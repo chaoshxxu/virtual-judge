@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry including="**" kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry including="**" kind="src" path="src/main/java"/>
+    <classpathentry excluding="**" kind="src" path="src/main/resources"/>
+    <classpathentry excluding="struts/" kind="src" path="src/main/config"/>
+    <classpathentry excluding="" kind="src" path="src/main/config/struts"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="target/classes"/>
+    <classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+        <attributes>
+            <attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+        </attributes>
+    </classpathentry>
+</classpath>

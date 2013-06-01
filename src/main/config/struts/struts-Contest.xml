@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="contest" extends="default"  namespace="/contest">
+
+		<!-- 罗列比赛 -->
+		<action name="toListContest" class="contestAction" method="toListContest">
+			<result name="success">/contest/listContest.jsp</result>
+		</action>
+
+		<!-- 获取比赛列表数据 -->
+		<action name="listContest" class="contestAction" method="listContest">
+			<result type="json">
+				<param name="root">dataTablesPage</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">false</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 进入添加比赛 -->
+		<action name="toAddContest" class="contestAction" method="toAddContest">
+			<result name="success">/contest/addContest.jsp</result>
+			<result name="error" type="redirect">toListContest.action</result>
+		</action>
+
+		<!-- 添加比赛 -->
+		<action name="addContest" class="contestAction" method="addContest">
+			<result name="success" type="redirect">/contest/view.action?cid=${cid}#overview</result>
+			<result name="choose_meaning">/contest/chooseMeaning.jsp</result>
+			<result name="input">/contest/addContest.jsp</result>
+			<result name="error">/contest/addContest.jsp</result>
+		</action>
+
+		<!-- 添加比赛回放 -->
+		<action name="addReplay" class="contestAction" method="addReplay">
+			<result name="success" type="redirectAction">
+				<param name="actionName">standing2</param>
+				<param name="namespace">/contest</param>
+				<param name="cid">${cid}</param>
+			</result>
+			<result name="input">/contest/chooseMeaning.jsp</result>
+			<result name="error">/contest/chooseMeaning.jsp</result>
+		</action>
+
+		<!-- 进入修改比赛 -->
+		<action name="toEditContest" class="contestAction" method="toEditContest">
+			<result name="detail_edit">/contest/editContest1.jsp</result>
+			<result name="brief_edit">/contest/editContest2.jsp</result>
+			<result name="error" type="redirect">toListContest.action</result>
+		</action>
+
+		<!-- 修改比赛 -->
+		<action name="editContest" class="contestAction" method="editContest">
+			<result name="success" type="redirect">/contest/view.action?cid=${cid}#overview</result>
+			<result name="choose_meaning">/contest/chooseMeaning.jsp</result>
+			<result name="detail_edit">/contest/editContest1.jsp</result>
+			<result name="brief_edit">/contest/editContest2.jsp</result>
+		</action>
+
+		<!-- 删除比赛 -->
+		<action name="deleteContest" class="contestAction" method="deleteContest">
+			<result name="success" type="redirect">toListContest.action</result>
+			<result name="error" type="redirect">toListContest.action</result>
+		</action>
+
+		<!-- 检查比赛授权状态 -->
+		<action name="checkAuthorizeStatus" class="contestAction" method="checkAuthorizeStatus">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 登陆比赛 -->
+		<action name="loginContest" class="contestAction" method="loginContest">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 进入比赛 -->
+		<action name="view" class="contestAction" method="view">
+			<result name="success">/contest/view.jsp</result>
+			<result name="error" type="redirect">/contest/toListContest.action#${cid}</result>
+		</action>
+
+		<!-- 获取题目信息 -->
+		<action name="showProblem" class="contestAction" method="showProblem">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 指定比赛用题的描述 -->
+		<action name="appointDescription" class="contestAction" method="appointDescription">
+		</action>
+
+		<!-- 进入rank设置页面 -->
+		<action name="showRankSetting" class="contestAction" method="showRankSetting">
+			<result name="success">/contest/rank_setting.jsp</result>
+		</action>
+
+		<!-- 提交 -->
+		<action name="submit" class="contestAction" method="submit">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 显示提交 -->
+		<action name="status" class="contestAction" method="status">
+			<result name="success">/contest/status.jsp</result>
+			<result name="input">/contest/loginContest.jsp</result>
+		</action>
+
+		<action name="fetchStatus" class="contestAction" method="fetchStatus">
+			<result type="json">
+				<param name="root">dataTablesPage</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">false</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 查看代码 -->
+		<action name="viewSource" class="contestAction" method="viewSource">
+			<result name="success">/contest/viewSource.jsp</result>
+			<result name="error" type="redirect">/toIndex.action</result>
+		</action>
+
+		<!-- 重判代码 -->
+		<action name="rejudge" class="contestAction" method="rejudge">
+			<result name="success" type="redirect">/toIndex.action</result>
+		</action>
+
+		<!-- 获取提交信息 -->
+		<action name="fetchSubmissionInfo" class="contestAction" method="fetchSubmissionInfo">
+			<result type="json">
+				<param name="root">submissionInfo</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- statistic -->
+		<action name="statistic" class="contestAction" method="statistic">
+			<result name="success">/contest/statistic.jsp</result>
+		</action>
+
+		<!-- 导出代码 -->
+		<action name="exportSource" class="contestAction" method="exportSource">
+			<result type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">sourceInputStream</param>
+				<param name="contentDisposition">attachment;filename="${cid}.zip"</param>
+				<param name="bufferSize">4096</param>
+			</result>
+		</action>
+
+
+		<!-- deprecated -->
+
+		<!-- 进入比赛 -->
+		<action name="viewContest" class="contestAction" method="viewContest">
+			<result type="redirect">/contest/view.action?cid=${cid}#overview</result>
+		</action>
+
+		<!-- 查看题目 -->
+		<action name="viewProblem" class="contestAction" method="viewProblem">
+			<result type="redirect">/contest/view.action?cid=${cid}#problem/${num}</result>
+		</action>
+
+		<!-- 排名页面2 -->
+		<action name="standing2" class="contestAction" method="standing2">
+			<result type="redirect">/contest/view.action?cid=${cid}#rank</result>
+		</action>
+
+	</package>
+</struts>

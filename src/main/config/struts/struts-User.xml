@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="user" extends="default"  namespace="/user">
+
+	    <!-- 登陆 -->
+        <action name="login" class="userAction" method="login">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+	    <!-- 登出 -->
+        <action name="logout" class="userAction" method="logout">
+	    </action>
+
+	    <!-- 注册 -->
+        <action name="register" class="userAction" method="register">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+	    <!-- 跳转至更改个人信息页面 -->
+        <action name="toUpdate" class="userAction" method="toUpdate">
+	        <result name="success">/user/update.jsp</result>
+	    </action>
+
+	    <!-- 更改个人信息 -->
+        <action name="update" class="userAction" method="update">
+			<result name="success" type="redirect">${redir}</result>
+	        <result name="input">/user/update.jsp</result>
+	        <result name="error">/user/update.jsp</result>
+	    </action>
+
+	    <!-- 查看资料 -->
+        <action name="profile" class="userAction" method="profile">
+	        <result name="success">/user/profile.jsp</result>
+	    </action>
+
+	    <!-- 检查登陆状态 -->
+        <action name="checkLogInStatus" class="userAction" method="checkLogInStatus">
+			<result type="json">
+				<param name="root">json</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+	</package>
+</struts>

@@ -1,0 +1,1 @@
+if(!this.sh_languages){this.sh_languages={}}var lang="properties";sh_languages[lang]=[[[/#/g,"sh-comment",1],[/!/g,"sh-comment",1],[/([^="]+)([ \t]*)(=)/g,["sh-type","sh-normal","sh-symbol"],-1]],[[/$/g,null,-2]]];if(sh_afterLoad){sh_afterLoad(lang)};

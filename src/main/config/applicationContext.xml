@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+		<property name="location"> 
+			<value>classpath:db.properties</value> 
+		</property> 
+	</bean>
+
+	<!-- datasource, don't direct use jdbc config in hibernate.cfg.xml --> 
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"> 
+		<property name="driverClassName" value="${jdbc.driverClassName}" /> 
+		<property name="url" value="${jdbc.url}" /> 
+		<property name="username" value="${jdbc.username}" /> 
+		<property name="password" value="${jdbc.password}" /> 
+	</bean>
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect 
+				</prop>
+
+<!--
+				<prop key="hibernate.query.factory_class">
+					org.hibernate.hql.classic.ClassicQueryTranslatorFactory
+				</prop>
+
+                <prop key="hibernate.show_sql">true</prop>  
+				<prop key="hibernate.format_sql">true</prop>
+-->
+			</props>
+		</property>
+		<property name="mappingResources">
+			<list>
+				<value>judge/bean/Contest.hbm.xml</value>
+				<value>judge/bean/Cproblem.hbm.xml</value>
+				<value>judge/bean/Problem.hbm.xml</value>
+				<value>judge/bean/Submission.hbm.xml</value>
+				<value>judge/bean/User.hbm.xml</value>
+				<value>judge/bean/Vlog.hbm.xml</value>
+				<value>judge/bean/Description.hbm.xml</value>
+				<value>judge/bean/ReplayStatus.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="sessionCleaner" class="judge.tool.SessionCleaner" />
+
+   	<bean id="sessionCleanerJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="sessionCleaner" />
+		</property>
+		<property name="targetMethod">
+			<value>clean</value>
+		</property>
+	</bean>
+
+	<bean id="sessionCleanerTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="sessionCleanerJobDetail" /> 
+		</property>
+		<property name="cronExpression">
+			<value>0 0/5 * * * ?</value>
+		</property>
+	</bean>
+
+	<bean id="tempFileCleaner" class="judge.tool.TempFileCleaner" />
+
+   	<bean id="tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="tempFileCleaner" />
+		</property>
+		<property name="targetMethod">
+			<value>clean</value>
+		</property>
+	</bean>
+
+	<bean id="tempFileCleanerTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="tempFileCleanerJobDetail" /> 
+		</property>
+		<property name="cronExpression">
+			<value>0 0 3 * * ?</value>
+		</property>
+	</bean>
+
+	<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="sessionCleanerTriggerBean" />
+				<ref bean="tempFileCleanerTriggerBean" />
+			</list>
+		</property> 
+	</bean>
+
+	 
+	<!-- 配置Dao -->
+	<bean id="baseDao" class="judge.dao.BaseDao">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+
+ 	<!-- 配置Service -->
+	<bean id="baseService" class="judge.service.imp.BaseService">
+	    <property name="baseDao" ref="baseDao" />
+	</bean>
+
+	<bean id="userService" class="judge.service.imp.UserService">
+	    <property name="baseDao" ref="baseDao" />
+	</bean>
+
+	<bean id="judgeService" class="judge.service.JudgeService">
+	    <property name="baseDao" ref="baseDao" />
+	</bean>
+
+
+	<!-- 配置Action部分 -->
+	<!-- 主配置文件struts.xml -->
+	<bean id="userAction" class="judge.action.UserAction" scope="prototype">
+		<property name="userService" ref="userService" />
+	</bean>
+	
+	<bean id="problemAction" class="judge.action.ProblemAction" scope="prototype">
+		<property name="baseService" ref="baseService" />
+		<property name="judgeService" ref="judgeService" />
+	</bean>
+
+	<bean id="contestAction" class="judge.action.ContestAction" scope="prototype">
+		<property name="baseService" ref="baseService" />
+		<property name="judgeService" ref="judgeService" />
+	</bean>
+
+	<bean id="mainAction" class="judge.action.MainAction" scope="prototype">
+	</bean>
+	
+	<bean id="statAction" class="judge.action.StatAction" scope="prototype">
+	</bean>
+
+</beans>

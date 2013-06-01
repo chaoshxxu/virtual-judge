@@ -1,0 +1,1 @@
+if(!this.sh_languages){this.sh_languages={}}var lang="lsm";sh_languages[lang]=[[[/\b(?:Begin[\d]*|End)\b/g,"sh-keyword",-1],[/^[A-Za-z0-9_-]+:/g,"sh-type",-1],[/(?:<?)[A-Za-z0-9_\.\/\-_~]+@[A-Za-z0-9_\.\/\-_~]+(?:>?)|(?:<?)[A-Za-z0-9_]+:\/\/[A-Za-z0-9_\.\/\-_~]+(?:>?)/g,"sh-url",-1]]];if(sh_afterLoad){sh_afterLoad(lang)};

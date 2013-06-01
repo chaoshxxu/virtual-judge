@@ -1,0 +1,1 @@
+if(!this.sh_languages){this.sh_languages={}}var lang="ldap";sh_languages[lang]=[[[/#/g,"sh-comment",1],[/(\b[A-Za-z0-9_]+:)((?:[^,=]*$)?)/g,["sh-keyword","sh-string"],-1],[/([A-Za-z0-9_]+)(=)([^,]+)(,?)/g,["sh-attribute","sh-symbol","sh-string","sh-symbol"],-1]],[[/$/g,null,-2]]];if(sh_afterLoad){sh_afterLoad(lang)};

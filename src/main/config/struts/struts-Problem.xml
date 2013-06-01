@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="problem" extends="default" namespace="/problem">
+
+		<!-- 罗列题目 -->
+		<action name="toListProblem" class="problemAction" method="listProblem">
+			<result name="success">/problem/listProblem.jsp</result>
+		</action>
+
+		<action name="listProblem" class="problemAction" method="listProblem">
+			<result type="json">
+				<param name="root">dataTablesPage</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">false</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 添加题目 -->
+		<action name="addProblem" class="problemAction" method="addProblem">
+			<result name="success" type="redirectAction">
+				<param name="actionName">toListProblem</param>
+				<param name="namespace">/problem</param>
+				<param name="OJId">${OJId}</param>
+			</result>
+			<result name="recrawl" type="redirectAction">
+				<param name="actionName">viewProblem</param>
+				<param name="namespace">/problem</param>
+				<param name="id">${id}</param>
+			</result>
+			<result name="error" type="redirectAction">
+				<param name="actionName">toListProblem</param>
+				<param name="namespace">/problem</param>
+				<param name="OJId">${OJId}</param>
+			</result>
+		</action>
+
+		<!-- 显示题目 -->
+		<action name="viewProblem" class="problemAction" method="viewProblem">
+			<result name="success">/problem/viewProblem.jsp</result>
+			<result name="error" type="redirect">toListProblem.action</result>
+		</action>
+
+		<!-- 为描述投票 -->
+		<action name="vote4Description" class="problemAction" method="vote4Description">
+		</action>
+
+		<!-- 显示提交 -->
+		<action name="status" class="problemAction" method="status">
+			<result name="success">/problem/status.jsp</result>
+			<result name="input">/problem/status.jsp</result>
+		</action>
+
+		<action name="fetchStatus" class="problemAction" method="fetchStatus">
+			<result type="json">
+				<param name="root">dataTablesPage</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">false</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+		<!-- 进入非比赛提交页面 -->
+		<action name="toSubmit" class="problemAction" method="toSubmit">
+			<result name="success">/problem/submit.jsp</result>
+			<result name="error" type="redirect">../user/toLogin.action</result>
+		</action>
+
+		<!-- 非比赛中的提交 -->
+		<action name="submit" class="problemAction" method="submit">
+			<result name="success" type="redirect">status.action?reset=1</result>
+			<result name="error" type="redirect">../user/toLogin.action</result>
+			<result name="input">/problem/submit.jsp</result>
+		</action>
+
+		<!-- 进入修改题面页面 -->
+		<action name="toEditDescription" class="problemAction" method="toEditDescription">
+			<result name="success">/problem/editDescription.jsp</result>
+			<result name="login" type="redirect">../user/toLogin.action</result>
+		</action>
+
+		<!-- 修改题面 -->
+		<action name="editDescription" class="problemAction" method="editDescription">
+			<result name="success" type="redirect">${redir}</result>
+		</action>
+
+		<!-- 删除题面 -->
+		<action name="deleteDescription" class="problemAction" method="deleteDescription">
+		</action>
+
+		<!-- 查看代码 -->
+		<action name="viewSource" class="problemAction" method="viewSource">
+			<result name="success">/problem/viewSource.jsp</result>
+			<result name="error" type="redirect">status.action</result>
+		</action>
+
+		<!-- 重判代码 -->
+		<action name="rejudge" class="problemAction" method="rejudge">
+			<result name="success" type="redirect">/toIndex.action</result>
+		</action>
+
+		<!-- 切花代码公开性 -->
+		<action name="toggleOpen" class="problemAction" method="toggleOpen">
+		</action>
+
+		<!-- 获取提交信息 -->
+		<action name="fetchSubmissionInfo" class="problemAction" method="fetchSubmissionInfo">
+			<result type="json">
+				<param name="root">submissionInfo</param>
+				<param name="noCache">true</param>
+				<param name="excludeNullProperties">true</param>
+				<param name="contentType">application/json-rpc</param>
+			</result>
+		</action>
+
+	</package>
+</struts>
