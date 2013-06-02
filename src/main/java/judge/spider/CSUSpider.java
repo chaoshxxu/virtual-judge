@@ -1,5 +1,6 @@
 package judge.spider;
 
+import judge.tool.HtmlHandleUtil;
 import judge.tool.Tools;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
@@ -27,22 +28,16 @@ public class CSUSpider extends Spider {
 				System.err.println("Method failed: "+getMethod.getStatusLine());
 			}
 			html = Tools.getHtml(getMethod, null);
+            html = HtmlHandleUtil.transformUrlToAbs(html, getMethod.getURI().toString());
 		} catch(Exception e) {
 			getMethod.releaseConnection();
 			throw new Exception();
 		}
 
-		if (html.contains("<title>Problem is not Availables")){
-			throw new Exception();
-		}
-		html = html.replaceAll("(['\"]?)/OnlineJudge", "$1http://acm.csu.edu.cn/OnlineJudge");
-		html = html.replaceAll("(['\"]?)problemset.php", "$1http://acm.csu.edu.cn/OnlineJudge/problemset.php");
-
 		problem.setTitle(Tools.regFind(html, "<center><h2>\\d+:([\\s\\S]*?)</h2>").trim());
 		if (problem.getTitle().isEmpty()){
 			throw new Exception();
 		}
-		problem.setSource(Tools.regFind(html, "<h2>Source</h2>[\\s\\S]*?<div class=content><p>([\\s\\S]*?)</p></div><center>"));
 
 		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit: </span>(\\d+) Sec")));
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "Memory Limit: </span>(\\d+) MB")));
@@ -52,6 +47,7 @@ public class CSUSpider extends Spider {
 		description.setSampleInput(Tools.regFind(html, "<h2>Sample Input</h2>([\\s\\S]*?)<h2>Sample Output</h2>").replaceAll("<span", "<pre").replaceAll("</span>", "</pre>"));
 		description.setSampleOutput(Tools.regFind(html, "<h2>Sample Output</h2>([\\s\\S]*?)<h2>HINT</h2>").replaceAll("<span", "<pre").replaceAll("</span>", "</pre>"));
 		description.setHint(Tools.regFind(html, "<h2>HINT</h2>([\\s\\S]*?)<h2>Source</h2>"));
+		problem.setSource(Tools.regFind(html, "<h2>Source</h2>[\\s\\S]*?<div class=\"content\"><p>([\\s\\S]*?)</p></div><center>"));
 		problem.setUrl("http://acm.csu.edu.cn/OnlineJudge/problem.php?id=" + problem.getOriginProb());
 	}
 }

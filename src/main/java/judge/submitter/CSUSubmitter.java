@@ -1,7 +1,6 @@
 package judge.submitter;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,14 +63,16 @@ public class CSUSubmitter extends Submitter {
 		languageList.put("0", "C");
 		languageList.put("1", "C++");
 		languageList.put("2", "Pascal");
-		languageList.put("3", "Java");
+        languageList.put("3", "Java");
+        languageList.put("10", "Obj-C");
+        languageList.put("11", "FreeBasic");
 		sc.setAttribute("CSU", languageList);
 	}
 
 	private void getMaxRunId() throws Exception {
 		GetMethod getMethod = new GetMethod("http://acm.csu.edu.cn/OnlineJudge/status.php");
 		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		Pattern p = Pattern.compile("class='evenrow'><td>(\\d+)");
+		Pattern p = Pattern.compile("class='evenrow'><td>\\s*(\\d+)");
 
 		httpClient.executeMethod(getMethod);
 		byte[] responseBody = getMethod.getResponseBody();
@@ -124,7 +125,14 @@ public class CSUSubmitter extends Submitter {
 	}
 
 	public void getResult(String username) throws Exception{
-		String reg = "class='evenrow'><td>(\\d+)[\\s\\S]*?<font[\\s\\S]*?>([\\s\\S]*?)</font>[\\s\\S]*?<td>([\\s\\S]*?)<td>([\\s\\S]*?)<td>", result;
+		String reg = 
+		        "<tr class='evenrow'>" +
+		        "<td>\\s*(\\d+)</td>" +
+		        "<td>.*?</td>" +
+                "<td>.*?</td>" +
+                "<td>(.*?)</td>" +
+                "<td>(.*?)</td>" +
+                "<td>(.*?)</td>";
 		Pattern p = Pattern.compile(reg);
 
 		GetMethod getMethod = new GetMethod("http://acm.csu.edu.cn/OnlineJudge/status.php?user_id=" + username);
@@ -138,7 +146,7 @@ public class CSUSubmitter extends Submitter {
 
 			Matcher m = p.matcher(tLine);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
-				result = m.group(2).trim();
+				String result = m.group(2).replaceAll("<.*?>", "").replace("(Click)", "").trim();
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
 				if (!result.contains("ing")){
@@ -166,7 +174,7 @@ public class CSUSubmitter extends Submitter {
 		httpClient.executeMethod(getMethod);
 		String additionalInfo = Tools.getHtml(getMethod, null);
 
-		submission.setAdditionalInfo(Tools.regFind(additionalInfo, "<title>Compile Error Info</title>\\s*(<pre>[\\s\\S]*?</pre>)"));
+		submission.setAdditionalInfo(Tools.regFind(additionalInfo, "(<pre[\\s\\S]*?</pre>)"));
 	}
 
 	private int getIdleClient() {
