@@ -1,7 +1,6 @@
 package judge.submitter;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,9 +62,9 @@ public class SGUSubmitter extends Submitter {
 		Map<String, String> languageList = new TreeMap<String, String>();
 		languageList.put("GNU C (MinGW, GCC 4)", "GNU C (MinGW, GCC 4)");
 		languageList.put("GNU CPP (MinGW, GCC 4)", "GNU CPP (MinGW, GCC 4)");
-		languageList.put("Visual Studio 8 C++", "Visual Studio 8 C++");
+		languageList.put("Visual Studio C++ 2010", "Visual Studio C++ 2010");
 		languageList.put("C# (Mono gmcs 2.4)", "C# (Mono gmcs 2.4)");
-		languageList.put("Visual Studio 8 C", "Visual Studio 8 C");
+		languageList.put("Visual Studio C 2010", "Visual Studio C 2010");
 		languageList.put("JAVA 1.6", "JAVA 1.6");
 		languageList.put("Delphi 7.0", "Delphi 7.0");
 		sc.setAttribute("SGU", languageList);
