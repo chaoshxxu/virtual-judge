@@ -151,7 +151,7 @@ public class SCUSubmitter extends Submitter {
 		    fos.close();
 
 		    BufferedImage img = ImageIO.read(captchaPic);
-		    return SCUCpatchaRecognizer.recognize(img);
+		    return SCUCaptchaRecognizer.recognize(img);
 		} finally {
 			EntityUtils.consume(entity);
 			if (captchaPic.exists()) {
@@ -272,7 +272,7 @@ public class SCUSubmitter extends Submitter {
 }
 
 
-class SCUCpatchaRecognizer {
+class SCUCaptchaRecognizer {
 	
 	public static String recognize(BufferedImage img) {
 		StringBuilder ans = new StringBuilder();
@@ -380,7 +380,6 @@ class SCUCpatchaRecognizer {
 				" #  # ",
 				"  ##  "		
 			},
-			
 			{
 				"######",
 				"     #",

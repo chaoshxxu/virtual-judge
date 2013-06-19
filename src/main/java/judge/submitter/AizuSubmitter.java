@@ -55,6 +55,7 @@ public class AizuSubmitter extends Submitter {
 			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
 			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
 			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
+//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
