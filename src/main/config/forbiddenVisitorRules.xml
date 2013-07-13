@@ -1,0 +1,14 @@
+<forbiddenVisitorRules>
+    <ua>
+        <equals></equals>
+        <substring>spider</substring>
+        <substring>bot</substring>
+        <substring>curl</substring>
+        <pattern></pattern>
+    </ua>
+    <ip>
+        <equals></equals>
+        <substring></substring>
+        <pattern></pattern>
+    </ip>
+</forbiddenVisitorRules>

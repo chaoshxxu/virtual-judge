@@ -147,5 +147,11 @@
 	
 	<bean id="statAction" class="judge.action.StatAction" scope="prototype">
 	</bean>
+    
+    
+    <bean id="forbiddenVisitorRuler" class="judge.tool.ForbiddenVisitorRuler" init-method="init">
+        <constructor-arg value="classpath:forbiddenVisitorRules.xml" />
+    </bean>
+    
 
 </beans>

@@ -9,38 +9,49 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 public class MyFilter implements Filter{
 
 	private SessionContext myc;
-
+	
+	private ForbiddenVisitorRuler forbiddenVisitorRuler;
+	
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+		if (forbiddenVisitorRuler == null) {
+			forbiddenVisitorRuler = SpringBean.getBean("forbiddenVisitorRuler", ForbiddenVisitorRuler.class);
+		}
 
 		try {
 
 			HttpServletRequest request = (HttpServletRequest) req;
+			HttpServletResponse response = (HttpServletResponse) res;
 			HttpSession session = request.getSession();
 
 			String ua = request.getHeader("user-agent");
-			String ip = request.getRemoteAddr();
 
 			// get X-Real-IP if the request comes from nginx
-			String ip2 = request.getHeader("X-Real-IP");
-			if (ip2 != null) ip = ip2;
+			String ip = request.getHeader("X-Real-IP");
+			if (ip == null) {
+				ip = request.getRemoteAddr();
+			}
 
-
-			if (!legalUA(ua) || !legalIP(ip)) {
+			if (forbiddenVisitorRuler.forbidden(ua, ip)) {
 				myc = SessionContext.getInstance();
 				session.invalidate();
 				myc.DelSession(session);
-			} else if (session.getAttribute("remoteAddr") == null) {
-				session.setAttribute("remoteAddr", ip);
-				session.setAttribute("user-agent", request.getHeader("user-agent"));
-				session.setAttribute("referer", request.getHeader("referer"));
+				
+				response.sendRedirect("http://ip138.com/ips138.asp?ip=" + ip);
+			} else {
+				if (session.getAttribute("remoteAddr") == null) {
+					session.setAttribute("remoteAddr", ip);
+					session.setAttribute("user-agent", request.getHeader("user-agent"));
+					session.setAttribute("referer", request.getHeader("referer"));
+				}
+				chain.doFilter(req, res);
 			}
-
-
+			
 //			Enumeration paramNames = request.getParameterNames();
 //			while (paramNames.hasMoreElements()) {
 //				String paramName = (String) paramNames.nextElement();
@@ -57,28 +68,7 @@ public class MyFilter implements Filter{
 			e.printStackTrace();
 		}
 
-		chain.doFilter(req, res);
     }
-
-	private boolean legalUA(String ua) {
-		if (ua == null){
-			return false;
-		}
-		ua = ua.toLowerCase();
-		if (ua.isEmpty() || ua.contains("bot") || ua.contains("spider")){
-			return false;
-		}
-		return true;
-	}
-
-	private boolean legalIP(String ip) {
-		if (ip == null || ip.isEmpty()){
-			return false;
-		}
-		return true;
-	}
-
-
 
 	public void destroy() {
 	}
