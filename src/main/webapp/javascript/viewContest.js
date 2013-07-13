@@ -811,7 +811,7 @@ function calcRankTable() {
 		}
 		exportRankHtml.push("</tr>");
 	}
-	exportRankHtml = "<table>" + exportRankHtml.join("") + "</table>";
+	exportRankHtml = ("<table>" + exportRankHtml.join("") + "</table>").replace("　", "");
 
 	var maxCorrectNumber = 0, totalNumber = 0, totalCorrectNumber = 0;
 	for (var j = 0; j < pnum; ++j) {
