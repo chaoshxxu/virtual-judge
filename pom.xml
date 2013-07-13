@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.3-beta2</version>
+            <version>4.2.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
@@ -192,7 +192,7 @@
             <artifactId>jaxen</artifactId>
             <version>1.1.4</version>
         </dependency>
-        </dependencies>
+    </dependencies>
 
     <build>
         <plugins>
@@ -204,9 +204,9 @@
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <executable>${JAVA_HOME}/bin/javac</executable>
-                    <compilerVersion>1.7</compilerVersion>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <compilerVersion>1.6</compilerVersion>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -224,7 +224,7 @@
                 <version>2.3</version>
                 <configuration>
                     <warName>vjudge</warName>
-                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>        
+                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
                 </configuration>
             </plugin>
         </plugins>
@@ -247,6 +247,5 @@
             </plugin>
         </plugins>
     </reporting>
-
 
 </project>

@@ -33,7 +33,6 @@ public class ForbiddenVisitorRuler {
 			Node rule = (Node) obj;
 			String method = rule.getName();
 			String value = rule.getText();
-			System.out.println(method + " - " + value);
 			if (!StringUtils.isEmpty(value)) {
 				String item = rule.getParent().getName();
 				rules.add(new Rule(
