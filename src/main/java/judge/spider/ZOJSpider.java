@@ -37,7 +37,7 @@ public class ZOJSpider extends Spider {
 		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit: </font> ([\\s\\S]*?) Second")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "Memory Limit: </font> ([\\s\\S]*?) KB")));
 		if (html.contains(">Input<") && html.contains(">Output<") && html.contains(">Sample Input<") && html.contains(">Sample Output<")){
-			description.setDescription(Tools.regFind(html, "KB </center><hr />([\\s\\S]*?)>[\\s]*Input"));
+			description.setDescription(Tools.regFind(html, "KB[\\s\\S]*?</center><hr />([\\s\\S]*?)>[\\s]*Input"));
 			description.setInput(Tools.regFindCaseSensitive(html, ">[\\s]*Input([\\s\\S]*?)>[\\s]*Out?put"));
 			description.setOutput(Tools.regFindCaseSensitive(html, ">[\\s]*Out?put([\\s\\S]*?)>[\\s]*Sample Input"));
 			description.setSampleInput(Tools.regFind(html, ">[\\s]*Sample Input([\\s\\S]*?)>[\\s]*Sample Out?put"));
