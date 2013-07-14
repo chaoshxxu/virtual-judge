@@ -22,6 +22,8 @@ public class SessionCleaner {
 			long freezeLength = new Date().getTime() - httpSession.getLastAccessedTime();
 			if (httpSession.getAttribute("remoteAddr") == null) {
 				httpSession.invalidate();
+			} else if (activeLength < 1000) {
+				httpSession.invalidate();
 			} else if (httpSession.getAttribute("visitor") == null && httpSession.getAttribute("lpc") == null && freezeLength > 3 * Math.max(activeLength, ONE_MINUTE)) {
 				httpSession.invalidate();
 			}
