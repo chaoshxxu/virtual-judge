@@ -9,7 +9,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <org.apache.struts.version>2.3.14.2</org.apache.struts.version>
+        <org.apache.struts.version>2.3.15.1</org.apache.struts.version>
         <org.springframework.version>3.2.3.RELEASE</org.springframework.version>
         <org.hibernate.version>3.6.9.Final</org.hibernate.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
