@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN" "http://struts.apache.org/dtds/struts-2.3.dtd">
 
 <struts>
 	<package name="problem" extends="default" namespace="/problem">
@@ -65,20 +65,20 @@
 		<!-- 进入非比赛提交页面 -->
 		<action name="toSubmit" class="problemAction" method="toSubmit">
 			<result name="success">/problem/submit.jsp</result>
-			<result name="error" type="redirect">../user/toLogin.action</result>
+			<result name="error" type="redirect">/toIndex.action</result>
 		</action>
 
 		<!-- 非比赛中的提交 -->
 		<action name="submit" class="problemAction" method="submit">
 			<result name="success" type="redirect">status.action?reset=1</result>
-			<result name="error" type="redirect">../user/toLogin.action</result>
+			<result name="error" type="redirect">/toIndex.action</result>
 			<result name="input">/problem/submit.jsp</result>
 		</action>
 
 		<!-- 进入修改题面页面 -->
 		<action name="toEditDescription" class="problemAction" method="toEditDescription">
 			<result name="success">/problem/editDescription.jsp</result>
-			<result name="login" type="redirect">../user/toLogin.action</result>
+			<result name="login" type="redirect">/toIndex.action</result>
 		</action>
 
 		<!-- 修改题面 -->

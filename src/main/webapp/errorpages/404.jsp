@@ -28,12 +28,8 @@ String basePath = (String)application.getAttribute("basePath");
 				<td>
 					<a href="contest/toListContest.action">Contest</a>
 				</td>
-				<td>
-					<a href="user/toRegister.action">Register</a>
-				</td>
-				<td>
-					<a href="user/toLogin.action">Login</a>
-				</td>
+                <td></td>
+                <td></td>
 			</tr>
 		</table>
 		<br /><br />
