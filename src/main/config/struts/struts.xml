@@ -7,26 +7,42 @@
     <include file="struts-User.xml" />
     <include file="struts-Stat.xml" />
 
-	<package name="default" extends="json-default">
-		<global-results>
-	        <result name="error">/errorpages/error.jsp</result>
-	        <result name="sqlError">/errorpages/error.jsp</result>
-	        <result name="input">/errorpages/error.jsp</result>
-	    </global-results>
-	    <global-exception-mappings>
-	        <exception-mapping result="sqlError" exception="java.sql.SQLException" />
-	        <exception-mapping result="error" exception="java.lang.Exception" />
-	    </global-exception-mappings>
+    <package name="default" extends="json-default">
+        <interceptors>
+            <interceptor name="autoLoginInterceptor" class="autoLoginInterceptor"></interceptor>
+            <interceptor-stack name="autoLoginDefaultStack">
+                <interceptor-ref name="autoLoginInterceptor"></interceptor-ref>
+                <interceptor-ref name="defaultStack">
+                    <param name="exception.logEnabled">true</param>
+                    <param name="exception.logLevel">ERROR</param>
+                </interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
 
-	    <!-- 跳转至主页 -->
+        <default-interceptor-ref name="autoLoginDefaultStack"></default-interceptor-ref>
+
+        <global-results>
+            <result name="error">/errorpages/error.jsp</result>
+            <result name="sqlError">/errorpages/error.jsp</result>
+            <result name="input">/errorpages/error.jsp</result>
+        </global-results>
+        <global-exception-mappings>
+            <exception-mapping result="sqlError"
+                exception="java.sql.SQLException" />
+            <exception-mapping result="error"
+                exception="java.lang.Exception" />
+        </global-exception-mappings>
+
+
+        <!-- 跳转至主页 -->
         <action name="toIndex" class="mainAction" method="toIndex">
-	        <result name="success">/index.jsp</result>
-	    </action>
+            <result name="success">/index.jsp</result>
+        </action>
 
-	    <!-- 跳转至主页 -->
+        <!-- 跳转至主页 -->
         <action name="discuss" class="mainAction" method="discuss">
-	        <result name="success">/discuss.jsp</result>
-	    </action>
+            <result name="success">/discuss.jsp</result>
+        </action>
 
-	</package>
+    </package>
 </struts>

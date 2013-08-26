@@ -25,7 +25,6 @@ import judge.bean.Problem;
 import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
-import judge.service.imp.BaseService;
 import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;

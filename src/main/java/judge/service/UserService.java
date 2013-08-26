@@ -1,13 +1,12 @@
-package judge.service.imp;
+package judge.service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import judge.bean.User;
-import judge.service.IUserService;
 
-public class UserService extends BaseService implements IUserService {
+public class UserService extends BaseService {
 
 	// ==============================================================
 	// 函数名：checkUsername

@@ -5,7 +5,7 @@
 //     本文件主要实现各模块service层的公共功能，包括增、删、改、计算
 //
 // ========================================================================
-package judge.service.imp;
+package judge.service;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,7 +14,6 @@ import java.util.Map;
 import org.hibernate.Session;
 
 import judge.dao.IBaseDao;
-import judge.service.IBaseService;
 
 @SuppressWarnings("unchecked")
 public class BaseService implements IBaseService {

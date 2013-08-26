@@ -113,23 +113,31 @@
 	
 
  	<!-- 配置Service -->
-	<bean id="baseService" class="judge.service.imp.BaseService">
+	<bean id="baseService" class="judge.service.BaseService">
 	    <property name="baseDao" ref="baseDao" />
 	</bean>
 
-	<bean id="userService" class="judge.service.imp.UserService">
+	<bean id="userService" class="judge.service.UserService">
 	    <property name="baseDao" ref="baseDao" />
 	</bean>
 
-	<bean id="judgeService" class="judge.service.JudgeService">
-	    <property name="baseDao" ref="baseDao" />
-	</bean>
+    <bean id="judgeService" class="judge.service.JudgeService">
+        <property name="baseDao" ref="baseDao" />
+    </bean>
+    
+    <bean id="forbiddenVisitorRuler" class="judge.tool.ForbiddenVisitorRuler" init-method="init">
+        <constructor-arg value="classpath:forbiddenVisitorRules.xml" />
+    </bean>
+    
+    <bean id="autoLoginManager" class="judge.service.AutoLoginManager" init-method="init">
+    </bean>
 
 
 	<!-- 配置Action部分 -->
 	<!-- 主配置文件struts.xml -->
 	<bean id="userAction" class="judge.action.UserAction" scope="prototype">
-		<property name="userService" ref="userService" />
+        <property name="userService" ref="userService" />
+        <property name="autoLoginManager" ref="autoLoginManager" />
 	</bean>
 	
 	<bean id="problemAction" class="judge.action.ProblemAction" scope="prototype">
@@ -148,10 +156,10 @@
 	<bean id="statAction" class="judge.action.StatAction" scope="prototype">
 	</bean>
     
-    
-    <bean id="forbiddenVisitorRuler" class="judge.tool.ForbiddenVisitorRuler" init-method="init">
-        <constructor-arg value="classpath:forbiddenVisitorRules.xml" />
+    <!-- Interceptor -->
+    <bean id="autoLoginInterceptor" class="judge.interceptor.AutoLoginInterceptor">
+        <property name="userService" ref="userService" />
+        <property name="autoLoginManager" ref="autoLoginManager" />
     </bean>
-    
 
 </beans>
