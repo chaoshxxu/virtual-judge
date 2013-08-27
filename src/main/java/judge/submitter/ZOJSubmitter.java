@@ -15,21 +15,38 @@ import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 public class ZOJSubmitter extends Submitter {
 
 	static final String OJ_NAME = "ZOJ";
-	static private HttpClient clientList[];
+	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+
+	private DefaultHttpClient client;
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("acm.zju.edu.cn");
+	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -51,13 +68,14 @@ public class ZOJSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
+		clientList = new DefaultHttpClient[usernameList.length];
+		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+			clientList[i] = new DefaultHttpClient();
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 300000);
+			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 300000);
+			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -72,100 +90,128 @@ public class ZOJSubmitter extends Submitter {
 		sc.setAttribute("ZOJ", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		GetMethod getMethod = new GetMethod("http://acm.zju.edu.cn/onlinejudge/showRuns.do?contestId=1");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+	private void getMaxRunId() throws ClientProtocolException, IOException {
 		Pattern p = Pattern.compile("<td class=\"runId\">(\\d+)</td>");
 
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
+		try {
+			get = new HttpGet("/onlinejudge/showRuns.do?contestId=1");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+
+		Matcher m = p.matcher(html);
 		if (m.find()) {
 			maxRunId = Integer.parseInt(m.group(1));
 			System.out.println("maxRunId : " + maxRunId);
 		} else {
-			throw new Exception();
+			throw new RuntimeException();
 		}
 	}
-
-	private void submit() throws Exception{
-		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-
-		GetMethod getMethod = new GetMethod("http://acm.zju.edu.cn/onlinejudge/showProblem.do?problemCode=" + problem.getOriginProb());
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		int statusCode = httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		String problemId = Tools.regFind(tLine, "problemId=([\\s\\S]*?)\"><font");
-
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
 		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			post = new HttpPost("/onlinejudge/login.do");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("handle", username));
+			nvps.add(new BasicNameValuePair("password", password));
+			nvps.add(new BasicNameValuePair("rememberMe", "on"));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			
+			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+				throw new RuntimeException();
+			}
+		} finally {
+			EntityUtils.consume(entity);
 		}
-
-		PostMethod postMethod = new PostMethod("http://acm.zju.edu.cn/onlinejudge/submit.do");
-		postMethod.addParameter("languageId", submission.getLanguage());
-		postMethod.addParameter("problemId", problemId);
-		postMethod.addParameter("source", submission.getSource());
-		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		httpClient.getParams().setContentCharset("UTF-8");
-
-		System.out.println("submit...");
-		statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-        responseBody = postMethod.getResponseBody();
-        tLine = new String(responseBody, "UTF-8");
-        if (!tLine.contains("Submit Successfully")){
-        	throw new Exception();
-        }
 	}
 
-	private void login(String username, String password) throws Exception{
-        PostMethod postMethod = new PostMethod("http://acm.zju.edu.cn/onlinejudge/login.do");
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		try {
+			get = new HttpGet("/onlinejudge/");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		if (html.contains("/logout.do")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-        postMethod.addParameter("handle", username);
-        postMethod.addParameter("password", password);
-        postMethod.addParameter("rememberMe", "on");
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		System.out.println("login...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-		if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
-        	throw new Exception();
-        }
+	private void submit() throws ClientProtocolException, IOException {
+		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
+		
+		try {
+			get = new HttpGet("/onlinejudge/showProblem.do?problemCode=" + problem.getOriginProb());
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		String problemId = Tools.regFind(html, "problemId=([\\s\\S]*?)\"><font");
+		
+		try {
+			post = new HttpPost("/onlinejudge/submit.do");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("languageId", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("problemId", problemId));
+			nvps.add(new BasicNameValuePair("source", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+			
+	        if (!html.contains("Submit Successfully")){
+	        	throw new RuntimeException();
+	        }
+		} finally {
+			EntityUtils.consume(entity);
+		}
 	}
 
 	public void getResult(String username) throws Exception{
-		String reg = "<td class=\"runId\">(\\d+)[\\s\\S]*?judgeReply\\w{2,5}\">([\\s\\S]*?)</span>[\\s\\S]*?runTime\">([\\s\\S]*?)</td>[\\s\\S]*?runMemory\">([\\s\\S]*?)</td>", result;
-		Pattern p = Pattern.compile(reg);
+		Pattern p = Pattern.compile("<td class=\"runId\">(\\d+)[\\s\\S]*?judgeReply\\w{2,5}\">([\\s\\S]*?)</span>[\\s\\S]*?runTime\">([\\s\\S]*?)</td>[\\s\\S]*?runMemory\">([\\s\\S]*?)</td>");
 
-		GetMethod getMethod = new GetMethod("http://acm.zju.edu.cn/onlinejudge/showRuns.do?contestId=1&handle=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
+			try {
+				get = new HttpGet("/onlinejudge/showRuns.do?contestId=1&handle=" + username);
+				response = client.execute(host, get);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
 
-			Matcher m = p.matcher(tLine);
+			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
-				result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim().replaceAll("loating ", "loat-");
+				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim().replaceAll("loating ", "loat-");
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
-				if (!result.contains("ing")) {
-					if (result.equals("Accepted")) {
-						submission.setMemory(Integer.parseInt(m.group(4)));
-						submission.setTime(Integer.parseInt(m.group(3)));
-					} else if (result.contains("Compilation Error")) {
+    			if (!result.contains("ing")){
+    				if (result.equals("Accepted")){
+	    				submission.setTime(Integer.parseInt(m.group(3)));
+	    				submission.setMemory(Integer.parseInt(m.group(4)));
+    				} else if (result.contains("Compilation Error")) {
 						String wierdRunId = Tools.regFind(m.group(2), "submissionId=(\\d+)");
 						getAdditionalInfo(wierdRunId);
 					}
-					baseService.addOrModify(submission);
-					return;
-				}
+    				baseService.addOrModify(submission);
+    				return;
+    			}
 				baseService.addOrModify(submission);
 			}
 			Thread.sleep(interval);
@@ -174,14 +220,16 @@ public class ZOJSubmitter extends Submitter {
 		throw new Exception();
 	}
 
-	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://acm.zju.edu.cn/onlinejudge/showJudgeComment.do?submissionId=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, null);
-
-		submission.setAdditionalInfo("<pre>" + additionalInfo + "</pre>");
+	private void getAdditionalInfo(String submissionId) throws HttpException, IOException {
+		try {
+			get = new HttpGet("/onlinejudge/showJudgeComment.do?submissionId=" + submissionId);
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		submission.setAdditionalInfo("<pre>" + html + "</pre>");
 	}
 
 	private int getIdleClient() {
@@ -194,7 +242,7 @@ public class ZOJSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
+						client = clientList[j];
 						return j;
 					}
 				}
@@ -207,49 +255,36 @@ public class ZOJSubmitter extends Submitter {
 		}
 	}
 
-
 	public void work() {
 		idx = getIdleClient();
 		int errorCode = 1;
-		httpClient = clientList[idx];
 
 		try {
 			getMaxRunId();
-			try {
-				//第一次尝试提交
-				submit();
-			} catch (Exception e1) {
-				//失败,认为是未登录所致
-				e1.printStackTrace();
-				Thread.sleep(2000);
+			if (!isLoggedIn()) {
 				login(usernameList[idx], passwordList[idx]);
-				Thread.sleep(2000);
-				submit();
 			}
+			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
 
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//zju oj限制每两次提交之间至少隔5秒
+		}	//ZJU限制每两次提交之间至少隔5秒
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
-
 }
