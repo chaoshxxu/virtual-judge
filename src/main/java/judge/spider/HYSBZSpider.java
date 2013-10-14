@@ -18,7 +18,7 @@ public class HYSBZSpider extends Spider {
 
 		String html = "";
 		HttpClient httpClient = new HttpClient();
-		GetMethod getMethod = new GetMethod("http://www.lydsy.com/JudgeOnline/problem.php?id=" + problem.getOriginProb());
+		GetMethod getMethod = new GetMethod("http://www.lydsy.com:808/JudgeOnline/problem.php?id=" + problem.getOriginProb());
 		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		try {
 			int statusCode = httpClient.executeMethod(getMethod);
@@ -52,6 +52,6 @@ public class HYSBZSpider extends Spider {
 		description.setSampleInput(Tools.regFind(html, "<h2>Sample Input</h2>([\\s\\S]*?)<h2>Sample Output</h2>").replaceAll("<span", "<pre").replaceAll("</span>", "</pre>").replace("<br /> ", "<br />"));
 		description.setSampleOutput(Tools.regFind(html, "<h2>Sample Output</h2>([\\s\\S]*?)<h2>HINT</h2>").replaceAll("<span", "<pre").replaceAll("</span>", "</pre>").replace("<br /> ", "<br />"));
 		description.setHint(Tools.regFind(html, "<h2>HINT</h2>([\\s\\S]*?)<h2>Source</h2>"));
-		problem.setUrl("http://www.lydsy.com/JudgeOnline/problem.php?id=" + problem.getOriginProb());
+		problem.setUrl("http://www.lydsy.com:808/JudgeOnline/problem.php?id=" + problem.getOriginProb());
 	}
 }

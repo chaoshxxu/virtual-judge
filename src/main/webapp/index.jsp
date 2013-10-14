@@ -26,7 +26,7 @@
 				<a href="http://acm.hust.edu.cn/thx/" target="_blank">HUST</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://www.spoj.pl" target="_blank">SPOJ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://acm.hdu.edu.cn" target="_blank">HDU</a>&nbsp;&nbsp;&nbsp;
-				<a href="http://www.lydsy.com/JudgeOnline/" target="_blank">HYSBZ</a>&nbsp;&nbsp;&nbsp;
+				<a href="http://www.lydsy.com:808/JudgeOnline/" target="_blank">HYSBZ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://uva.onlinejudge.org/" target="_blank">UVA</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://codeforces.com/" target="_blank">CodeForces</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://www.z-trening.com/" target="_blank">Z-Trening</a>&nbsp;&nbsp;&nbsp;

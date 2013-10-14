@@ -3,6 +3,7 @@ package judge.submitter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,21 +16,37 @@ import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 public class HYSBZSubmitter extends Submitter {
 
 	static final String OJ_NAME = "HYSBZ";
-	static private HttpClient clientList[];
+	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+
+	private DefaultHttpClient client;
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("www.lydsy.com", 808);
+	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -51,13 +68,14 @@ public class HYSBZSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
+		clientList = new DefaultHttpClient[usernameList.length];
+//		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+			clientList[i] = new DefaultHttpClient();
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
+//			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -65,87 +83,116 @@ public class HYSBZSubmitter extends Submitter {
 		languageList.put("1", "C++");
 		languageList.put("2", "Pascal");
 		languageList.put("3", "Java");
+		languageList.put("4", "Ruby");
+		languageList.put("5", "Bash");
+		languageList.put("6", "Python");
 		sc.setAttribute("HYSBZ", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		GetMethod getMethod = new GetMethod("http://www.lydsy.com/JudgeOnline/status.php");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+	private void getMaxRunId() throws ClientProtocolException, IOException {
 		Pattern p = Pattern.compile("class='evenrow'><td>(\\d+)");
 
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
+		try {
+			get = new HttpGet("/JudgeOnline/status.php");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+
+		Matcher m = p.matcher(html);
 		if (m.find()) {
 			maxRunId = Integer.parseInt(m.group(1));
 			System.out.println("maxRunId : " + maxRunId);
 		} else {
-			throw new Exception();
+			throw new RuntimeException();
+		}
+	}
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
+		try {
+			post = new HttpPost("/JudgeOnline/login.php");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("user_id", username));
+			nvps.add(new BasicNameValuePair("password", password));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		if (!html.contains("history.go(-2)")) {
+			throw new RuntimeException();
 		}
 	}
 
-	private void submit() throws Exception{
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		try {
+			get = new HttpGet("/JudgeOnline");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		if (html.contains("<a href=logout.php>")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void submit() throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-
-		PostMethod postMethod = new PostMethod("http://www.lydsy.com/JudgeOnline/submit.php");
-		postMethod.addParameter("id", problem.getOriginProb());
-		postMethod.addParameter("language", submission.getLanguage());
-		postMethod.addParameter("source", submission.getSource());
-		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		httpClient.getParams().setContentCharset("UTF-8");
-
-		System.out.println("submit...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-
-		if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
-			throw new Exception();
-		}
-	}
-
-	private void login(String username, String password) throws Exception{
-        PostMethod postMethod = new PostMethod("http://www.lydsy.com/JudgeOnline/login.php");
-        postMethod.addParameter("password", password);
-        postMethod.addParameter("submit", "Submit");
-        postMethod.addParameter("user_id", username);
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-        System.out.println("login...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-
-		if (!tLine.contains("history.go(-2)")) {
-			throw new Exception();
+		
+		try {
+			post = new HttpPost("/JudgeOnline/submit.php");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("id", problem.getOriginProb()));
+			nvps.add(new BasicNameValuePair("source", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			
+			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+				throw new RuntimeException();
+			}
+		} finally {
+			EntityUtils.consume(entity);
 		}
 	}
 
 	public void getResult(String username) throws Exception{
-		String reg = "class='evenrow'><td>(\\d+)[\\s\\S]*?<font[\\s\\S]*?>([\\s\\S]*?)</font>[\\s\\S]*?<td>([\\s\\S]*?)<td>([\\s\\S]*?)<td>", result;
-		Pattern p = Pattern.compile(reg);
+		Pattern p = Pattern.compile("<tr align=center class='evenrow'><td>(\\d+)<td>.+?<td>.+?<td>(.+?)<td>(.+?)<td>(.+?)<td>");
 
-		GetMethod getMethod = new GetMethod("http://www.lydsy.com/JudgeOnline/status.php?user_id=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
+			try {
+				get = new HttpGet("/JudgeOnline/status.php?user_id=" + username);
+				response = client.execute(host, get);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
 
-			Matcher m = p.matcher(tLine);
+			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
-				result = m.group(2).trim();
+				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
-				if (!result.contains("ing")){
+    			if (!result.contains("ing")){
     				if (result.equals("Accepted")){
-	    				submission.setMemory(Integer.parseInt(m.group(3).replaceAll("\\D", "")));
+    					submission.setMemory(Integer.parseInt(m.group(3).replaceAll("\\D", "")));
 	    				submission.setTime(Integer.parseInt(m.group(4).replaceAll("\\D", "")));
-    				} else if (result.contains("Compile Error")) {
+    				} else if (result.contains("Compile_Error")) {
 						getAdditionalInfo(submission.getRealRunId());
 					}
     				baseService.addOrModify(submission);
@@ -160,13 +207,15 @@ public class HYSBZSubmitter extends Submitter {
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://www.lydsy.com/JudgeOnline/ceinfo.php?sid=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, null);
-
-		submission.setAdditionalInfo(Tools.regFind(additionalInfo, "<title>Compile Error Info</title>\\s*(<pre>[\\s\\S]*?</pre>)"));
+		try {
+			get = new HttpGet("/JudgeOnline/ceinfo.php?sid=" + runId);
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		submission.setAdditionalInfo(Tools.regFind(html, "(<pre>[\\s\\S]*?</pre>)"));
 	}
 
 	private int getIdleClient() {
@@ -179,7 +228,7 @@ public class HYSBZSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
+						client = clientList[j];
 						return j;
 					}
 				}
@@ -198,40 +247,30 @@ public class HYSBZSubmitter extends Submitter {
 
 		try {
 			getMaxRunId();
-			try {
-				//第一次尝试提交
-				submit();
-			} catch (Exception e1) {
-				//失败,认为是未登录所致
-				e1.printStackTrace();
-				Thread.sleep(2000);
+			if (!isLoggedIn()) {
 				login(usernameList[idx], passwordList[idx]);
-				Thread.sleep(2000);
-				submit();
 			}
+			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
 
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(15000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//BZOJ限制每两次提交之间至少隔10秒
+		}	//HYSBZ限制每两次提交之间至少隔???秒
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
 }
