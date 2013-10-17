@@ -3,6 +3,7 @@ package judge.submitter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,20 +16,40 @@ import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 public class SPOJSubmitter extends Submitter {
 
 	static final String OJ_NAME = "SPOJ";
-	static private HttpClient clientList[];
+	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+
+	private DefaultHttpClient client;
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("www.spoj.com", 80);
+	private String html;
+	
+	private String runId;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -50,135 +71,135 @@ public class SPOJSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
+		clientList = new DefaultHttpClient[usernameList.length];
+		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+			clientList[i] = new DefaultHttpClient();
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
-		languageList.put("11", "C (gcc 4.3.2)");
-		languageList.put("34", "C99 strict (gcc 4.3.2)");
-		languageList.put("1", "C++ (g++ 4.0.0-8)");
-		languageList.put("41", "C++ (g++ 4.3.2)");
-		languageList.put("2", "Pascal (gpc 20070904)");
-		languageList.put("22", "Pascal (fpc 2.2.4)");
-		languageList.put("38", "Tcl (tclsh 8.5.3)");
-		languageList.put("39", "Scala (Scalac 2.7.4)");
-		languageList.put("10", "Java (JavaSE 6)");
-		languageList.put("25", "Nice (nicec 0.9.6)");
-		languageList.put("24", "JAR (JavaSE 6)");
-		languageList.put("27", "C# (gmcs 2.0.1)");
-		languageList.put("30", "Nemerle (ncc 0.9.3)");
-		languageList.put("23", "Smalltalk (gst 3.0.3)");
-		languageList.put("13", "Assembler (nasm 2.03.01)");
-		languageList.put("20", "D (gdc 4.1.3)");
-		languageList.put("5", "Fortran 95 (gfortran 4.3.2)");
 		languageList.put("7", "ADA 95 (gnat 4.3.2)");
-		languageList.put("28", "Bash (bash 3.2.29)");
-		languageList.put("3", "Perl (perl 5.10.0)");
-		languageList.put("44", "Python (python 2.6.2)");
-		languageList.put("4", "Python (python 2.5)");
-		languageList.put("17", "Ruby (ruby 1.9.0)");
-		languageList.put("26", "Lua (luac 5.1.3)");
-		languageList.put("16", "Icon (iconc 9.4.3)");
-		languageList.put("19", "Pike (pike 7.6.112)");
-		languageList.put("29", "PHP (php 5.2.6)");
-		languageList.put("33", "Scheme (guile 1.8.5)");
-		languageList.put("18", "Scheme (stalin 0.11)");
+		languageList.put("13", "Assembler (nasm 2.03.01)");
+		languageList.put("104", "Awk (gawk-3.1.6)");
+		languageList.put("28", "Bash (bash-4.0.37)");
+		languageList.put("12", "Brainf**k (bff 1.0.3.1)");
+		languageList.put("11", "C (gcc 4.3.2)");
+		languageList.put("27", "C# (gmcs 2.0.1)");
+		languageList.put("41", "C++ (g++ 4.3.2)");
+		languageList.put("1", "C++ (g++ 4.0.0-8)");
+		languageList.put("34", "C99 strict (gcc 4.3.2)");
+		languageList.put("14", "Clips (clips 6.24)");
+		languageList.put("111", "Clojure (clojure 1.1.0)");
 		languageList.put("31", "Common Lisp (sbcl 1.0.18)");
 		languageList.put("32", "Common Lisp (clisp 2.44.1)");
-		languageList.put("21", "Haskell (ghc 6.10.4)");
+		languageList.put("20", "D (gdc 4.1.3)");
 		languageList.put("36", "Erlang (erl 5.6.3)");
-		languageList.put("8", "Ocaml (ocamlopt 3.10.2)");
-		languageList.put("14", "Clips (clips 6.24)");
-		languageList.put("15", "Prolog (swipl 5.6.58)");
-		languageList.put("6", "Whitespace (wspace 0.3)");
-		languageList.put("12", "Brainf**k (bff 1.0.3.1)");
+		languageList.put("124", "F# (fsharp 2.0.0)");
+		languageList.put("5", "Fortran 95 (gfortran 4.3.2)");
+		languageList.put("114", "Go (gc 2010-07-14)");
+		languageList.put("21", "Haskell (ghc 6.10.4)");
+		languageList.put("16", "Icon (iconc 9.4.3)");
 		languageList.put("9", "Intercal (ick 0.28-4)");
-		languageList.put("62", "Text (plain text)");
+		languageList.put("24", "JAR (JavaSE 6)");
+		languageList.put("10", "Java (JavaSE 6)");
 		languageList.put("35", "JavaScript (rhino 1.7R1-2)");
+		languageList.put("26", "Lua (luac 5.1.3)");
+		languageList.put("30", "Nemerle (ncc 0.9.3)");
+		languageList.put("25", "Nice (nicec 0.9.6)");
+		languageList.put("8", "Ocaml (ocamlopt 3.10.2)");
+		languageList.put("22", "Pascal (fpc 2.2.4)");
+		languageList.put("2", "Pascal (gpc 20070904)");
+		languageList.put("3", "Perl (perl 5.12.1)");
+		languageList.put("29", "PHP (php 5.2.6)");
+		languageList.put("19", "Pike (pike 7.6.112)");
+		languageList.put("15", "Prolog (swipl 5.6.58)");
+		languageList.put("4", "Python (python 2.7)");
+		languageList.put("116", "Python 3 (python 3.2.3)");
+		languageList.put("126", "Python 3 nbc (python 3.2.3 nbc)");
+		languageList.put("17", "Ruby (ruby 1.9.3)");
+		languageList.put("39", "Scala (scala 2.8.0)");
+		languageList.put("33", "Scheme (guile 1.8.5)");
+		languageList.put("18", "Scheme (stalin 0.11)");
+		languageList.put("46", "Sed (sed-4.2)");
+		languageList.put("23", "Smalltalk (gst 3.0.3)");
+		languageList.put("38", "Tcl (tclsh 8.5.3)");
+		languageList.put("42", "TECS ()");
+		languageList.put("62", "Text (plain text)");
+		languageList.put("6", "Whitespace (wspace 0.3)");
 		sc.setAttribute("SPOJ", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		// 获取当前最大RunID
-		GetMethod getMethod = new GetMethod("http://www.spoj.com/status");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		Pattern p = Pattern.compile("id=\"max_id\" value=\"(\\d+)");
-
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
-		if (m.find()) {
-			maxRunId = Integer.parseInt(m.group(1));
-			System.out.println("maxRunId : " + maxRunId);
-		} else {
-			throw new Exception();
-		}
-	}
-
-
-	private void submit(String username, String password) throws Exception{
+	private void submit(String username, String password) throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-		PostMethod postMethod = new PostMethod("http://www.spoj.com/submit/complete/");
-
-		postMethod.addParameter("lang", submission.getLanguage());
-		postMethod.addParameter("login_user", username);
-		postMethod.addParameter("password", password);
-		postMethod.addParameter("problemcode", problem.getOriginProb());
-		postMethod.addParameter("file", submission.getSource());
-		postMethod.addParameter("submit", "Send");
-		postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		httpClient.getParams().setContentCharset("UTF-8");
-
-		System.out.println("submit...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		if (tLine.contains("submit in this language for this problem")){
-			throw new Exception("judge_exception:Language Error");
+		
+		try {
+			post = new HttpPost("/submit/complete/");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("lang", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("login_user", username));
+			nvps.add(new BasicNameValuePair("password", password));
+			nvps.add(new BasicNameValuePair("problemcode", problem.getOriginProb()));
+			nvps.add(new BasicNameValuePair("file", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+			
+			if (html.contains("submit in this language for this problem")){
+				throw new RuntimeException("judge_exception:Language Error");
+			}
+			if (html.contains("solution is too long")){
+				throw new RuntimeException("judge_exception:Code length exceeded");
+			}
+			runId = Tools.regFind(html, "name=\"newSubmissionId\" value=\"(\\d+)\"");
+			if (StringUtils.isEmpty(runId)) {
+				throw new RuntimeException();
+			}
+		} finally {
+			EntityUtils.consume(entity);
 		}
-		if (tLine.contains("solution is too long")){
-			throw new Exception("judge_exception:Code length exceeded");
-		}
-		//注意:此处判断登陆成功条件并不充分,相当于默认成功
 	}
 
-	public void getResult(String username) throws Exception{
-		String reg = "id=\"max_id\" value=\"(\\d+)[\\s\\S]*?<td class=\"statusres\"[\\s\\S]*?>([\\s\\S]*?)</td>\n<td[\\s\\S]*?>([\\s\\S]*?)</td>\n<td[\\s\\S]*?>([\\s\\S]*?)</td>", result;
-		Pattern p = Pattern.compile(reg);
-		GetMethod getMethod = new GetMethod("http://www.spoj.com/status/" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+	public void getResult() throws Exception{
+		Pattern p = Pattern.compile("\"status_description\":\"(.+?)\", \"id\":" + runId + ", \"status\":.+?,\"time\":\"(.+?)\",\"mem\":\"(.+?)\",");
+
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
-			Matcher m = p.matcher(tLine);
-			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId){
-				result = m.group(2).replaceAll("edit", "").replaceAll(">run<", "><").replaceAll("<[\\s\\S]*?>", "").replaceAll("&nbsp;", "").trim();
+			try {
+				post = new HttpPost("/status/ajax=1,ajaxdiff=1");
+				List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+				nvps.add(new BasicNameValuePair("ids", runId));
+				post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+				response = client.execute(host, post);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
+			html = html.replaceAll("\\\\[nt]", "").replaceAll(">(run|edit)<", "><").replaceAll("<.*?>", "").replace("&nbsp;", "").trim();
+
+			Matcher m = p.matcher(html);
+			if (m.find()) {
+				String result = m.group(1).replace("accepted", "Accepted");
 				submission.setStatus(result);
-				submission.setRealRunId(m.group(1));
-				if (!result.contains("ing")){
-					if (result.contains("accepted")){
-						submission.setStatus("Accepted");
-						result = m.group(4).trim();
-						int mul = result.contains("M") ? 1024 : 1;
-						submission.setMemory((int)(0.5 + mul * Double.parseDouble(result.replaceAll("[Mk]", ""))));
-						submission.setTime((int)(0.5 + 1000 * Double.parseDouble(m.group(3).replaceAll("<[\\s\\S]*?>", "").trim())));
-					} else if (result.contains("compilation error")) {
-						getAdditionalInfo(submission.getRealRunId());
+				submission.setRealRunId(runId);
+    			if (!result.contains("ing")){
+    				if (result.equals("Accepted")){
+						int mul = m.group(3).contains("M") ? 1024 : 1;
+						submission.setMemory((int)(0.5 + mul * Double.parseDouble(m.group(3).replaceAll("[Mk]", "").trim())));
+						submission.setTime((int)(0.5 + 1000 * Double.parseDouble(m.group(2).trim())));
+    				} else if (result.contains("compilation error")) {
+						getAdditionalInfo();
 					}
-					baseService.addOrModify(submission);
-					return;
-				}
+    				baseService.addOrModify(submission);
+    				return;
+    			}
 				baseService.addOrModify(submission);
 			}
 			Thread.sleep(interval);
@@ -187,14 +208,16 @@ public class SPOJSubmitter extends Submitter {
 		throw new Exception();
 	}
 
-	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://www.spoj.com/error/" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, null);
-
-		submission.setAdditionalInfo("<pre>" + Tools.regFind(additionalInfo, "<div align=\"left\"><pre><small>([\\s\\S]*?)</small></pre>") + "</pre>");
+	private void getAdditionalInfo() throws HttpException, IOException {
+		try {
+			get = new HttpGet("/error/" + runId);
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		submission.setAdditionalInfo("<pre>" + Tools.regFind(html, "<div align=\"left\"><pre><small>([\\s\\S]*?)</small></pre>") + "</pre>");
 	}
 
 	private int getIdleClient() {
@@ -207,7 +230,7 @@ public class SPOJSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
+						client = clientList[j];
 						return j;
 					}
 				}
@@ -225,36 +248,27 @@ public class SPOJSubmitter extends Submitter {
 		int errorCode = 1;
 
 		try {
-			getMaxRunId();
-
-			submit(usernameList[idx], passwordList[idx]);	//非登陆式,只需交一次
+			submit(usernameList[idx], passwordList[idx]);
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
-			getResult(usernameList[idx]);
+			getResult();
 		} catch (Exception e) {
 			e.printStackTrace();
-			if (e.getMessage() != null && e.getMessage().startsWith("judge_exception:")){
-				submission.setStatus(e.getMessage().substring(16));
-			} else {
-				submission.setStatus("Judging Error " + errorCode);
-			}
+			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
 
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//client冷却时间
+		}	//SPOJ限制每两次提交之间至少隔???秒
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
 }

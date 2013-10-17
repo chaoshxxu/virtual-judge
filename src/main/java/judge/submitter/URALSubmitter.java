@@ -56,8 +56,8 @@ public class URALSubmitter extends Submitter {
 		for (int i = 0; i < clientList.length; i++){
 			clientList[i] = new HttpClient();
 			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(10000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(10000);
+			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
+			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
 //			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
 		}
 
