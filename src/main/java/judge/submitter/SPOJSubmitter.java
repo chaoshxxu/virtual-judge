@@ -48,7 +48,7 @@ public class SPOJSubmitter extends Submitter {
 	private HttpEntity entity;
 	private HttpHost host = new HttpHost("www.spoj.com", 80);
 	private String html;
-	
+
 	private String runId;
 
 	static {
@@ -58,7 +58,7 @@ public class SPOJSubmitter extends Submitter {
 			BufferedReader br = new BufferedReader(fr);
 			while (br.ready()) {
 				String info[] = br.readLine().split("\\s+");
-				if (info.length >= 3 && info[0].equalsIgnoreCase(OJ_NAME)){
+				if (info.length >= 3 && info[0].equalsIgnoreCase(OJ_NAME)) {
 					uList.add(info[1]);
 					pList.add(info[2]);
 				}
@@ -73,7 +73,7 @@ public class SPOJSubmitter extends Submitter {
 		using = new boolean[usernameList.length];
 		clientList = new DefaultHttpClient[usernameList.length];
 		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
-		for (int i = 0; i < clientList.length; i++){
+		for (int i = 0; i < clientList.length; i++) {
 			clientList[i] = new DefaultHttpClient();
 			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
 			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
@@ -135,7 +135,7 @@ public class SPOJSubmitter extends Submitter {
 
 	private void submit(String username, String password) throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-		
+
 		try {
 			post = new HttpPost("/submit/complete/");
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -144,17 +144,17 @@ public class SPOJSubmitter extends Submitter {
 			nvps.add(new BasicNameValuePair("password", password));
 			nvps.add(new BasicNameValuePair("problemcode", problem.getOriginProb()));
 			nvps.add(new BasicNameValuePair("file", submission.getSource()));
-			
+
 			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
-			
+
 			response = client.execute(host, post);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
-			
-			if (html.contains("submit in this language for this problem")){
+
+			if (html.contains("submit in this language for this problem")) {
 				throw new RuntimeException("judge_exception:Language Error");
 			}
-			if (html.contains("solution is too long")){
+			if (html.contains("solution is too long")) {
 				throw new RuntimeException("judge_exception:Code length exceeded");
 			}
 			runId = Tools.regFind(html, "name=\"newSubmissionId\" value=\"(\\d+)\"");
@@ -166,11 +166,11 @@ public class SPOJSubmitter extends Submitter {
 		}
 	}
 
-	public void getResult() throws Exception{
+	public void getResult() throws Exception {
 		Pattern p = Pattern.compile("\"status_description\":\"(.+?)\", \"id\":" + runId + ", \"status\":.+?,\"time\":\"(.+?)\",\"mem\":\"(.+?)\",");
 
 		long cur = new Date().getTime(), interval = 2000;
-		while (new Date().getTime() - cur < 600000){
+		while (new Date().getTime() - cur < 600000) {
 			try {
 				post = new HttpPost("/status/ajax=1,ajaxdiff=1");
 				List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -189,17 +189,17 @@ public class SPOJSubmitter extends Submitter {
 				String result = m.group(1).replace("accepted", "Accepted");
 				submission.setStatus(result);
 				submission.setRealRunId(runId);
-    			if (!result.contains("ing")){
-    				if (result.equals("Accepted")){
+				if (!result.contains("ing")) {
+					if (result.equals("Accepted")) {
 						int mul = m.group(3).contains("M") ? 1024 : 1;
-						submission.setMemory((int)(0.5 + mul * Double.parseDouble(m.group(3).replaceAll("[Mk]", "").trim())));
-						submission.setTime((int)(0.5 + 1000 * Double.parseDouble(m.group(2).trim())));
-    				} else if (result.contains("compilation error")) {
+						submission.setMemory((int) (0.5 + mul * Double.parseDouble(m.group(3).replaceAll("[Mk]", "").trim())));
+						submission.setTime((int) (0.5 + 1000 * Double.parseDouble(m.group(2).trim())));
+					} else if (result.contains("compilation error")) {
 						getAdditionalInfo();
 					}
-    				baseService.addOrModify(submission);
-    				return;
-    			}
+					baseService.addOrModify(submission);
+					return;
+				}
 				baseService.addOrModify(submission);
 			}
 			Thread.sleep(interval);
@@ -224,7 +224,7 @@ public class SPOJSubmitter extends Submitter {
 		int length = usernameList.length;
 		int begIdx = (int) (Math.random() * length);
 
-		while(true) {
+		while (true) {
 			synchronized (using) {
 				for (int i = begIdx, j; i < begIdx + length; i++) {
 					j = i % length;
@@ -255,7 +255,11 @@ public class SPOJSubmitter extends Submitter {
 			getResult();
 		} catch (Exception e) {
 			e.printStackTrace();
-			submission.setStatus("Judging Error " + errorCode);
+			if (e.getMessage() != null && e.getMessage().startsWith("judge_exception:")) {
+				submission.setStatus(e.getMessage().substring(16));
+			} else {
+				submission.setStatus("Judging Error " + errorCode);
+			}
 			baseService.addOrModify(submission);
 		}
 	}
@@ -266,7 +270,7 @@ public class SPOJSubmitter extends Submitter {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//SPOJ限制每两次提交之间至少隔???秒
+		} // SPOJ限制每两次提交之间至少隔???秒
 		synchronized (using) {
 			using[idx] = false;
 		}
