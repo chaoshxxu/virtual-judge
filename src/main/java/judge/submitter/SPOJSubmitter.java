@@ -14,9 +14,11 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
+import judge.tool.SocksSchemeSocketFactory;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -26,7 +28,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
@@ -72,14 +74,13 @@ public class SPOJSubmitter extends Submitter {
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
 		clientList = new DefaultHttpClient[usernameList.length];
-		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++) {
 			clientList[i] = new DefaultHttpClient();
-			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36");
 			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
 			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
-			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
+
 
 		Map<String, String> languageList = new TreeMap<String, String>();
 		languageList.put("7", "ADA 95 (gnat 4.3.2)");
@@ -132,20 +133,58 @@ public class SPOJSubmitter extends Submitter {
 		languageList.put("6", "Whitespace (wspace 0.3)");
 		sc.setAttribute("SPOJ", languageList);
 	}
+	
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		try {
+			get = new HttpGet("/");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		return html.contains("<a href=\"/logout\">");
+	}
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
+		try {
+			post = new HttpPost("/logout");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("login_user", username));
+			nvps.add(new BasicNameValuePair("password", password));
+			nvps.add(new BasicNameValuePair("autologin", "1"));
+			nvps.add(new BasicNameValuePair("submit", "Log In"));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Consts.ISO_8859_1));
+			
+			post.addHeader("Host", "www.spoj.com");
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			
+			html = EntityUtils.toString(entity);
+			
+			if (!html.contains(username)) {
+				throw new RuntimeException();
+			}
+		} finally {
+			EntityUtils.consume(entity);
+		}
+	}
 
-	private void submit(String username, String password) throws ClientProtocolException, IOException {
+	private void submit() throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
 
 		try {
 			post = new HttpPost("/submit/complete/");
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			nvps.add(new BasicNameValuePair("lang", submission.getLanguage()));
-			nvps.add(new BasicNameValuePair("login_user", username));
-			nvps.add(new BasicNameValuePair("password", password));
 			nvps.add(new BasicNameValuePair("problemcode", problem.getOriginProb()));
 			nvps.add(new BasicNameValuePair("file", submission.getSource()));
 
-			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			post.setEntity(new UrlEncodedFormEntity(nvps, Consts.ISO_8859_1));
+
+			post.addHeader("Host", "www.spoj.com");
 
 			response = client.execute(host, post);
 			entity = response.getEntity();
@@ -176,6 +215,7 @@ public class SPOJSubmitter extends Submitter {
 				List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 				nvps.add(new BasicNameValuePair("ids", runId));
 				post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+				post.addHeader("Host", "www.spoj.com");
 				response = client.execute(host, post);
 				entity = response.getEntity();
 				html = EntityUtils.toString(entity);
@@ -183,7 +223,7 @@ public class SPOJSubmitter extends Submitter {
 				EntityUtils.consume(entity);
 			}
 			html = html.replaceAll("\\\\[nt]", "").replaceAll(">(run|edit)<", "><").replaceAll("<.*?>", "").replace("&nbsp;", "").trim();
-
+			
 			Matcher m = p.matcher(html);
 			if (m.find()) {
 				String result = m.group(1).replace("accepted", "Accepted");
@@ -248,7 +288,10 @@ public class SPOJSubmitter extends Submitter {
 		int errorCode = 1;
 
 		try {
-			submit(usernameList[idx], passwordList[idx]);
+			if (!isLoggedIn()) {
+				login(usernameList[idx], passwordList[idx]);
+			}
+			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
