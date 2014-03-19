@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import judge.tool.HtmlHandleUtil;
+import judge.tool.SocksSchemeSocketFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -12,6 +13,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.struts2.json.JSONException;
@@ -27,6 +29,10 @@ public class UVASpider extends Spider {
 		HttpResponse response = null;
 		HttpEntity entity = null;
 		String html;
+
+		client.getParams().setParameter("socks.host", "127.0.0.1");
+		client.getParams().setParameter("socks.port", 1081);
+		client.getConnectionManager().getSchemeRegistry().register(new Scheme("http", 80, new SocksSchemeSocketFactory()));
 
 		if (!problem.getOriginProb().matches("[1-9]\\d*")) {
 			throw new RuntimeException();
@@ -44,8 +50,6 @@ public class UVASpider extends Spider {
 		}
 
 		int category = Integer.parseInt(problem.getOriginProb()) / 100;
-		String pdfLink = "<span style='float:right'><a target='_blank' href='http://uva.onlinejudge.org/external/" + category + "/" + problem.getOriginProb() + ".pdf'><img width='100' height='26' border='0' title='Download as PDF' alt='Download as PDF' src='http://uva.onlinejudge.org/components/com_onlinejudge/images/button_pdf.png'></a></span><div style='clear:both'></div>";
-		description.setDescription(pdfLink);
 		try {
 			get = new HttpGet("/external/" + category + "/" + problem.getOriginProb() + ".html");
 			response = client.execute(host, get);
@@ -55,20 +59,25 @@ public class UVASpider extends Spider {
 		} finally {
 			EntityUtils.consume(entity);
 		}
-		description.setDescription(pdfLink + Tools.regFind(html, "^([\\s\\S]*?)<H2><FONT size=4 COLOR=#ff0000><A NAME=\"SECTION000100\\d000000000000000\">"));
+		description.setDescription(Tools.regFind(html, "^([\\s\\S]*?)<H2><FONT size=4 COLOR=#ff0000><A NAME=\"SECTION000100\\d000000000000000\">"));
 		description.setInput(Tools.regFind(html, "Int?put</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*?)<H2><FONT size=4 COLOR=#ff0000><A NAME=\"SECTION000100\\d000000000000000\">"));
 		description.setOutput(Tools.regFind(html, "Output</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*?)<H2><FONT size=4 COLOR=#ff0000><A NAME=\"SECTION000100\\d000000000000000\">"));
 		description.setSampleInput(Tools.regFind(html, "Sample Int?put</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*?)<H2><FONT size=4 COLOR=#ff0000><A NAME=\"SECTION000100\\d000000000000000\">"));
 		description.setSampleOutput(Tools.regFind(html, "Sample Output</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*)"));
 
 		if (description.getSampleInput().isEmpty() || description.getSampleOutput().isEmpty()) {
-			description.setDescription(pdfLink + html);
+			if (html.contains("META HTTP-EQUIV=\"Refresh\"")) {
+				description.setDescription("");
+			} else {
+				description.setDescription(html);
+			}
 			description.setInput(null);
 			description.setOutput(null);
 			description.setSampleInput(null);
 			description.setSampleOutput(null);
 		}
-		description.setDescription("<style type=\"text/css\">h1,h2,h3,h4,h5,h6{margin-bottom:0;}div.textBG p{margin: 0 0 0.0001pt;}</style>" + description.getDescription());
+		String pdfLink = "<span style='float:right'><a target='_blank' href='http://uva.onlinejudge.org/external/" + category + "/" + problem.getOriginProb() + ".pdf'><img width='100' height='26' border='0' title='Download as PDF' alt='Download as PDF' src='http://uva.onlinejudge.org/components/com_onlinejudge/images/button_pdf.png'></a></span><div style='clear:both'></div>";
+		description.setDescription("<style type=\"text/css\">h1,h2,h3,h4,h5,h6{margin-bottom:0;}div.textBG p{margin: 0 0 0.0001pt;}</style>" + pdfLink + description.getDescription());
 	}
 
 	private Map getProblemInfo(String problemNum, HttpClient client) throws ClientProtocolException, IOException, JSONException {
