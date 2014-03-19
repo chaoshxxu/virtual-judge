@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
+import judge.tool.SocksSchemeSocketFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -26,6 +27,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
@@ -69,13 +71,14 @@ public class HYSBZSubmitter extends Submitter {
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
 		clientList = new DefaultHttpClient[usernameList.length];
-//		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
 			clientList[i] = new DefaultHttpClient();
 			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
 			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
 			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
-//			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+			clientList[i].getParams().setParameter("socks.host", "acm.hust.edu.cn");
+			clientList[i].getParams().setParameter("socks.port", 1081);
+			clientList[i].getConnectionManager().getSchemeRegistry().register(new Scheme("http", 80, new SocksSchemeSocketFactory()));
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();

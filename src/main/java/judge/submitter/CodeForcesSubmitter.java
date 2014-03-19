@@ -279,7 +279,7 @@ public class CodeForcesSubmitter extends Submitter {
 
 			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
-				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim().replaceAll("judge\\b", "judging").replaceAll("queue", "queueing");
+				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim().replaceAll("judge\\b", "judging").replaceAll("queue", "queueing").replace("Happy New Year!", "Accepted");
 				if (result.isEmpty()) {
 					result = "processing";
 				}
