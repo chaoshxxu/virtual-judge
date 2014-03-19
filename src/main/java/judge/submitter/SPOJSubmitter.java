@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
-import judge.tool.SocksSchemeSocketFactory;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;

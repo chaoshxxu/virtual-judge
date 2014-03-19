@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import judge.tool.HtmlHandleUtil;
-import judge.tool.SocksSchemeSocketFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -13,7 +12,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.struts2.json.JSONException;

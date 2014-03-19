@@ -3,6 +3,7 @@ package judge.submitter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,20 +16,37 @@ import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 public class SGUSubmitter extends Submitter {
 
 	static final String OJ_NAME = "SGU";
-	static private HttpClient clientList[];
+	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+
+	private DefaultHttpClient client;
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("acm.sgu.ru");
+	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -50,13 +68,14 @@ public class SGUSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
+		clientList = new DefaultHttpClient[usernameList.length];
+		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+			clientList[i] = new DefaultHttpClient();
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -70,64 +89,74 @@ public class SGUSubmitter extends Submitter {
 		sc.setAttribute("SGU", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		// 获取当前最大RunID
-		GetMethod getMethod = new GetMethod("http://acm.sgu.ru/status.php");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+	private void getMaxRunId() throws ClientProtocolException, IOException {
 		Pattern p = Pattern.compile("<TD>(\\d{7,})</TD>");
 
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
+		try {
+			get = new HttpGet("/status.php");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+
+		Matcher m = p.matcher(html);
 		if (m.find()) {
 			maxRunId = Integer.parseInt(m.group(1));
 			System.out.println("maxRunId : " + maxRunId);
 		} else {
-			throw new Exception();
+			throw new RuntimeException();
 		}
 	}
 
-
-	private void submit(String username, String password) throws Exception{
+	private void submit(String username, String password) throws Exception {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-        PostMethod postMethod = new PostMethod("http://acm.sgu.ru/sendfile.php?contest=0");
-        postMethod.addParameter("elang", submission.getLanguage());
-        postMethod.addParameter("id", username);
-        postMethod.addParameter("pass", password);
-        postMethod.addParameter("problem", problem.getOriginProb());
-        postMethod.addParameter("source", submission.getSource());
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        httpClient.getParams().setContentCharset("UTF-8");
-
-        System.out.println("submit...");
-		httpClient.executeMethod(postMethod);
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		if (tLine.contains("Your source seems to be dangerous")) {
-			throw new Exception("judge_exception:Dangerous Code Error");
-		}
-		if (!tLine.contains("successfully submitted")){
-			throw new Exception();
+		
+		try {
+			post = new HttpPost("/sendfile.php?contest=0");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("elang", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("id", username));
+			nvps.add(new BasicNameValuePair("pass", password));
+			nvps.add(new BasicNameValuePair("problem", problem.getOriginProb()));
+			nvps.add(new BasicNameValuePair("source", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+			
+			if (html.contains("Your source seems to be dangerous")) {
+				throw new Exception("judge_exception:Dangerous Code Error");
+			}
+			if (!html.contains("successfully submitted")){
+				throw new Exception();
+			}
+		} finally {
+			EntityUtils.consume(entity);
 		}
 	}
 
 	public void getResult(String username) throws Exception{
-		String reg = "<TD>(\\d{7,})</TD>[\\s\\S]*?<TD class=btab>([\\s\\S]*?)</TD>[\\s\\S]*?([\\d]*?) ms</TD><TD>([\\d]*?) kb</TD>", result;
+		String reg = "<TD>(\\d{7,})</TD>[\\s\\S]*?<TD class=btab>([\\s\\S]*?)</TD>[\\s\\S]*?([\\d]*?) ms</TD><TD>([\\d]*?) kb</TD>";
 		Pattern p = Pattern.compile(reg);
 
-		GetMethod getMethod = new GetMethod("http://acm.sgu.ru/status.php?idmode=1&id=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
+			try {
+				get = new HttpGet("/status.php?idmode=1&id=" + username);
+				response = client.execute(host, get);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
 
-			Matcher m = p.matcher(tLine);
+			Matcher m = p.matcher(html);
     		if (m.find() && Integer.parseInt(m.group(1)) > maxRunId){
-    			result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
+    			String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
     			if (!result.contains("ing")){
@@ -149,13 +178,15 @@ public class SGUSubmitter extends Submitter {
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://acm.sgu.ru/cerror.php?id=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, null);
-
-		submission.setAdditionalInfo(Tools.regFind(additionalInfo, runId + "</TD><TD>(<pre>[\\s\\S]*?</pre>)"));
+		try {
+			get = new HttpGet("/cerror.php?id=" + runId);
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		submission.setAdditionalInfo(Tools.regFind(html, runId + "</TD><TD>(<pre>[\\s\\S]*?</pre>)"));
 	}
 
 	private int getIdleClient() {
@@ -168,7 +199,7 @@ public class SGUSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
+						client = clientList[j];
 						return j;
 					}
 				}
@@ -187,12 +218,10 @@ public class SGUSubmitter extends Submitter {
 
 		try {
 			getMaxRunId();
-
-			submit(usernameList[idx], passwordList[idx]);	//非登陆式,只需交一次
+			submit(usernameList[idx], passwordList[idx]);
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -205,17 +234,15 @@ public class SGUSubmitter extends Submitter {
 		}
 	}
 
-
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(35000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//sgu限制每两次提交之间至少隔30秒
+		}
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
 }

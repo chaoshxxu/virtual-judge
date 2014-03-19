@@ -3,6 +3,7 @@ package judge.submitter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,20 +16,37 @@ import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 public class FZUSubmitter extends Submitter {
 
 	static final String OJ_NAME = "FZU";
-	static private HttpClient clientList[];
+	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+
+	private DefaultHttpClient client;
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("acm.fzu.edu.cn");
+	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -50,13 +68,14 @@ public class FZUSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
+		clientList = new DefaultHttpClient[usernameList.length];
+		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
 		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+			clientList[i] = new DefaultHttpClient();
+			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
+			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
+			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -69,58 +88,85 @@ public class FZUSubmitter extends Submitter {
 		sc.setAttribute("FZU", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		GetMethod getMethod = new GetMethod("http://acm.fzu.edu.cn/log.php");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+	private void getMaxRunId() throws ClientProtocolException, IOException {
 		Pattern p = Pattern.compile("<tr onmouseover=\"hl\\(this\\);\" onmouseout=\"unhl\\(this\\);\" >\\s*<td>(\\d+)</td>");
 
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
+		try {
+			get = new HttpGet("/log.php");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+
+		Matcher m = p.matcher(html);
 		if (m.find()) {
 			maxRunId = Integer.parseInt(m.group(1));
 			System.out.println("maxRunId : " + maxRunId);
 		} else {
-			throw new Exception();
+			throw new RuntimeException();
+		}
+	}
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
+		try {
+			post = new HttpPost("/login.php?act=1");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("uname", username));
+			nvps.add(new BasicNameValuePair("upassword", password));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		if (!html.contains("location.replace(\"index.php\")")) {
+			throw new RuntimeException();
 		}
 	}
 
-	private void submit() throws Exception{
-		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-
-        PostMethod postMethod = new PostMethod("http://acm.fzu.edu.cn/submit.php?act=5");
-        postMethod.addParameter("lang", submission.getLanguage());
-        postMethod.addParameter("pid", problem.getOriginProb());
-        postMethod.addParameter("code", submission.getSource());
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        httpClient.getParams().setContentCharset("UTF-8");
-
-        System.out.println("submit...");
-		httpClient.executeMethod(postMethod);
-
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-        if (!tLine.contains("Your Program have been saved.")){
-        	throw new Exception();
-        }
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		try {
+			get = new HttpGet("/index.php");
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		if (html.contains(">Logout</a>")) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	private void login(String username, String password) throws Exception{
-        PostMethod postMethod = new PostMethod("http://acm.fzu.edu.cn/login.php?act=1");
-
-        postMethod.addParameter("uname", username);
-        postMethod.addParameter("upassword", password);
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		System.out.println("login...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-        if (!tLine.contains("location.replace(\"index.php\")")){
-        	throw new Exception();
-        }
+	private void submit() throws ClientProtocolException, IOException {
+		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
+		
+		try {
+			post = new HttpPost("/submit.php?act=5");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("lang", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("pid", problem.getOriginProb()));
+			nvps.add(new BasicNameValuePair("code", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			
+			response = client.execute(host, post);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+			
+	        if (!html.contains("Your Program have been saved.")){
+	        	throw new RuntimeException();
+	        }
+		} finally {
+			EntityUtils.consume(entity);
+		}
 	}
 
 	public void getResult(String username) throws Exception{
@@ -132,21 +178,22 @@ public class FZUSubmitter extends Submitter {
 				"<td>.*?</td>\\s*" +
 				"<td>(.*?)</td>\\s*" +
 				"<td>(.*?)</td>\\s*";
-		String result;
 		Pattern p = Pattern.compile(reg);
 
-		GetMethod getMethod = new GetMethod("http://acm.fzu.edu.cn/log.php?user=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
+			try {
+				get = new HttpGet("/log.php?user=" + username);
+				response = client.execute(host, get);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
 
-			Matcher m = p.matcher(tLine);
+			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
-				result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
+				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
 				if (!result.contains("ing")){
@@ -168,13 +215,15 @@ public class FZUSubmitter extends Submitter {
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://acm.fzu.edu.cn/ce.php?sid=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, null);
-
-		submission.setAdditionalInfo("<pre>" + Tools.regFind(additionalInfo, "Information:</b><br /><font color=\"blue\" size=\"-1\">([\\s\\S]*?)</font>").replaceAll("\n", "<br />") + "</pre>");
+		try {
+			get = new HttpGet("/ce.php?sid=" + runId);
+			response = client.execute(host, get);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		submission.setAdditionalInfo("<pre>" + Tools.regFind(html, "Information:</b><br /><font color=\"blue\" size=\"-1\">([\\s\\S]*?)</font>").replaceAll("\n", "<br />") + "</pre>");
 	}
 
 	private int getIdleClient() {
@@ -187,7 +236,7 @@ public class FZUSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
+						client = clientList[j];
 						return j;
 					}
 				}
@@ -200,36 +249,25 @@ public class FZUSubmitter extends Submitter {
 		}
 	}
 
-
 	public void work() {
 		idx = getIdleClient();
 		int errorCode = 1;
-		httpClient = clientList[idx];
 
 		try {
 			getMaxRunId();
-			try {
-				//第一次尝试提交
-				submit();
-			} catch (Exception e1) {
-				//失败,认为是未登录所致
-				e1.printStackTrace();
-				Thread.sleep(2000);
+			if (!isLoggedIn()) {
 				login(usernameList[idx], passwordList[idx]);
-				Thread.sleep(2000);
-				submit();
 			}
+			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
 
 	@Override
@@ -243,6 +281,4 @@ public class FZUSubmitter extends Submitter {
 			using[idx] = false;
 		}
 	}
-
-
 }
