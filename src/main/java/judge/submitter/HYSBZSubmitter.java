@@ -49,7 +49,7 @@ public class HYSBZSubmitter extends Submitter {
 	private HttpPost post;
 	private HttpResponse response;
 	private HttpEntity entity;
-	private HttpHost host = new HttpHost("www.lydsy.com", 808);
+	private HttpHost host = new HttpHost("www.lydsy.com");
 	private String html;
 
 	static {

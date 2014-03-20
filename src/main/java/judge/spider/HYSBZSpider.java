@@ -18,7 +18,7 @@ public class HYSBZSpider extends Spider {
 
 		String html = "";
 		HttpClient httpClient = new HttpClient();
-		GetMethod getMethod = new GetMethod("http://www.lydsy.com:808/JudgeOnline/problem.php?id=" + problem.getOriginProb());
+		GetMethod getMethod = new GetMethod("http://www.lydsy.com/JudgeOnline/problem.php?id=" + problem.getOriginProb());
 		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		try {
 			int statusCode = httpClient.executeMethod(getMethod);
