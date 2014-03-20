@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
+import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -23,25 +24,27 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 public class CSUSubmitter extends Submitter {
 
 	static final String OJ_NAME = "CSU";
-	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
-
-	private DefaultHttpClient client;
+	static private HttpContext[] contexts;
+	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	
 	private HttpGet get;
 	private HttpPost post;
 	private HttpResponse response;
@@ -69,14 +72,11 @@ public class CSUSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new DefaultHttpClient[usernameList.length];
-		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
-		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new DefaultHttpClient();
-			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
-			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
-			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
-			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+		contexts = new HttpContext[usernameList.length];
+		for (int i = 0; i < contexts.length; i++){
+			CookieStore cookieStore = new BasicCookieStore();
+			contexts[i] = new BasicHttpContext();
+			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -94,7 +94,7 @@ public class CSUSubmitter extends Submitter {
 
 		try {
 			get = new HttpGet("/OnlineJudge/status.php");
-			response = client.execute(host, get);
+			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
 		} finally {
@@ -119,7 +119,7 @@ public class CSUSubmitter extends Submitter {
 			
 			post.setEntity(new UrlEncodedFormEntity(nvps));
 			
-			response = client.execute(host, post);
+			response = client.execute(host, post, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
 		} finally {
@@ -133,7 +133,7 @@ public class CSUSubmitter extends Submitter {
 	private boolean isLoggedIn() throws ClientProtocolException, IOException {
 		try {
 			get = new HttpGet("/OnlineJudge/include/profile.php");
-			response = client.execute(host, get);
+			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
 		} finally {
@@ -158,7 +158,7 @@ public class CSUSubmitter extends Submitter {
 			
 			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
 			
-			response = client.execute(host, post);
+			response = client.execute(host, post, contexts[idx]);
 			entity = response.getEntity();
 			
 			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
@@ -184,7 +184,7 @@ public class CSUSubmitter extends Submitter {
 		while (new Date().getTime() - cur < 600000){
 			try {
 				get = new HttpGet("/OnlineJudge/status.php?user_id=" + username);
-				response = client.execute(host, get);
+				response = client.execute(host, get, contexts[idx]);
 				entity = response.getEntity();
 				html = EntityUtils.toString(entity);
 			} finally {
@@ -217,7 +217,7 @@ public class CSUSubmitter extends Submitter {
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
 		try {
 			get = new HttpGet("/OnlineJudge/ceinfo.php?sid=" + runId);
-			response = client.execute(host, get);
+			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
 		} finally {
@@ -236,7 +236,6 @@ public class CSUSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						client = clientList[j];
 						return j;
 					}
 				}

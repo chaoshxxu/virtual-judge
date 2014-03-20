@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.tool.ApplicationContainer;
+import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
 import org.apache.http.Consts;
@@ -21,26 +22,29 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 
 public class UVASubmitter extends Submitter {
 
 	static final String OJ_NAME = "UVA";
-	static private DefaultHttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
-
-	private DefaultHttpClient httpClient;
+	static private HttpContext[] contexts;
+	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	
+	private HttpHost host = new HttpHost("uva.onlinejudge.org");
 	private HttpEntity entity;
 
 	static {
@@ -63,15 +67,13 @@ public class UVASubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new DefaultHttpClient[usernameList.length];
-		HttpHost proxy = new HttpHost("127.0.0.1", 8087);
-		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new DefaultHttpClient();
-			clientList[i].getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1");
-			clientList[i].getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
-			clientList[i].getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
-			clientList[i].getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+		contexts = new HttpContext[usernameList.length];
+		for (int i = 0; i < contexts.length; i++){
+			CookieStore cookieStore = new BasicCookieStore();
+			contexts[i] = new BasicHttpContext();
+			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		}
+
 
 		Map<String, String> languageList = new TreeMap<String, String>();
 		languageList.put("1", "ANSI C 4.8.2");
@@ -83,7 +85,7 @@ public class UVASubmitter extends Submitter {
 	}
 
 	private void submit() throws Exception{
-		HttpPost httpPost = new HttpPost("http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=25&page=save_submission");
+		HttpPost httpPost = new HttpPost("/index.php?option=com_onlinejudge&Itemid=25&page=save_submission");
 
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("problemid", ""));
@@ -97,7 +99,7 @@ public class UVASubmitter extends Submitter {
 		System.out.println("submit...");
 
 		try {
-			HttpResponse response = httpClient.execute(httpPost);
+			HttpResponse response = client.execute(host, httpPost, contexts[idx]);
 			entity = response.getEntity();
 			int statusCode = response.getStatusLine().getStatusCode();
 
@@ -119,8 +121,8 @@ public class UVASubmitter extends Submitter {
 	private void ensureLoggedIn(String username, String password) throws Exception{
 		String indexContent = "";
 		try {
-			HttpGet httpGet = new HttpGet("http://uva.onlinejudge.org/index.php");
-			HttpResponse response = httpClient.execute(httpGet);
+			HttpGet httpGet = new HttpGet("/index.php");
+			HttpResponse response = client.execute(host, httpGet, contexts[idx]);
 			entity = response.getEntity();
 			indexContent = EntityUtils.toString(entity);
 		} finally {
@@ -132,7 +134,7 @@ public class UVASubmitter extends Submitter {
 		}
 
 		try {
-			HttpPost httpost = new HttpPost("http://uva.onlinejudge.org/index.php?option=com_comprofiler&task=login");
+			HttpPost httpost = new HttpPost("/index.php?option=com_comprofiler&task=login");
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			String reg = "<input type=\"hidden\" name=\"([\\s\\S]*?)\" value=\"([\\s\\S]*?)\" />";
@@ -152,7 +154,7 @@ public class UVASubmitter extends Submitter {
 
 			httpost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
 
-			HttpResponse response = httpClient.execute(httpost);
+			HttpResponse response = client.execute(host, httpost, contexts[idx]);
 			entity = response.getEntity();
 		} finally {
 			EntityUtils.consume(entity);
@@ -163,12 +165,12 @@ public class UVASubmitter extends Submitter {
 		String reg = "<td>" + submission.getRealRunId() + "</td>[\\s\\S]*?</td>[\\s\\S]*?</td>[\\s\\S]*?<td>([\\s\\S]*?)</td>[\\s\\S]*?</td>[\\s\\S]*?<td>([\\s\\S]*?)</td>", result;
 		Pattern p = Pattern.compile(reg);
 
-		HttpGet get = new HttpGet("http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=9");
+		HttpGet get = new HttpGet("/index.php?option=com_onlinejudge&Itemid=9");
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
 			String tLine = null;
 			try {
-				HttpResponse rsp = httpClient.execute(get);
+				HttpResponse rsp = client.execute(host, get, contexts[idx]);
 				entity = rsp.getEntity();
 				tLine = EntityUtils.toString(entity);
 			} finally {
@@ -200,10 +202,10 @@ public class UVASubmitter extends Submitter {
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		HttpGet httpGet = new HttpGet("http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=9&page=show_compilationerror&submission=" + runId);
+		HttpGet httpGet = new HttpGet("/index.php?option=com_onlinejudge&Itemid=9&page=show_compilationerror&submission=" + runId);
 
 		try {
-			HttpResponse rsp = httpClient.execute(httpGet);
+			HttpResponse rsp = client.execute(host, httpGet, contexts[idx]);
 			entity = rsp.getEntity();
 			String additionalInfo = EntityUtils.toString(entity);
 			submission.setAdditionalInfo(Tools.regFind(additionalInfo, "Compilation error for submission " + runId + "</div>\\s*(<pre>[\\s\\S]*?</pre>)"));
@@ -223,7 +225,6 @@ public class UVASubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
 						return j;
 					}
 				}

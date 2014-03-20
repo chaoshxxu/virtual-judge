@@ -2,17 +2,17 @@ package judge.spider;
 
 import java.util.Date;
 
+import judge.submitter.UVALiveSubmitter;
+import judge.tool.HtmlHandleUtil;
+import judge.tool.Tools;
+
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-
-import judge.submitter.UVALiveSubmitter;
-import judge.tool.HtmlHandleUtil;
-import judge.tool.Tools;
 
 public class UVALiveSpider extends Spider {
 
@@ -33,7 +33,7 @@ public class UVALiveSpider extends Spider {
 			lastTime = new Date().getTime();
 		}
 		if (problemNumberMap == null || problemNumberMap[5358] == null) {
-			new UVaLiveSpiderInitializer("https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&category=1").start();
+			new UVaLiveSpiderInitializer("/index.php?option=com_onlinejudge&Itemid=8&category=1").start();
 		}
 		do {
 			try {
@@ -49,17 +49,17 @@ public class UVALiveSpider extends Spider {
 		}
 
 		String html = "";
-		HttpClient httpClient = new DefaultHttpClient(UVALiveSubmitter.cm, UVALiveSubmitter.params);
-//		httpClient.getHostConfiguration().setProxy("127.0.0.1", 8087);
+		HttpClient httpClient = UVALiveSubmitter.client;
 		if (!problem.getOriginProb().matches("\\d+")) {
 			throw new Exception();
 		}
 
 		//抓标题、时限
-		HttpGet getMethod = new HttpGet("https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=" + realProblemNumber);
+		HttpHost host = new HttpHost("icpcarchive.ecs.baylor.edu");
+		HttpGet getMethod = new HttpGet("/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=" + realProblemNumber);
 		HttpEntity entity = null;
 		try {
-			HttpResponse response = httpClient.execute(getMethod);
+			HttpResponse response = httpClient.execute(host, getMethod, UVALiveSubmitter.contexts[0]);
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode != HttpStatus.SC_OK) {
 				throw new Exception();
@@ -78,9 +78,9 @@ public class UVALiveSpider extends Spider {
 		int category = Integer.parseInt(problem.getOriginProb()) / 100;
 		String pdfLink = "<span style='float:right'><a target='_blank' href='https://icpcarchive.ecs.baylor.edu/external/" + category + "/" + problem.getOriginProb() + ".pdf'><img width='100' height='26' border='0' title='Download as PDF' alt='Download as PDF' src='https://icpcarchive.ecs.baylor.edu/components/com_onlinejudge/images/button_pdf.png'></a></span><div style='clear:both'></div>";
 		description.setDescription(pdfLink);
-		getMethod = new HttpGet("https://icpcarchive.ecs.baylor.edu/external/" + category + "/" + problem.getOriginProb() + ".html");
+		getMethod = new HttpGet("/external/" + category + "/" + problem.getOriginProb() + ".html");
 		try {
-			HttpResponse response = httpClient.execute(getMethod);
+			HttpResponse response = httpClient.execute(host, getMethod, UVALiveSubmitter.contexts[0]);
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode != HttpStatus.SC_OK) {
 				throw new Exception();

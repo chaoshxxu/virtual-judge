@@ -19,7 +19,7 @@ import org.apache.http.params.HttpParams;
  * client.getParams().setParameter("socks.port", 1081);
  * client.getConnectionManager().getSchemeRegistry().register(new Scheme("http", 80, new SocksSchemeSocketFactory()));
  * 
- * @author hxxu
+ * @author Isun
  *
  */
 public class SocksSchemeSocketFactory implements SchemeSocketFactory {
