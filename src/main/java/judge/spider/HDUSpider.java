@@ -26,11 +26,12 @@ public class HDUSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "color:#1A5CC8\">([\\s\\S]*?)</h1>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "color:#1A5CC8\">([\\s\\S]*?)</h1>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(Integer.parseInt(Tools.regFind(html, "(\\d*) MS")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "/(\\d*) K")));
 		description.setDescription(Tools.regFind(html, "> Problem Description </div>([\\s\\S]*?)<br /><[^<>]*?panel_title[^<>]*?>"));

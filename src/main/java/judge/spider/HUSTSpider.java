@@ -28,11 +28,12 @@ public class HUSTSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<title>[\\s\\S]*?-- ([\\s\\S]*?)</title>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<title>[\\s\\S]*?-- ([\\s\\S]*?)</title>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit: </b>([\\d\\.]*?) Sec")));
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "Memory Limit: </b>([\\d\\.]*?) MB")));
 		description.setDescription(Tools.regFind(html, "<h2>Description</h2>([\\s\\S]*?)<h2>"));

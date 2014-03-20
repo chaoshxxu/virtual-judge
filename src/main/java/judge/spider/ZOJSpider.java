@@ -30,10 +30,12 @@ public class ZOJSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<span class=\"bigProblemTitle\">([\\s\\S]*?)</span>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<span class=\"bigProblemTitle\">([\\s\\S]*?)</span>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit: </font> ([\\s\\S]*?) Second")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "Memory Limit: </font> ([\\s\\S]*?) KB")));
 		if (html.contains(">Input<") && html.contains(">Output<") && html.contains(">Sample Input<") && html.contains(">Sample Output<")){

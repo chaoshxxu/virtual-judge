@@ -34,11 +34,12 @@ public class AizuSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<h1 class=\"title\">([\\s\\S]*?)</h1>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<h1 class=\"title\">([\\s\\S]*?)</h1>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit : (\\d+) sec")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "Memory Limit : (\\d+) KB")));
 		description.setDescription(Tools.regFind(html, "<div class=\"description\">([\\s\\S]*?)<hr />").replaceAll("^[\\s\\S]*</h1>", ""));

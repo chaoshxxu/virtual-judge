@@ -69,7 +69,7 @@ public class MultipleProxyHttpClient implements HttpClient {
 				HttpResponse response = client.execute(target, request, context);
 				successCount[i]++;
 				lastSuccessIndex = i;
-				System.out.println("Client " + identifier + " #" + i + " succeeded -> "  + successCount[i] + "/" + failCount[i]);
+//				System.out.println("Client " + identifier + " #" + i + " succeeded -> "  + successCount[i] + "/" + failCount[i]);
 				return response;
 			} catch (IOException e) {
 				failCount[i]++;

@@ -51,8 +51,12 @@ public class SGUSpider extends Spider {
 			}
 		}
 
-		problem.setTitle(Tools.regFind(html, problem.getOriginProb() + "\\.([\\s\\S]*?)</[th]", 1).trim());
-
+		String title = Tools.regFind(html, problem.getOriginProb() + "\\.([\\s\\S]*?)</[th]", 1).trim();
+		if (title.isEmpty()){
+			throw new Exception();
+		}
+		
+		problem.setTitle(title);
 		description.setInput(null);
 		description.setOutput(null);
 		description.setSampleInput(null);

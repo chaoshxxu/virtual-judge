@@ -4,7 +4,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -32,6 +34,7 @@ import org.apache.http.params.CoreProtocolPNames;
 public class MultipleProxyHttpClientFactory {
 
 	private static List<HttpClient> delegates = new ArrayList<HttpClient>();
+	private static Map<String, MultipleProxyHttpClient> instances = new HashMap<String, MultipleProxyHttpClient>();
 
 	static {
 		Scheme sslScheme = null;
@@ -100,12 +103,12 @@ public class MultipleProxyHttpClientFactory {
 
 		// 4
 		final HttpClient acmhustProxyClient = new DefaultHttpClient(paramSocksCM);
-		lrqSocksProxyClient.getParams().setParameter("socks.host", "acm.hust.edu.cn");
-		lrqSocksProxyClient.getParams().setParameter("socks.port", 1081);
+		acmhustProxyClient.getParams().setParameter("socks.host", "acm.hust.edu.cn");
+		acmhustProxyClient.getParams().setParameter("socks.port", 1081);
 
 		delegates.add(plainClient);
 		delegates.add(gaeClient);
-//		delegates.add(lrqHttpProxyClient);
+		delegates.add(lrqHttpProxyClient);
 		delegates.add(lrqSocksProxyClient);
 		delegates.add(acmhustProxyClient);
 
@@ -118,7 +121,14 @@ public class MultipleProxyHttpClientFactory {
 	}
 
 	static public MultipleProxyHttpClient getInstance(String identifier) {
-		return new MultipleProxyHttpClient(identifier, delegates);
+		if (!instances.containsKey(identifier)) {
+			synchronized (instances) {
+				if (!instances.containsKey(identifier)) {
+					instances.put(identifier, new MultipleProxyHttpClient(identifier, delegates));
+				}
+			}
+		}
+		return instances.get(identifier);
 	}
 
 }

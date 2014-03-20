@@ -32,11 +32,12 @@ public class FZUSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<b> Problem \\d+ (.+?)</b>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<b> Problem \\d+ (.+?)</b>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(Integer.parseInt(Tools.regFind(html, "Time Limit: (\\d+) mSec")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "Memory Limit : (\\d+) KB")));
 		description.setDescription(Tools.regFind(html, "Problem Description</h2><div class=\"pro_desc\">([\\s\\S]+?)</div>\\s*<h2><img"));

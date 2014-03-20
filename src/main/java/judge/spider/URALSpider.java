@@ -29,10 +29,12 @@ public class URALSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "problem_title\">\\d{4}. ([\\s\\S]*?)</H2>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "problem_title\">\\d{4}. ([\\s\\S]*?)</H2>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		problem.setTimeLimit((int)(1000 * Double.parseDouble(Tools.regFind(html, "Time Limit: ([\\d\\.]*?) second"))));
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "Memory Limit: ([\\d\\.]*?) MB")));
 		description.setDescription(Tools.regFind(html, "problem_text\">([\\s\\S]*?)<H3 CLASS=\"problem_subtitle\">Input"));

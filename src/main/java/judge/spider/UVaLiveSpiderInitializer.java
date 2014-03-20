@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.submitter.UVALiveSubmitter;
+import judge.tool.MultipleProxyHttpClientFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -51,7 +52,7 @@ public class UVaLiveSpiderInitializer extends Thread {
 		HttpHost host = new HttpHost("icpcarchive.ecs.baylor.edu");
 		String html = null;
 		HttpGet getMethod = new HttpGet(rootUrl);
-		HttpClient httpClient = UVALiveSubmitter.client;
+		HttpClient httpClient = MultipleProxyHttpClientFactory.getInstance("UVALive");
 		HttpEntity entity = null;
 		try {
 			System.out.println("start: " + rootUrl);

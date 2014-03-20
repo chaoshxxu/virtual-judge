@@ -44,10 +44,12 @@ public class LightOJSpider extends Spider {
 			getMethod.releaseConnection();
 		}
 
-		problem.setTitle(Tools.regFind(html, "Problem \\d+ - ([\\s\\S]*?)</title>"));
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "Problem \\d+ - ([\\s\\S]*?)</title>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		problem.setTimeLimit((int)(1000 * Double.parseDouble(Tools.regFind(html, "([\\d\\.]*?) second\\(s\\)</span>"))));
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "([\\d\\.]*?) MB</span>")));
 

@@ -33,10 +33,12 @@ public class SPOJSpider extends Spider {
 		}
 
 
-		problem.setTitle(Tools.regFind(html, "<h1>\\d+\\.([\\s\\S]*?)</h1>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<h1>\\d+\\.([\\s\\S]*?)</h1>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		Double timeLimit = 1000 * Double.parseDouble(Tools.regFind(html, "Time limit:</td><td>([\\s\\S]*?)s"));
 		problem.setTimeLimit(timeLimit.intValue());
 

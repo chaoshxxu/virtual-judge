@@ -35,11 +35,12 @@ public class POJSpider extends Spider {
 			getMethod.releaseConnection();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<title>\\d{3,} -- ([\\s\\S]*?)</title>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<title>\\d{3,} -- ([\\s\\S]*?)</title>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(Integer.parseInt(Tools.regFind(html, "<b>Time Limit:</b> (\\d{3,})MS</td>")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "<b>Memory Limit:</b> (\\d{2,})K</td>")));
 		description.setDescription(Tools.regFind(html, "<p class=\"pst\">Description</p>([\\s\\S]*?)<p class=\"pst\">"));

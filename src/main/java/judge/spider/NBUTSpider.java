@@ -31,11 +31,12 @@ public class NBUTSpider extends Spider {
 			getMethod.releaseConnection();
 		}
 
-		problem.setTitle(Tools.regFind(html, "\\["+ problem.getOriginProb() + "\\]([\\s\\S]*?)</title>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "\\["+ problem.getOriginProb() + "\\]([\\s\\S]*?)</title>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setTimeLimit(Integer.parseInt(Tools.regFind(html, "时间限制: (\\d+)")));
 		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "内存限制: (\\d+)")));
 		description.setDescription(Tools.regFind(html, "<li class=\"contents\" id=\"description\">([\\s\\S]*?)</li>\\s*<li class=\"titles\" id=\"input-title\">"));

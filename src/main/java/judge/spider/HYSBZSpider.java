@@ -32,11 +32,12 @@ public class HYSBZSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<center><h2>([\\s\\S]*?)</h2>").replaceAll(problem.getOriginProb() + ": ", "").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<center><h2>([\\s\\S]*?)</h2>").replaceAll(problem.getOriginProb() + ": ", "").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
-
+		
+		problem.setTitle(title);
 		problem.setSource(Tools.regFind(html, "<h2>Source</h2>[\\s\\S]*?<div class=content><p>([\\s\\S]*?)</p></div><center>"));
 		Matcher matcher = Pattern.compile("\\[(.*)\\](.*)").matcher(problem.getTitle());
 		if (matcher.find()) {

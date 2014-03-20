@@ -33,10 +33,12 @@ public class CodeForcesSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<div class=\"title\">\\s*" + problemNum + "\\. ([\\s\\S]*?)</div>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<div class=\"title\">\\s*" + problemNum + "\\. ([\\s\\S]*?)</div>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		Double timeLimit = 1000 * Double.parseDouble(Tools.regFind(html, "</div>([\\d\\.]+) seconds?\\s*</div>"));
 		problem.setTimeLimit(timeLimit.intValue());
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "</div>(\\d+) megabytes\\s*</div>")));

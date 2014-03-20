@@ -61,10 +61,12 @@ public class ZTreningSpider extends Spider {
 			throw new Exception();
 		}
 
-		problem.setTitle(Tools.regFind(html, "<TITLE>Task :: ([\\s\\S]*?)</TITLE>").trim());
-		if (problem.getTitle().isEmpty()){
+		String title = Tools.regFind(html, "<TITLE>Task :: ([\\s\\S]*?)</TITLE>").trim();
+		if (title.isEmpty()){
 			throw new Exception();
 		}
+		
+		problem.setTitle(title);
 		Double timeLimit = 1000 * Double.parseDouble(Tools.regFind(html, "Time:</TD><TD CLASS=\"right\">(\\S*?) sec"));
 		problem.setTimeLimit(timeLimit.intValue());
 		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "Memory:</TD><TD CLASS=\"right\">(\\d+) MB")));

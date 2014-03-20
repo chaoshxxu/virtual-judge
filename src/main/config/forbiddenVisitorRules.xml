@@ -4,6 +4,7 @@
         <substring>spider</substring>
         <substring>bot</substring>
         <substring>curl</substring>
+        <substring>ahrefs.com</substring>
         <pattern></pattern>
     </ua>
     <ip>

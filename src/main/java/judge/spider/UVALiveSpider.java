@@ -4,6 +4,7 @@ import java.util.Date;
 
 import judge.submitter.UVALiveSubmitter;
 import judge.tool.HtmlHandleUtil;
+import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -49,7 +50,7 @@ public class UVALiveSpider extends Spider {
 		}
 
 		String html = "";
-		HttpClient httpClient = UVALiveSubmitter.client;
+		HttpClient httpClient = MultipleProxyHttpClientFactory.getInstance("UVALive");
 		if (!problem.getOriginProb().matches("\\d+")) {
 			throw new Exception();
 		}
