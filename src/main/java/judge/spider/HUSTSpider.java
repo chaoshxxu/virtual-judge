@@ -1,48 +1,58 @@
 package judge.spider;
 
+import java.nio.charset.Charset;
+
 import judge.tool.HtmlHandleUtil;
+import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.util.EntityUtils;
 
 
 public class HUSTSpider extends Spider {
 
 	public void crawl() throws Exception{
-
-		String html = "";
-		HttpClient httpClient = new HttpClient();
-		GetMethod getMethod = new GetMethod("http://acm.hust.edu.cn/problem.php?id=" + problem.getOriginProb());
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		try {
-			int statusCode = httpClient.executeMethod(getMethod);
-			if(statusCode != HttpStatus.SC_OK) {
-				System.err.println("Method failed: "+getMethod.getStatusLine());
-			}
-			html = Tools.getHtml(getMethod, null);
-			html = HtmlHandleUtil.transformUrlToAbs(html, getMethod.getURI().toString());
-		} catch(Exception e) {
-			getMethod.releaseConnection();
+		
+		if (!problem.getOriginProb().matches("[1-9]\\d*")) {
 			throw new Exception();
 		}
 
-		String title = Tools.regFind(html, "<title>[\\s\\S]*?-- ([\\s\\S]*?)</title>").trim();
+		String html = null;
+		HttpEntity entity = null;
+		try {
+			HttpClient client = MultipleProxyHttpClientFactory.getInstance("HUST");
+			HttpHost host = new HttpHost("acm.hust.edu.cn");
+			HttpGet get = new HttpGet("/problem/show/" + problem.getOriginProb());
+			HttpResponse response = client.execute(host, get, new BasicHttpContext());
+			entity = response.getEntity();
+
+			html = EntityUtils.toString(entity, Charset.forName("UTF-8"));
+			html = HtmlHandleUtil.transformUrlToAbs(html, host.toURI() + get.getURI());
+		} finally {
+			EntityUtils.consume(entity);
+		}
+
+		String title = Tools.regFind(html, "<title>([\\s\\S]*?)</title>").trim();
 		if (title.isEmpty()){
 			throw new Exception();
 		}
 		
 		problem.setTitle(title);
-		problem.setTimeLimit(1000 * Integer.parseInt(Tools.regFind(html, "Time Limit: </b>([\\d\\.]*?) Sec")));
-		problem.setMemoryLimit(1024 * Integer.parseInt(Tools.regFind(html, "Memory Limit: </b>([\\d\\.]*?) MB")));
-		description.setDescription(Tools.regFind(html, "<h2>Description</h2>([\\s\\S]*?)<h2>"));
-		description.setInput(Tools.regFind(html, "<h2>Input</h2>([\\s\\S]*?)<h2>"));
-		description.setOutput(Tools.regFind(html, "<h2>Output</h2>([\\s\\S]*?)<h2>"));
-		description.setSampleInput(Tools.regFind(html, "<h2>Sample Input</h2>([\\s\\S]*?)<h2>"));
-		description.setSampleOutput(Tools.regFind(html, "<h2>Sample Output</h2>([\\s\\S]*?)<h2>"));
-		description.setHint(Tools.regFind(html, "<h2>HINT</h2>([\\s\\S]*?)<h2>"));
-		problem.setSource(Tools.regFind(html, "<h2>Source</h2>([\\s\\S]*?)<center>").replaceAll("<[\\s\\S]*?>", ""));
-		problem.setUrl("http://acm.hust.edu.cn/problem.php?id=" + problem.getOriginProb());
+		problem.setTimeLimit((int) (1000 * Double.parseDouble(Tools.regFind(html, "Time Limit: <span class=\"label label-warning\">(.+)s</span>"))));
+		problem.setMemoryLimit((int) (1024 * Double.parseDouble(Tools.regFind(html, "Memory Limit: <span class=\"label label-danger\">(.+)MB</span>"))));
+		description.setDescription(Tools.regFind(html, "<dd id=\"problem-desc\">([\\s\\S]*?)</dd>"));
+		description.setInput(Tools.regFind(html, "<dt> Input </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		description.setOutput(Tools.regFind(html, "<dt> Output </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		description.setSampleInput(Tools.regFind(html, "<dt> Sample Input </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		description.setSampleOutput(Tools.regFind(html, "<dt> Sample Output </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		description.setHint(Tools.regFind(html, "<dt> Hint </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		problem.setSource(Tools.regFind(html, "<dt> Source </dt>\\s*<dd>([\\s\\S]*?)</dd>"));
+		problem.setUrl("http://acm.hust.edu.cn/problem/show/" + problem.getOriginProb());
 	}
 }
