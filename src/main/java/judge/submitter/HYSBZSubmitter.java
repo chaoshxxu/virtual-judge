@@ -133,7 +133,7 @@ public class HYSBZSubmitter extends Submitter {
 
 	private boolean isLoggedIn() throws ClientProtocolException, IOException {
 		try {
-			get = new HttpGet("/JudgeOnline");
+			get = new HttpGet("/JudgeOnline/");
 			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
