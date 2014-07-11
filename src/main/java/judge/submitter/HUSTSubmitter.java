@@ -1,8 +1,13 @@
 package judge.submitter;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,23 +18,47 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
+import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 
 public class HUSTSubmitter extends Submitter {
 
 	static final String OJ_NAME = "HUST";
-	static private HttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+	static private HttpContext[] contexts;
+	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	
+	static public String[] captachaStrings;
+	static public File[] captchaImages;
+	
+	private HttpGet get;
+	private HttpPost post;
+	private HttpResponse response;
+	private HttpEntity entity;
+	private HttpHost host = new HttpHost("acm.hust.edu.cn");
+	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -51,117 +80,166 @@ public class HUSTSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
-		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+		contexts = new HttpContext[usernameList.length];
+		captachaStrings = new String[usernameList.length];
+		captchaImages = new File[usernameList.length];
+		for (int i = 0; i < contexts.length; i++){
+			CookieStore cookieStore = new BasicCookieStore();
+			contexts[i] = new BasicHttpContext();
+			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
 		languageList.put("0", "C");
 		languageList.put("1", "C++");
 		languageList.put("2", "Pascal");
-		languageList.put("3", "Java");
+        languageList.put("3", "Java");
 		sc.setAttribute("HUST", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		GetMethod getMethod = new GetMethod("http://acm.hust.edu.cn/status.php");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		Pattern p = Pattern.compile("class='evenrow'><td>(\\d+)");
+	private void getMaxRunId(String username) throws ClientProtocolException, IOException {
+		String url = "/status";
+		if (!StringUtils.isEmpty(username)) {
+			url += "?uid=" + username;
+		}
+		
+		Pattern p1 = Pattern.compile("/solution/source/(\\d+)");
+		Pattern p2 = Pattern.compile("<td>\\s{5,}(\\d+)\\s{5,}</td>");
 
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
-		if (m.find()) {
-			maxRunId = Integer.parseInt(m.group(1));
-			System.out.println("maxRunId : " + maxRunId);
+		try {
+			get = new HttpGet(url);
+			response = client.execute(host, get, contexts[idx]);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		
+		Matcher m1 = p1.matcher(html);
+		Matcher m2 = p2.matcher(html);
+		if (m1.find()) {
+			maxRunId = Integer.parseInt(m1.group(1));
+		} else if (m2.find()) {
+			maxRunId = Integer.parseInt(m2.group(1));
 		} else {
-			throw new Exception();
+			throw new RuntimeException();
+		}
+		System.out.println("maxRunId : " + maxRunId);
+	}
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
+		try {
+			post = new HttpPost("/user/login");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("username", username));
+			nvps.add(new BasicNameValuePair("pwd", password));
+			nvps.add(new BasicNameValuePair("code", captachaStrings[idx]));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps));
+			response = client.execute(host, post, contexts[idx]);
+
+			Validate.isTrue(response.getStatusLine().getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
+		} finally {
+			EntityUtils.consume(response.getEntity());
 		}
 	}
 
-	private void submit() throws Exception{
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		try {
+			get = new HttpGet("/");
+			response = client.execute(host, get, contexts[idx]);
+			entity = response.getEntity();
+			html = EntityUtils.toString(entity);
+		} finally {
+			EntityUtils.consume(entity);
+		}
+		return html.contains("/logout"); 
+	}
+
+	private void submit() throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
-
-        PostMethod postMethod = new PostMethod("http://acm.hust.edu.cn/submit.php");
-        postMethod.addParameter("language", submission.getLanguage());
-        postMethod.addParameter("id", problem.getOriginProb());
-        postMethod.addParameter("source", submission.getSource());
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        httpClient.getParams().setContentCharset("UTF-8");
-		System.out.println("submit...");
-		int statusCode = httpClient.executeMethod(postMethod);
-		System.out.println("statusCode = " + statusCode);
-		if (statusCode != HttpStatus.SC_MOVED_TEMPORARILY){
-			throw new Exception();
+		
+		try {
+			post = new HttpPost("/problem/submit");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
+			nvps.add(new BasicNameValuePair("pid", problem.getOriginProb()));
+			nvps.add(new BasicNameValuePair("source", submission.getSource()));
+			
+			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+			
+			response = client.execute(host, post, contexts[idx]);
+			entity = response.getEntity();
+			
+			Validate.isTrue(response.getStatusLine().getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
+		} finally {
+			EntityUtils.consume(entity);
 		}
 	}
 
-	private void login(String username, String password) throws Exception{
-        PostMethod postMethod = new PostMethod("http://acm.hust.edu.cn/login.php");
-
-        postMethod.addParameter("password", password);
-        postMethod.addParameter("submit", "Submit");
-        postMethod.addParameter("user_id", username);
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-        System.out.println("login...");
-		httpClient.executeMethod(postMethod);
-		byte[] responseBody = postMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		if (!tLine.contains("history.go(-2)")){
-			throw new Exception();
-		}
-	}
-
-	public void getResult(String username) throws Exception{
-		String reg = "class='evenrow'><td>(\\d+)[\\s\\S]*?<font[\\s\\S]*?>([\\s\\S]*?)</font>[\\s\\S]*?<td>([\\s\\S]*?)<td>([\\s\\S]*?)<td>", result;
+	public void getResult(String username) throws Exception {
+		getMaxRunId(username);
+		
+		String reg = 
+		        "<span class=\"badge\">(.*?)</span>\\s*Result[\\s\\S]*?" +
+		        "<span class=\"badge\">(\\d+)ms</span>\\s*Time[\\s\\S]*?" +
+		        "<span class=\"badge\">(\\d+)kb</span>\\s*Memory";
 		Pattern p = Pattern.compile(reg);
-		GetMethod getMethod = new GetMethod("http://acm.hust.edu.cn/status.php?user_id=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
+			try {
+				get = new HttpGet("/solution/source/" + maxRunId);
+				response = client.execute(host, get, contexts[idx]);
+				entity = response.getEntity();
+				html = EntityUtils.toString(entity);
+			} finally {
+				EntityUtils.consume(entity);
+			}
 
-			Matcher m = p.matcher(tLine);
-			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId){
-				result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
+			Matcher m = p.matcher(html);
+			if (m.find()) {
+				String result = m.group(1).trim();
 				submission.setStatus(result);
-				submission.setRealRunId(m.group(1));
+				submission.setRealRunId(maxRunId + "");
 				if (!result.contains("ing")){
-					if (result.equals("Accepted")){
-						submission.setMemory(Integer.parseInt(m.group(3).replaceAll(" <font[\\s\\S]*?font>", "")));
-						submission.setTime(Integer.parseInt(m.group(4).replaceAll(" <font[\\s\\S]*?font>", "")));
-					} else if (result.contains("Compile Error")) {
-						getAdditionalInfo(submission.getRealRunId());
+    				if (result.equals("Accepted")){
+    					submission.setTime(Integer.parseInt(m.group(2)));
+	    				submission.setMemory(Integer.parseInt(m.group(3)));
+    				} else if (result.contains("Compile Error")) {
+    					submission.setAdditionalInfo(Tools.regFind(html, "(<pre class=\"col-sm-12 linenums\">[\\s\\S]*?</pre>)"));
 					}
-					baseService.addOrModify(submission);
-					return;
-				}
+    				baseService.addOrModify(submission);
+    				return;
+    			}
 				baseService.addOrModify(submission);
 			}
 			Thread.sleep(interval);
 			interval += 500;
-        }
-    	throw new Exception();
+		}
+		throw new Exception();
 	}
 
-	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://acm.hust.edu.cn/ceinfo.php?sid=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, "ISO-8859-1");
-
-		submission.setAdditionalInfo(Tools.regFind(additionalInfo, "<title>Compile Error Info</title>\\s*(<pre>[\\s\\S]*?</pre>)"));
+	private void downloadCaptcha() throws ClientProtocolException, IOException {
+		BufferedInputStream bis = null;
+		BufferedOutputStream bos = null;
+		String filePath = "hust_captcha_" + idx;
+		captchaImages[idx] = new File(filePath);
+		try {
+			get = new HttpGet("/index/captcha");
+			response = client.execute(host, get, contexts[idx]);
+			entity = response.getEntity();
+			bis = new BufferedInputStream(entity.getContent());
+			bos = new BufferedOutputStream(new FileOutputStream(captchaImages[idx]));
+			int inByte;
+			while((inByte = bis.read()) != -1) {
+				bos.write(inByte);
+			}
+		} finally {
+			bis.close();
+			bos.close();
+			EntityUtils.consume(entity);
+		}
 	}
 
 	private int getIdleClient() {
@@ -174,7 +252,6 @@ public class HUSTSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
 						return j;
 					}
 				}
@@ -192,41 +269,36 @@ public class HUSTSubmitter extends Submitter {
 		int errorCode = 1;
 
 		try {
-			getMaxRunId();
-			try {
-				//第一次尝试提交
-				submit();
-			} catch (Exception e1) {
-				//失败,认为是未登录所致
-				e1.printStackTrace();
-				Thread.sleep(2000);
-				login(usernameList[idx], passwordList[idx]);
-				Thread.sleep(2000);
-				submit();
+			getMaxRunId(null);
+			if (!isLoggedIn()) {
+				try {
+					login(usernameList[idx], passwordList[idx]);
+				} catch (Exception e) {
+					downloadCaptcha();
+					throw new RuntimeException(e);
+				}
 			}
+			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
 
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(12000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//host oj限制每两次提交之间至少隔10秒
+		}
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
 }

@@ -1,8 +1,8 @@
 <forbiddenVisitorRules>
     <ua>
-        <equals></equals>
-        <substring>spider</substring>
-        <substring>bot</substring>
+        <equals>Mozilla/4.0</equals>
+        <substring></substring>
+        <substring>urllib</substring>
         <substring>curl</substring>
         <substring>ahrefs.com</substring>
         <pattern></pattern>
