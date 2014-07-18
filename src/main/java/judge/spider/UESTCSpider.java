@@ -1,59 +1,45 @@
 package judge.spider;
 
-import java.nio.charset.Charset;
+import java.util.Map;
 
-import judge.tool.HtmlHandleUtil;
+import judge.tool.DedicatedHttpClient;
 import judge.tool.MultipleProxyHttpClientFactory;
-import judge.tool.Tools;
 
-import org.apache.http.HttpEntity;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.util.EntityUtils;
+import org.apache.struts2.json.JSONUtil;
 
 
 public class UESTCSpider extends Spider {
 
+	@SuppressWarnings("unchecked")
 	public void crawl() throws Exception{
-
-		if (!problem.getOriginProb().matches("[1-9]\\d*")) {
-			throw new Exception();
-		}
-
-		String html = null;
-		HttpEntity entity = null;
-		try {
-			HttpClient client = MultipleProxyHttpClientFactory.getInstance("UESTC");
-			HttpHost host = new HttpHost("acm.uestc.edu.cn");
-			HttpGet get = new HttpGet("/old/problem.php?pid=" + problem.getOriginProb());
-			HttpResponse response = client.execute(host, get, new BasicHttpContext());
-			entity = response.getEntity();
-
-			html = EntityUtils.toString(entity, Charset.forName("UTF-8"));
-			html = html.replaceAll("<div class=\"bg\">\\s*</div>", "");
-			html = HtmlHandleUtil.transformUrlToAbs(html, host.toURI() + get.getURI());
-		} finally {
-			EntityUtils.consume(entity);
-		}
-
-		String title = Tools.regFind(html, problem.getOriginProb() + " - ([\\s\\S]*?) - UESTC Online Judge").trim();
-		if (title.isEmpty()){
-			throw new Exception();
-		}
+		HttpHost host = new HttpHost("acm.uestc.edu.cn");
+		HttpClient delegateClient = MultipleProxyHttpClientFactory.getInstance("UESTC");
+		DedicatedHttpClient client = new DedicatedHttpClient(host, delegateClient);
+		String jsonStr = client.get("/problem/data/" + problem.getOriginProb()).getBody();
+//		html = HtmlHandleUtil.transformUrlToAbs(html, host.toURI() + get.getURI());
+		
+		Map<String, ?> json = (Map<String, ?>) JSONUtil.deserialize(jsonStr);
+		Map<String, ?> problemJson = (Map<String, ?>) json.get("problem");
+		Long problemId = (Long) problemJson.get("problemId");
+		Validate.isTrue(problem.getOriginProb().equals(problemId.toString()));
+		
+		String title = (String) problemJson.get("title");
+		Validate.isTrue(!StringUtils.isEmpty(title));
 		
 		problem.setTitle(title);
-		problem.setTimeLimit(Integer.parseInt(Tools.regFind(html, "Time Limit: <span class=\"h4\">\\s*(\\d+)")));
-		problem.setMemoryLimit(Integer.parseInt(Tools.regFind(html, "Memory Limit: <span class=\"h4\">\\s*(\\d+)")));
-		description.setDescription(Tools.regFind(html, "<h2>Description</h2>([\\s\\S]*?)<h2>"));
-		description.setInput(Tools.regFind(html, "<h2>Input</h2>([\\s\\S]*?)<h2>"));
-		description.setOutput(Tools.regFind(html, "<h2>Output</h2>([\\s\\S]*?)<h2>"));
-		description.setSampleInput(Tools.regFind(html, "<h2>Sample Input</h2>([\\s\\S]*?)<h2>"));
-		description.setSampleOutput(Tools.regFind(html, "<h2>Sample Output</h2>([\\s\\S]*?)<h2>"));
-		description.setHint(Tools.regFind(html, "<h2>Hint</h2>([\\s\\S]*?)<h2>"));
-		problem.setSource(Tools.regFind(html, "<h2>Source</h2>\\s*<p>([\\s\\S]*?)</p>\\s*</div>\\s*<div class=\"pmenu_all").trim());
-		problem.setUrl("http://acm.uestc.edu.cn/old/problem.php?pid=" + problem.getOriginProb());
+		problem.setTimeLimit(((Long) problemJson.get("timeLimit")).intValue());
+		problem.setMemoryLimit(((Long) problemJson.get("memoryLimit")).intValue());
+		description.setDescription((String) problemJson.get("description"));
+		description.setInput((String) problemJson.get("input"));
+		description.setOutput((String) problemJson.get("output"));
+		description.setSampleInput((String) problemJson.get("sampleInput"));
+		description.setSampleOutput((String) problemJson.get("sampleOutput"));
+		description.setHint((String) problemJson.get("hint"));
+		problem.setSource((String) problemJson.get("source"));
+		problem.setUrl("http://acm.uestc.edu.cn/#/problem/show/" + problem.getOriginProb());
 	}
 }

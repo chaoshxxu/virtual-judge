@@ -14,27 +14,27 @@ import java.util.regex.Pattern;
 
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
+import judge.tool.DedicatedHttpClient;
 import judge.tool.MultipleProxyHttpClientFactory;
+import judge.tool.SimpleHttpResponse;
+import judge.tool.SimpleHttpResponseHandler;
 import judge.tool.Tools;
 
-import org.apache.http.HttpEntity;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 
 public class POJSubmitter extends Submitter {
 
@@ -43,14 +43,10 @@ public class POJSubmitter extends Submitter {
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient deligateClient = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
 	
-	private HttpGet get;
-	private HttpPost post;
-	private HttpResponse response;
-	private HttpEntity entity;
+	private DedicatedHttpClient client;
 	private HttpHost host = new HttpHost("poj.org");
-	private String html;
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -91,85 +87,59 @@ public class POJSubmitter extends Submitter {
 	}
 
 	private void getMaxRunId() throws ClientProtocolException, IOException {
-		Pattern p = Pattern.compile("<tr align=center><td>(\\d+)");
-
-		try {
-			get = new HttpGet("/status");
-			response = client.execute(host, get, contexts[idx]);
-			entity = response.getEntity();
-			html = EntityUtils.toString(entity);
-		} finally {
-			EntityUtils.consume(entity);
-		}
-
-		Matcher m = p.matcher(html);
-		if (m.find()) {
-			maxRunId = Integer.parseInt(m.group(1));
-			System.out.println("maxRunId : " + maxRunId);
-		} else {
-			throw new RuntimeException();
-		}
+		client.get("/status", new SimpleHttpResponseHandler() {
+			@Override
+			public void handle(SimpleHttpResponse response) {
+				String html = response.getBody();
+				Matcher m = Pattern.compile("<tr align=center><td>(\\d+)").matcher(html);
+				if (m.find()) {
+					maxRunId = Integer.parseInt(m.group(1));
+					System.out.println("maxRunId : " + maxRunId);
+				} else {
+					throw new RuntimeException();
+				}
+			}
+		});
 	}
 	
 	private void login(String username, String password) throws ClientProtocolException, IOException {
-		try {
-			post = new HttpPost("/login");
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("B1", "login"));
-			nvps.add(new BasicNameValuePair("password1", password));
-			nvps.add(new BasicNameValuePair("url", "/"));
-			nvps.add(new BasicNameValuePair("user_id1", username));
-			
-			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
-			
-			response = client.execute(host, post, contexts[idx]);
-			entity = response.getEntity();
-			
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
-				throw new RuntimeException();
+		HttpPost post = new HttpPost("/login");
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("B1", "login"));
+		nvps.add(new BasicNameValuePair("password1", password));
+		nvps.add(new BasicNameValuePair("url", "/"));
+		nvps.add(new BasicNameValuePair("user_id1", username));
+		post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+		
+		client.execute(post, new SimpleHttpResponseHandler() {
+			@Override
+			public void handle(SimpleHttpResponse response) {
+				Validate.isTrue(response.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
 			}
-		} finally {
-			EntityUtils.consume(entity);
-		}
+		});
 	}
 
 	private boolean isLoggedIn() throws ClientProtocolException, IOException {
-		try {
-			get = new HttpGet("/");
-			response = client.execute(host, get, contexts[idx]);
-			entity = response.getEntity();
-			html = EntityUtils.toString(entity);
-		} finally {
-			EntityUtils.consume(entity);
-		}
-		if (html.contains(">Log Out</a>")) {
-			return true;
-		} else {
-			return false;
-		}
+		String html = client.get("/").getBody();
+		return html.contains(">Log Out</a>");
 	}
 
 	private void submit() throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
 		
-		try {
-			post = new HttpPost("/submit");
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
-			nvps.add(new BasicNameValuePair("problem_id", problem.getOriginProb()));
-			nvps.add(new BasicNameValuePair("source", submission.getSource()));
-			
-			post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
-			
-			response = client.execute(host, post, contexts[idx]);
-			entity = response.getEntity();
-			
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
-				throw new RuntimeException();
+		HttpPost post = new HttpPost("/submit");
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
+		nvps.add(new BasicNameValuePair("problem_id", problem.getOriginProb()));
+		nvps.add(new BasicNameValuePair("source", submission.getSource()));
+		post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+		
+		client.execute(post, new SimpleHttpResponseHandler() {
+			@Override
+			public void handle(SimpleHttpResponse response) {
+				Validate.isTrue(response.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
 			}
-		} finally {
-			EntityUtils.consume(entity);
-		}
+		});
 	}
 
 	public void getResult(String username) throws Exception{
@@ -177,15 +147,7 @@ public class POJSubmitter extends Submitter {
 		Pattern p = Pattern.compile(reg);
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			try {
-				get = new HttpGet("/status?user_id=" + username);
-				response = client.execute(host, get, contexts[idx]);
-				entity = response.getEntity();
-				html = EntityUtils.toString(entity);
-			} finally {
-				EntityUtils.consume(entity);
-			}
-
+			String html = client.get("/status?user_id=" + username).getBody();
 			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId) {
 				String result = m.group(2).replaceAll("<[\\s\\S]*?>", "").trim();
@@ -210,14 +172,7 @@ public class POJSubmitter extends Submitter {
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		try {
-			get = new HttpGet("/showcompileinfo?solution_id=" + runId);
-			response = client.execute(host, get, contexts[idx]);
-			entity = response.getEntity();
-			html = EntityUtils.toString(entity);
-		} finally {
-			EntityUtils.consume(entity);
-		}
+		String html = client.get("/showcompileinfo?solution_id=" + runId).getBody();
 		submission.setAdditionalInfo(Tools.regFind(html, "(<pre>[\\s\\S]*?</pre>)"));
 	}
 
@@ -245,6 +200,8 @@ public class POJSubmitter extends Submitter {
 
 	public void work() {
 		idx = getIdleClient();
+		client = new DedicatedHttpClient(host, contexts[idx], deligateClient);
+		
 		int errorCode = 1;
 
 		try {

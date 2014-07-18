@@ -21,6 +21,7 @@ import judge.spider.SCUSpider;
 import judge.spider.SGUSpider;
 import judge.spider.SPOJSpider;
 import judge.spider.Spider;
+import judge.spider.UESTCOldSpider;
 import judge.spider.UESTCSpider;
 import judge.spider.URALSpider;
 import judge.spider.UVALiveSpider;
@@ -41,6 +42,7 @@ import judge.submitter.SCUSubmitter;
 import judge.submitter.SGUSubmitter;
 import judge.submitter.SPOJSubmitter;
 import judge.submitter.Submitter;
+import judge.submitter.UESTCOldSubmitter;
 import judge.submitter.UESTCSubmitter;
 import judge.submitter.URALSubmitter;
 import judge.submitter.UVALiveSubmitter;
@@ -90,6 +92,7 @@ public class BaseAction extends ActionSupport{
 		OJList.add("Z-Trening");
 		OJList.add("Aizu");
 		OJList.add("LightOJ");
+		OJList.add("UESTC-old");
 		OJList.add("UESTC");
 		OJList.add("NBUT");
 		OJList.add("FZU");
@@ -119,6 +122,7 @@ public class BaseAction extends ActionSupport{
 		spiderMap.put("Z-Trening", new ZTreningSpider());
 		spiderMap.put("Aizu", new AizuSpider());
 		spiderMap.put("LightOJ", new LightOJSpider());
+		spiderMap.put("UESTC-old", new UESTCOldSpider());
 		spiderMap.put("UESTC", new UESTCSpider());
 		spiderMap.put("NBUT", new NBUTSpider());
 		spiderMap.put("FZU", new FZUSpider());
@@ -142,6 +146,7 @@ public class BaseAction extends ActionSupport{
 		submitterMap.put("Z-Trening", new ZTreningSubmitter());
 		submitterMap.put("Aizu", new AizuSubmitter());
 		submitterMap.put("LightOJ", new LightOJSubmitter());
+		submitterMap.put("UESTC-old", new UESTCOldSubmitter());
 		submitterMap.put("UESTC", new UESTCSubmitter());
 		submitterMap.put("NBUT", new NBUTSubmitter());
 		submitterMap.put("FZU", new FZUSubmitter());
@@ -165,6 +170,7 @@ public class BaseAction extends ActionSupport{
 		lf.put("Z-Trening", "%lld & %llu");
 		lf.put("Aizu", "%lld & %llu");
 		lf.put("LightOJ", "%lld & %llu");
+		lf.put("UESTC-old", "%lld & %llu");
 		lf.put("UESTC", "%lld & %llu");
 		lf.put("NBUT", "%I64d & %I64u");
 		lf.put("FZU", "%I64d & %I64u");

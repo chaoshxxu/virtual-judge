@@ -114,7 +114,39 @@ public class MultipleProxyHttpClient implements HttpClient {
 	@Override
 	public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context) throws IOException,
 			ClientProtocolException {
-		throw new RuntimeException("Not supported");
+		List<Integer> indices = new ArrayList<Integer>();
+		for (int i = 0; i < delegates.size(); i++) {
+			indices.add(i);
+		}
+		Collections.sort(indices, new Comparator<Integer>() {
+			@Override
+			public int compare(Integer a, Integer b) {
+				if (a.equals(lastSuccessIndex)) {
+					return -1;
+				} else if (b.equals(lastSuccessIndex)) {
+					return 1;
+				} else if (!failCount[a].equals(failCount[b])) {
+					return failCount[a].compareTo(failCount[b]);
+				} else {
+					return successCount[b].compareTo(successCount[a]);
+				}
+			}
+		});
+		IOException finalException = null;
+		for (int i : indices) {
+			HttpClient client = delegates.get(i);
+			try {
+				T result = client.execute(target, request, responseHandler, context);
+				successCount[i]++;
+				lastSuccessIndex = i;
+				return result;
+			} catch (IOException e) {
+				failCount[i]++;
+				System.err.println("Client " + identifier + " #" + i + " success: "  + successCount[i] + " fail: " + failCount[i]);
+				finalException = e;
+			}
+		}
+		throw finalException;
 	}
 
 	@Override
