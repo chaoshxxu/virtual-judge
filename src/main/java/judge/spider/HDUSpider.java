@@ -10,6 +10,10 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 public class HDUSpider extends Spider {
 
 	public void crawl() throws Exception{
+		if (!problem.getOriginProb().matches("[1-9]\\d*")) {
+			throw new Exception();
+		}
+
 		String html = "";
 		HttpClient httpClient = new HttpClient();
 		GetMethod getMethod = new GetMethod("http://acm.hdu.edu.cn/showproblem.php?pid=" + problem.getOriginProb());
