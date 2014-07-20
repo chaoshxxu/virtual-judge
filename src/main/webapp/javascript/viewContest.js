@@ -309,12 +309,14 @@ $(function(){
 					ids += "_" + $(this).val();
 				});
 				var showTeams = $.browser.msie ? 0 : $("[name=showTeams]:checked").val();
-				var showNick = $("[name=showNick]:checked").val();
+				var showNick = $("[name=showNick]:checked").val() == 'on';
+				var showUsername = $("[name=showUsername]:checked").val() == 'on';
 				var showAnimation = $("[name=showAnimation]:checked").val();
-
+				
 				$.cookie("contest_" + cid, ids, { expires: 3 });
 				$.cookie("show_all_teams", showTeams, { expires: 30 });
 				$.cookie("show_nick", showNick, { expires: 30 });
+				$.cookie("show_username", showUsername, { expires: 30 });
 				$.cookie("show_animation", showAnimation, { expires: 30 });
 				$( this ).dialog( "close" );
 				lastRankUpdateTime = -99999999;
@@ -600,7 +602,10 @@ function updateRankInfo() {
 		$.cookie("show_all_teams", 0, { expires: 30 });
 	}
 	if ($.cookie("show_nick") == undefined){
-		$.cookie("show_nick", 0, { expires: 30 });
+		$.cookie("show_nick", true, { expires: 30 });
+	}
+	if ($.cookie("show_username") == undefined){
+		$.cookie("show_username", true, { expires: 30 });
 	}
 	if ($.cookie("show_animation") == undefined){
 		$.cookie("show_animation", 1, { expires: 30 });
@@ -729,7 +734,8 @@ function calcRankTable() {
 		return b[1] - a[1] || a[2] - b[2];
 	});
 	
-	var showNick = $.cookie("show_nick");
+	var showNick = $.cookie("show_nick") == 'true';
+	var showUsername = $.cookie("show_username") == 'true';
 	var showAllTeams = $.cookie("show_all_teams");
 	var sbHtml = [];
 	
@@ -750,7 +756,23 @@ function calcRankTable() {
 		}
 		sbHtml.push("' cid='" + curCid + "'><div class='meta_td rank'>" + (i + 1) + "</div><div class='meta_td id");
 		if (username[uid]) {
-			sbHtml.push("'><a target='_blank' href='user/profile.action?uid=" + uid + "'>" + (showNick > 0 ? nickname[uid] || username[uid] : username[uid]) + "</a></div>");
+			var displayTitle =
+				showNick == showUsername ?
+						nickname[uid] && username[uid] != nickname[uid] ?
+								username[uid] + " (" + nickname[uid] + ")" :
+								username[uid] :
+				showNick && nickname[uid] ?
+						nickname[uid] :
+						username[uid];
+			var displayName =
+				showNick == showUsername ?
+						nickname[uid] && username[uid] != nickname[uid] ?
+								username[uid] + "<span style='color:gray'>(" + nickname[uid] + ")</span>" :
+								username[uid] :
+				showNick && nickname[uid] ?
+						nickname[uid] :
+						username[uid];
+			sbHtml.push("' title='" + displayTitle + "'><a target='_blank' href='user/profile.action?uid=" + uid + "'>" + displayName +  "</a></div>");
 		} else {
 			sbHtml.push(" replay' title='" + uid + "'>" + uid + "</div>");
 		}
@@ -793,7 +815,16 @@ function calcRankTable() {
 		}
 		exportRankHtml.push("<tr><td>" + (i + 1) + "</td><td>");
 		if (username[uid]) {
-			exportRankHtml.push((showNick > 0 ? nickname[uid] || username[uid] : username[uid]) + "</td>");
+			exportRankHtml.push(
+				(
+					showNick == showUsername ?
+							nickname[uid] && username[uid] != nickname[uid] ?
+									username[uid] + "(" + nickname[uid] + ")" :
+									username[uid] :
+					showNick && nickname[uid] ?
+							nickname[uid] :
+							username[uid]
+				) + "</td>");
 		} else {
 			exportRankHtml.push(uid + "</td>");
 		}

@@ -47,8 +47,8 @@
 		</td>
 		<td style="width:150px;text-align:center"><b>Team Name</b>:</td>
 		<td>
-			<input name="showNick" id="showNick0" value="0" onclick="this.blur()" type="radio"><label for="showNick0">Username</label><br>
-			<input name="showNick" id="showNick1" value="1" onclick="this.blur()" type="radio"><label for="showNick1">Nickname</label>
+			<input name="showUsername" id="showUsername" onclick="this.blur()" type="checkbox"><label for="showUsername">Username</label><br>
+			<input name="showNick" id="showNick" onclick="this.blur()" type="checkbox"><label for="showNick">Nickname</label>
 		</td>
 	</tr>
 	<tr>
@@ -61,7 +61,7 @@
 		<td>
 			<input type="button" value="Export" id="exportRank" />
 		</td>
-	</tr>
+    </tr>
 </table>
 
 <script type="text/javascript">
@@ -81,7 +81,8 @@ for (var i = 0; i < ids.length; i++){
 }
 
 $("[name=showTeams]").eq($.cookie("show_all_teams")).prop("checked", "checked");
-$("[name=showNick]").eq($.cookie("show_nick")).prop("checked", "checked");
+$("[name=showNick]").prop("checked", $.cookie("show_nick") == 'true' ? "checked" : "");
+$("[name=showUsername]").prop("checked", $.cookie("show_username") == 'true' ? "checked" : "");
 $("[name=showAnimation]").eq($.cookie("show_animation")).prop("checked", "checked");
 
 $("[name=showTeams]").change(function(){
