@@ -84,37 +84,37 @@ public class MultipleProxyHttpClientFactory {
 		// ////////////////////////////////////////////////////////////////
 
 		// 0
-		final HttpClient plainClient = new DefaultHttpClient(plainCM);
-
-		// 1
-		final HttpClient gaeClient = new DefaultHttpClient(plainCM);
-		HttpHost gaeProxy = new HttpHost("127.0.0.1", 8087);
-		gaeClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, gaeProxy);
-
-		// 2
 		final HttpClient lrqHttpProxyClient = new DefaultHttpClient(plainCM);
 		HttpHost lrqHttpProxyHost = new HttpHost("106.186.23.182", 25);
 		lrqHttpProxyClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, lrqHttpProxyHost);
 
-		// 3
+		// 1
 		final HttpClient lrqSocksProxyClient = new DefaultHttpClient(paramSocksCM);
 		lrqSocksProxyClient.getParams().setParameter("socks.host", "106.186.23.182");
 		lrqSocksProxyClient.getParams().setParameter("socks.port", 21);
 
-		// 4
-		final HttpClient acmhustProxyClient = new DefaultHttpClient(paramSocksCM);
-		acmhustProxyClient.getParams().setParameter("socks.host", "acm.hust.edu.cn");
-		acmhustProxyClient.getParams().setParameter("socks.port", 1081);
+		// 2
+		final HttpClient localssProxyClient1 = new DefaultHttpClient(paramSocksCM);
+		localssProxyClient1.getParams().setParameter("socks.host", "127.0.0.1");
+		localssProxyClient1.getParams().setParameter("socks.port", 1081);
 
-		delegates.add(plainClient);
-		delegates.add(gaeClient);
+		// 3
+		final HttpClient localssProxyClient2 = new DefaultHttpClient(paramSocksCM);
+		localssProxyClient2.getParams().setParameter("socks.host", "127.0.0.1");
+		localssProxyClient2.getParams().setParameter("socks.port", 1080);
+
+		// 4
+		final HttpClient plainClient = new DefaultHttpClient(plainCM);
+
 		delegates.add(lrqHttpProxyClient);
 		delegates.add(lrqSocksProxyClient);
-		delegates.add(acmhustProxyClient);
+		delegates.add(localssProxyClient1);
+		delegates.add(localssProxyClient2);
+		delegates.add(plainClient);
 
 		for (HttpClient client : delegates) {
 			((DefaultHttpClient) client).getParams().setParameter(CoreProtocolPNames.USER_AGENT,
-					"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36");
+					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
 			((DefaultHttpClient) client).getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
 			((DefaultHttpClient) client).getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
 		}

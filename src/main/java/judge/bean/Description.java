@@ -25,20 +25,6 @@ public class Description {
 	private Set<Cproblem> cproblems;
 
 
-	/**
-	 * 去除空标签
-	 * @param string
-	 * @return
-	 */
-	private String trans(String string){
-		if (string != null){
-			string = string.replaceAll("(?i)(?<=(\\b|java))script\\b", "ｓcript").trim();
-			if (!string.contains("img") && !string.contains("IMG") && !string.contains("iframe") && string.matches("(<[^<>]*>\\s*)*")){
-				string = "";
-			}
-		}
-		return string;
-	}
 	@JSON(deserialize=false,serialize=false)
 	public Problem getProblem() {
 		return problem;
@@ -56,37 +42,37 @@ public class Description {
 		return description;
 	}
 	public void setDescription(String description) {
-		this.description = trans(description);
+		this.description = description;
 	}
 	public String getInput() {
 		return input;
 	}
 	public void setInput(String input) {
-		this.input = trans(input);
+		this.input = input;
 	}
 	public String getOutput() {
 		return output;
 	}
 	public void setOutput(String output) {
-		this.output = trans(output);
+		this.output = output;
 	}
 	public String getSampleInput() {
 		return sampleInput;
 	}
 	public void setSampleInput(String sampleInput) {
-		this.sampleInput = trans(sampleInput);
+		this.sampleInput = sampleInput;
 	}
 	public String getSampleOutput() {
 		return sampleOutput;
 	}
 	public void setSampleOutput(String sampleOutput) {
-		this.sampleOutput = trans(sampleOutput);
+		this.sampleOutput = sampleOutput;
 	}
 	public String getHint() {
 		return hint;
 	}
 	public void setHint(String hint) {
-		this.hint = trans(hint);
+		this.hint = hint;
 	}
 	@JSON(format="yyyy-MM-dd")
 	public Date getUpdateTime() {

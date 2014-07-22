@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.DedicatedHttpClient;
-import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.SimpleHttpResponse;
 import judge.tool.SimpleHttpResponseHandler;
 import judge.tool.Tools;
@@ -27,10 +26,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
@@ -43,7 +41,6 @@ public class POJSubmitter extends Submitter {
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient deligateClient = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
 	
 	private DedicatedHttpClient client;
 	private HttpHost host = new HttpHost("poj.org");
@@ -72,7 +69,7 @@ public class POJSubmitter extends Submitter {
 		for (int i = 0; i < contexts.length; i++){
 			CookieStore cookieStore = new BasicCookieStore();
 			contexts[i] = new BasicHttpContext();
-			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+			contexts[i].setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -200,7 +197,7 @@ public class POJSubmitter extends Submitter {
 
 	public void work() {
 		idx = getIdleClient();
-		client = new DedicatedHttpClient(host, contexts[idx], deligateClient);
+		client = new DedicatedHttpClient(host, contexts[idx]);
 		
 		int errorCode = 1;
 

@@ -15,6 +15,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.struts2.ServletActionContext;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 
 import judge.bean.Cproblem;
 import judge.bean.DataTablesPage;
@@ -426,6 +428,13 @@ public class ProblemAction extends BaseAction{
 		if (id == 0){
 			return ERROR;
 		}
+		description.setDescription(Jsoup.clean(description.getDescription(), Whitelist.basic()));
+		description.setInput(Jsoup.clean(description.getInput(), Whitelist.basic()));
+		description.setOutput(Jsoup.clean(description.getOutput(), Whitelist.basic()));
+		description.setSampleInput(Jsoup.clean(description.getSampleInput(), Whitelist.basic()));
+		description.setSampleOutput(Jsoup.clean(description.getSampleOutput(), Whitelist.basic()));
+		description.setHint(Jsoup.clean(description.getHint(), Whitelist.basic()));
+		
 		description.setUpdateTime(new Date());
 		description.setAuthor(user.getUsername());
 		description.setVote(0);

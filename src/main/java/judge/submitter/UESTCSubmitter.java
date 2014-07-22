@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import judge.bean.Problem;
 import judge.tool.ApplicationContainer;
 import judge.tool.DedicatedHttpClient;
-import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.SimpleHttpResponse;
 import judge.tool.SimpleHttpResponseHandler;
 
@@ -24,9 +23,8 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.protocol.BasicHttpContext;
@@ -42,7 +40,6 @@ public class UESTCSubmitter extends Submitter {
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient deligateClient = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
 	
 	private DedicatedHttpClient client;
 	private HttpHost host = new HttpHost("acm.uestc.edu.cn");
@@ -71,7 +68,7 @@ public class UESTCSubmitter extends Submitter {
 		for (int i = 0; i < contexts.length; i++){
 			CookieStore cookieStore = new BasicCookieStore();
 			contexts[i] = new BasicHttpContext();
-			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+			contexts[i].setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -220,7 +217,7 @@ public class UESTCSubmitter extends Submitter {
 
 	public void work() {
 		idx = getIdleClient();
-		client = new DedicatedHttpClient(host, contexts[idx], deligateClient);
+		client = new DedicatedHttpClient(host, contexts[idx]);
 		
 		int errorCode = 1;
 

@@ -27,10 +27,18 @@ public class HtmlHandleUtil {
 				element.attr(pair[1], element.absUrl(pair[1]));
 			}
 		}
-		return doc.toString()
-				.replaceAll(">\\s*<", "><")
-				.replaceAll("(?<=\\w)\\s+<(?!/pre)", " <")
-				.replaceAll("(?<!pre)>\\s+(?=\\w)", "> ");
+		return doc.toString();
+	}
+
+	public static String transformUrlToAbsBody(String html, String baseUri) {
+		Document doc = Jsoup.parseBodyFragment(html, baseUri);
+		for (String[] pair : pairs) {
+			Elements links = doc.select(pair[0]);
+			for (Element element : links) {
+				element.attr(pair[1], element.absUrl(pair[1]));
+			}
+		}
+		return doc.body().toString();
 	}
 
 	public static List<String> getStyleSheet(String html) {

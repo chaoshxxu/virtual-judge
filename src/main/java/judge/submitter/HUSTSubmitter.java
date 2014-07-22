@@ -34,7 +34,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
@@ -86,7 +86,7 @@ public class HUSTSubmitter extends Submitter {
 		for (int i = 0; i < contexts.length; i++){
 			CookieStore cookieStore = new BasicCookieStore();
 			contexts[i] = new BasicHttpContext();
-			contexts[i].setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+			contexts[i].setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();

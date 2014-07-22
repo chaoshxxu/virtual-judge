@@ -9,8 +9,8 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <org.apache.struts.version>2.3.15.1</org.apache.struts.version>
-        <org.springframework.version>3.2.3.RELEASE</org.springframework.version>
+        <org.apache.struts.version>2.3.16.3</org.apache.struts.version>
+        <org.springframework.version>4.0.6.RELEASE</org.springframework.version>
         <org.hibernate.version>3.6.9.Final</org.hibernate.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -109,7 +109,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.25</version>
+            <version>5.1.31</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -125,17 +125,17 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
+            <version>3.3.2</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.7</version>
+            <version>1.9</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.7.2</version>
+            <version>1.7.3</version>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -145,12 +145,12 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.2.5</version>
+            <version>4.4-alpha1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.9.1</version>
+            <version>1.9.4</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
@@ -175,12 +175,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>dom4j</groupId>
