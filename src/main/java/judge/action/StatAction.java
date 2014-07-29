@@ -7,6 +7,7 @@ package judge.action;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
 import judge.bean.User;
@@ -66,9 +67,9 @@ public class StatAction extends ActionSupport {
 				row.add(null);
 				row.add(null);
 			}
-			row.add(ip);
-			row.add(PhysicalAddressTool.getPhysicalAddressTool(ip));
-			row.add(new Date(session.getCreationTime()));
+			row.add(ip.replaceAll(",.+", " ..."));
+			row.add(PhysicalAddressTool.getPhysicalAddressTool(ip.replaceAll(",.+", "")));
+ 			row.add(new Date(session.getCreationTime()));
 
 			long al = (session.getLastAccessedTime() - session.getCreationTime()) / 1000;
 			row.add((al / 60 > 0 ? al / 60 + "分" : "") + (al % 60 + "秒"));

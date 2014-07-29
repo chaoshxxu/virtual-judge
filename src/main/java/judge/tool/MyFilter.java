@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class MyFilter implements Filter{
 
 	private SessionContext myc;
@@ -32,8 +34,11 @@ public class MyFilter implements Filter{
 			String ua = request.getHeader("user-agent");
 
 			// get X-Real-IP if the request comes from nginx
-			String ip = request.getHeader("X-Real-IP");
-			if (ip == null) {
+			String ip = request.getHeader("X-Forwarded-For");
+			if (StringUtils.isEmpty(ip)) {
+				ip = request.getHeader("X-Real-IP");
+			}
+			if (StringUtils.isEmpty(ip)) {
 				ip = request.getRemoteAddr();
 			}
 

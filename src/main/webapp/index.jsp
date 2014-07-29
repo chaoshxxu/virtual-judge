@@ -39,19 +39,10 @@
                 <a href="http://cstest.scu.edu.cn/" target="_blank">SCU</a>&nbsp;&nbsp;&nbsp;
 			</p>
 			<br />
-			<b>Change Log:</b>
+			<b>What's new:</b>
 			<ul>
-				<li>2010-05-04 : Put into use.</li>
-				<li>2010-05-10 : Remember the last language selected.</li>
-				<li>2010-05-10 : Remember the OJ of the last problem selected.</li>
-				<li>2010-05-10 : Optimize the crawling of <a href="http://acm.zju.edu.cn/onlinejudge/">ZOJ</a>.</li>
-				<li>2010-05-10 : <a href="http://acm.hdu.edu.cn">HDU OJ</a> is added.</li>
-				<li>2010-06-01 : Host Virtual Judge on <a href="http://code.google.com/p/virtual-judge">Google Code</a>.</li>
-				<li>2010-07-18 : Use <a href="http://ckeditor.com">CKEditor</a> in problem editing.</li>
-				<li>2010-07-20 : Implement syntax highlighting in source viewing by using <a href="http://shjs.sourceforge.net">SHJS</a>.</li>
-				<li>2010-08-17 : Use AJAX pagination in problem list to avoid overload.</li>
-				<li>2010-08-17 : Post-contest submitting is enabled. Try it yourself :)</li>
-				<li>2010-10-07 : Refer to <a href="http://code.google.com/p/virtual-judge/updates/list">this page</a>, and this section will not update.</li>
+				<li>2014-07-30 : You can use <a href="http://i.vjudge.net/toIndex.action" target="_blank">http://i.vjudge.net</a> as an alternative.</li>
+				<li>2010-10-07 : Refer to <a href="https://code.google.com/p/virtual-judge/source/list">this page</a> for recent change of Virtual Judge.</li>
 			</ul>
 		</div>
 		
