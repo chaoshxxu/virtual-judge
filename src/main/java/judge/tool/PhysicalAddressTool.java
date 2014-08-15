@@ -1,42 +1,55 @@
 package judge.tool;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import judge.executor.ExecutorTaskType;
+import judge.executor.Task;
+import judge.httpclient.DedicatedHttpClient;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
 
 public class PhysicalAddressTool {
 
-	static public Map<String, String> addressMap = new ConcurrentHashMap<String, String>();
+	static private Map<String, String> addressMap = new ConcurrentHashMap<String, String>();
 
-	static public String getPhysicalAddressTool(final String ip) {
+	static public String getPhysicalAddress(final String ips) {
+		List<String> locations = new ArrayList<String>();
+		for (String ip : ips.split("[^\\w\\.:]+")) {
+			locations.add(getPhysicalAddressOne(ip));
+		}
+		return StringUtils.join(locations, ", ");
+	}
+	
+	static private String getPhysicalAddressOne(final String ip) {
 		if (addressMap.containsKey(ip)) {
 			return addressMap.get(ip);
 		}
-		addressMap.put(ip, "");
-		new Thread(new Runnable() {
-			public void run() {
-				HttpClient httpClient = new HttpClient();
-				GetMethod getMethod = new GetMethod("http://ip138.com/ips138.asp?ip=" + ip);
-				try {
-					httpClient.executeMethod(getMethod);
-					String responceString = Tools.getHtml(getMethod, "GB2312");
-					Matcher matcher = Pattern.compile("<li>本站主数据：(.+?)</li>").matcher(responceString);
-					matcher.find();
-					String physicalAddress = matcher.group(1);
-					if (addressMap.size() >= 1000) {
-						addressMap.clear();
-					}
+		addressMap.put(ip, "N/A");
+		new Task<String>(ExecutorTaskType.GENERAL) {
+			@Override
+			public String call() throws Exception {
+				HttpHost host = new HttpHost("www.ip138.com");
+				DedicatedHttpClient client = new DedicatedHttpClient(host, "gb2312");
+				String html = client.get("/ips138.asp?ip=" + ip).getBody();
+				String physicalAddress = Tools.regFind(html, "<li>本站主数据：(.+?)</li>");
+				if (!StringUtils.isBlank(physicalAddress)) {
 					addressMap.put(ip, physicalAddress);
-				} catch (Exception e) {
-					e.printStackTrace();
-					addressMap.remove(ip);
 				}
+				if (addressMap.size() > 5000) {
+					addressMap.clear();
+				}
+				return null;
 			}
-		}).start();
-		return "";
+		}.submit();
+		return addressMap.get(ip);
 	}
+	
+	static public int getIpMapSize() {
+		return addressMap.size();
+	}
+	
 }

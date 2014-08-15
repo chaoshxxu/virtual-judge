@@ -3,6 +3,7 @@ package judge.submitter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,23 +12,39 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import judge.bean.Problem;
+import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.HttpStatusValidator;
+import judge.httpclient.SimpleHttpResponse;
+import judge.httpclient.SimpleHttpResponseMapper;
+import judge.httpclient.SimpleHttpResponseValidator;
 import judge.tool.ApplicationContainer;
 import judge.tool.Tools;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.lang3.Validate;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 public class NBUTSubmitter extends Submitter {
 
 	static final String OJ_NAME = "NBUT";
-	static private HttpClient clientList[];
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
+	static private HttpContext[] contexts;
+	
+	private DedicatedHttpClient client;
+	private HttpHost host = new HttpHost("cdn.ac.nbutoj.com");
 
 	static {
 		List<String> uList = new ArrayList<String>(), pList = new ArrayList<String>();
@@ -49,13 +66,11 @@ public class NBUTSubmitter extends Submitter {
 		usernameList = uList.toArray(new String[0]);
 		passwordList = pList.toArray(new String[0]);
 		using = new boolean[usernameList.length];
-		clientList = new HttpClient[usernameList.length];
-		for (int i = 0; i < clientList.length; i++){
-			clientList[i] = new HttpClient();
-			clientList[i].getParams().setParameter(HttpMethodParams.USER_AGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8");
-			clientList[i].getHttpConnectionManager().getParams().setConnectionTimeout(60000);
-			clientList[i].getHttpConnectionManager().getParams().setSoTimeout(60000);
-//			clientList[i].getHostConfiguration().setProxy("127.0.0.1", 8087);
+		contexts = new HttpContext[usernameList.length];
+		for (int i = 0; i < contexts.length; i++){
+			CookieStore cookieStore = new BasicCookieStore();
+			contexts[i] = new BasicHttpContext();
+			contexts[i].setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 		}
 
 		Map<String, String> languageList = new TreeMap<String, String>();
@@ -65,79 +80,53 @@ public class NBUTSubmitter extends Submitter {
 		sc.setAttribute("NBUT", languageList);
 	}
 
-	private void getMaxRunId() throws Exception {
-		GetMethod getMethod = new GetMethod("http://cdn.ac.nbutoj.com/Problem/status.xhtml");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-		Pattern p = Pattern.compile("<td style=\"text-align: center;\">(\\d+)");
-
-		httpClient.executeMethod(getMethod);
-		byte[] responseBody = getMethod.getResponseBody();
-		String tLine = new String(responseBody, "UTF-8");
-		Matcher m = p.matcher(tLine);
-		if (m.find()) {
-			maxRunId = Integer.parseInt(m.group(1));
-			System.out.println("maxRunId : " + maxRunId);
-		} else {
-			throw new Exception();
-		}
-	}
-
-	private void submit() throws Exception{
-        PostMethod postMethod = new PostMethod("http://cdn.ac.nbutoj.com/Problem/submitok.xhtml");
-        postMethod.addParameter("language", submission.getLanguage());
-        postMethod.addParameter("code", submission.getSource());
-        postMethod.addParameter("id", submission.getOriginProb());
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        httpClient.getParams().setContentCharset("UTF-8");
-		System.out.println("submit...");
-		httpClient.executeMethod(postMethod);
-	}
-
-	private void ensureLoggedIn() throws Exception {
-		GetMethod getMethod = new GetMethod("http://cdn.ac.nbutoj.com/");
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		String html = null;
-		try {
-			httpClient.executeMethod(getMethod);
-			html = Tools.getHtml(getMethod, "UTF-8");
-		} finally {
-			getMethod.releaseConnection();
-		}
-		if (!html.contains("<a href=\"/User/logout.xhtml\" title=\"登出\">")) {
-			Thread.sleep(2000);
-			login(usernameList[idx], passwordList[idx]);
-		}
-	}
-
-	private void login(String username, String password) throws Exception{
-		String ojVerify = null;
-
-        GetMethod getMethod = new GetMethod("http://cdn.ac.nbutoj.com/User/login.xhtml?url=%2F");
-		try {
-			httpClient.executeMethod(getMethod);
-			String html = Tools.getHtml(getMethod, "UTF-8");
-			ojVerify = Tools.regFind(html, "name=\"__OJVERIFY__\" value=\"(\\w+)\"");
-		} finally {
-			getMethod.releaseConnection();
-		}
-
-        PostMethod postMethod = new PostMethod("http://cdn.ac.nbutoj.com/User/chklogin.xhtml");
-        postMethod.addParameter("__OJVERIFY__", ojVerify);
-        postMethod.addParameter("password", password);
-        postMethod.addParameter("username", username);
-        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-        System.out.println("login...");
-		try {
-			httpClient.executeMethod(postMethod);
-			String html = Tools.getHtml(postMethod, "UTF-8");
-			if (!html.contains("1")) {
-				throw new Exception();
+	private void getMaxRunId() throws ClientProtocolException, IOException {
+		maxRunId = client.get("/Problem/status.xhtml", new SimpleHttpResponseMapper<Integer>() {
+			@Override
+			public Integer map(SimpleHttpResponse response) throws Exception {
+				String html = response.getBody();
+				Matcher matcher = Pattern.compile("<td style=\"text-align: center;\">(\\d+)").matcher(html);
+				Validate.isTrue(matcher.find());
+				return Integer.parseInt(matcher.group(1));
 			}
-		} finally {
-			getMethod.releaseConnection();
-		}
+		});
+		System.out.println("maxRunId : " + maxRunId);
+	}
+	
+	private void login(String username, String password) throws ClientProtocolException, IOException {
+		String html = client.get("/User/login.xhtml?url=%2F").getBody();
+		String ojVerify = Tools.regFind(html, "name=\"__OJVERIFY__\" value=\"(\\w+)\"");
+		
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("__OJVERIFY__", ojVerify));
+		nvps.add(new BasicNameValuePair("password", password));
+		nvps.add(new BasicNameValuePair("username", username));
+		System.out.println(username + " - " + password);
+		HttpEntity entity = new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8"));
+		
+		client.post("/User/chklogin.xhtml", entity, new SimpleHttpResponseValidator() {
+			@Override
+			public void validate(SimpleHttpResponse response) throws Exception {
+				Validate.isTrue(response.getBody().contains("1"));
+			}
+		});
+	}
+
+	private boolean isLoggedIn() throws ClientProtocolException, IOException {
+		String html = client.get("/").getBody();
+		return html.contains("title=\"登出\"");
+	}
+
+	private void submit() throws ClientProtocolException, IOException {
+		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
+		
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
+		nvps.add(new BasicNameValuePair("code", submission.getSource()));
+		nvps.add(new BasicNameValuePair("id", problem.getOriginProb()));
+		HttpEntity entity = new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8"));
+
+		client.post("/Problem/submitok.xhtml", entity, HttpStatusValidator.SC_OK);
 	}
 
 	public void getResult(String username) throws Exception{
@@ -148,20 +137,13 @@ public class NBUTSubmitter extends Submitter {
 				"<td style=\"text-align: center;\">([\\s\\S]*?)</td>\\s*" +
 				"<td style=\"text-align: center;\">(\\d+)</td>\\s*" +
 				"<td style=\"text-align: center;\">(\\d+)</td>";
-		String result;
 		Pattern p = Pattern.compile(reg);
-		GetMethod getMethod = new GetMethod("http://cdn.ac.nbutoj.com/Problem/status.xhtml?username=" + username);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
 		long cur = new Date().getTime(), interval = 2000;
 		while (new Date().getTime() - cur < 600000){
-			System.out.println("getResult...");
-			httpClient.executeMethod(getMethod);
-			byte[] responseBody = getMethod.getResponseBody();
-			String tLine = new String(responseBody, "UTF-8");
-
-			Matcher m = p.matcher(tLine);
+			String html = client.get("/Problem/status.xhtml?username=" + username).getBody();
+			Matcher m = p.matcher(html);
 			if (m.find() && Integer.parseInt(m.group(1)) > maxRunId){
-				result = toCamel(m.group(2).replaceAll("<.*?>", "").trim());
+				String result = toCamel(m.group(2).replaceAll("<.*?>", "").trim());
 				submission.setStatus(result);
 				submission.setRealRunId(m.group(1));
 				if (!result.contains("ing")){
@@ -178,22 +160,17 @@ public class NBUTSubmitter extends Submitter {
 			}
 			Thread.sleep(interval);
 			interval += 500;
-        }
-    	throw new Exception();
+		}
+		throw new Exception();
+	}
+	
+	private String toCamel(String string) {
+		return (string.charAt(0) + string.substring(1).toLowerCase()).replace("_", " ");
 	}
 
 	private void getAdditionalInfo(String runId) throws HttpException, IOException {
-		GetMethod getMethod = new GetMethod("http://cdn.ac.nbutoj.com/Problem/viewce.xhtml?submitid=" + runId);
-		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-
-		httpClient.executeMethod(getMethod);
-		String additionalInfo = Tools.getHtml(getMethod, "UTF-8");
-
-		submission.setAdditionalInfo(Tools.regFind(additionalInfo, "(<pre style=\"overflow-x: auto;\">[\\s\\S]*?</pre>)"));
-	}
-
-	private String toCamel(String string) {
-		return (string.charAt(0) + string.substring(1).toLowerCase()).replace("_", " ");
+		String html = client.get("/Problem/viewce.xhtml?submitid=" + runId).getBody();
+		submission.setAdditionalInfo(Tools.regFind(html, "(<pre style=\"overflow-x: auto;\">[\\s\\S]*?</pre>)"));
 	}
 
 	private int getIdleClient() {
@@ -206,7 +183,6 @@ public class NBUTSubmitter extends Submitter {
 					j = i % length;
 					if (!using[j]) {
 						using[j] = true;
-						httpClient = clientList[j];
 						return j;
 					}
 				}
@@ -221,36 +197,36 @@ public class NBUTSubmitter extends Submitter {
 
 	public void work() {
 		idx = getIdleClient();
+		client = new DedicatedHttpClient(host, contexts[idx]);
+		
 		int errorCode = 1;
 
 		try {
+			if (!isLoggedIn()) {
+				login(usernameList[idx], passwordList[idx]);
+			}
 			getMaxRunId();
-			ensureLoggedIn();
 			submit();
 			errorCode = 2;
 			submission.setStatus("Running & Judging");
 			baseService.addOrModify(submission);
-			Thread.sleep(2000);
 			getResult(usernameList[idx]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			submission.setStatus("Judging Error " + errorCode);
 			baseService.addOrModify(submission);
 		}
-
 	}
-
 
 	@Override
 	public void waitForUnfreeze() {
 		try {
-			Thread.sleep(6000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}	//nbut oj限制每两次提交之间至少隔?秒
+		}
 		synchronized (using) {
 			using[idx] = false;
 		}
 	}
-
 }

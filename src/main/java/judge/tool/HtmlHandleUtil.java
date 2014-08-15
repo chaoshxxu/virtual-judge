@@ -27,7 +27,10 @@ public class HtmlHandleUtil {
 				element.attr(pair[1], element.absUrl(pair[1]));
 			}
 		}
-		return doc.toString();
+		return doc.toString()
+				.replaceAll(">\\s*<", "><")
+				.replaceAll("(?<=\\w)\\s+<(?!/pre)", " <")
+				.replaceAll("(?<!pre)>\\s+(?=\\w)", "> ");
 	}
 
 	public static String transformUrlToAbsBody(String html, String baseUri) {
@@ -38,7 +41,10 @@ public class HtmlHandleUtil {
 				element.attr(pair[1], element.absUrl(pair[1]));
 			}
 		}
-		return doc.body().toString();
+		return doc.body().toString()
+				.replaceAll(">\\s*<", "><")
+				.replaceAll("(?<=\\w)\\s+<(?!/pre)", " <")
+				.replaceAll("(?<!pre)>\\s+(?=\\w)", "> ");
 	}
 
 	public static List<String> getStyleSheet(String html) {

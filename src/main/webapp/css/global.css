@@ -500,6 +500,35 @@ pre {
 	font-size: 125%;
 }
 
+/********************listOL*********************/
+
+#listOL table {
+    table-layout: fixed;
+}
+#listOL td {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 3px 10px; 
+}
+#listOL td.address {
+    white-space: normal;
+    word-break: break-all;
+    word-wrap: break-word;
+    width: 400px;
+}
+#listOL th.ip {
+    width: 150px;
+}
+#listOL th.browser {
+    width: 70px;
+}
+#listOL th.os {
+    width: 70px;
+}
+
+/********************Background*********************/
+
 body {
 	background-image: -webkit-gradient(
 		linear,

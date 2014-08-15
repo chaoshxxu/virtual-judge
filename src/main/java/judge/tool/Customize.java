@@ -19,7 +19,7 @@ import org.hibernate.Transaction;
 public class Customize {
 
 	static public ServletContext sc = ApplicationContainer.sc;
-	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService", sc);
+	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService");
 
 	static public void recalculateContestHash() {
 		Session session = baseService.getSession();

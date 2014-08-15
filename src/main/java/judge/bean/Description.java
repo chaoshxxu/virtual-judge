@@ -15,7 +15,7 @@ public class Description {
 	private String sampleOutput;//样例输出
 	private String hint;		//提示
 
-	private Date updateTime;	//更新时间
+	private Date updateTime;	//上次成功更新时间
 	private String author;		//作者
 	private String remarks;		//备注
 	private int vote;			//like票数

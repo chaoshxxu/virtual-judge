@@ -105,7 +105,7 @@
 							</s:else>
 							<a style="padding-right:10px;float:right" href="problem/toEditDescription.action?id=${id}" class="login"><img height="18" src="images/ico_edit.gif" border="0"/></a>
 							<s:if test='author.equals("0")'>
-								<s:if test="problem.timeLimit != 1"><a style="padding-right:10px;float:right" href="problem/addProblem.action?id=${problem.id}"><img height="18" src="images/refresh.png" border="0"/></a></s:if>
+								<a style="padding-right:10px;float:right" href="problem/addProblem.action?id=${problem.id}"><img height="18" src="images/refresh.png" border="0"/></a>
 							</s:if>
 							<s:elseif test="#session.visitor.sup == 1 || #session.visitor.username == author">
 								<a style="padding-right:10px;float:right" id="del_${id}" class="delete_desc" href="javascript:void(0)"><img height="18" src="images/ico_delete.gif" border="0"/></a>

@@ -9,7 +9,9 @@
     </ua>
     <ip>
         <equals></equals>
-        <substring></substring>
+        <substring>150.70.173</substring>
+        <substring>150.70.197</substring>
+        <substring>150.70.97</substring>
         <pattern></pattern>
     </ip>
 </forbiddenVisitorRules>

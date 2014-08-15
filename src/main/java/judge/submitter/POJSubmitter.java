@@ -13,21 +13,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.bean.Problem;
+import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.HttpStatusValidator;
+import judge.httpclient.SimpleHttpResponse;
+import judge.httpclient.SimpleHttpResponseMapper;
 import judge.tool.ApplicationContainer;
-import judge.tool.DedicatedHttpClient;
-import judge.tool.SimpleHttpResponse;
-import judge.tool.SimpleHttpResponseHandler;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.Validate;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
@@ -84,36 +84,27 @@ public class POJSubmitter extends Submitter {
 	}
 
 	private void getMaxRunId() throws ClientProtocolException, IOException {
-		client.get("/status", new SimpleHttpResponseHandler() {
+		maxRunId = client.get("/status", new SimpleHttpResponseMapper<Integer>() {
 			@Override
-			public void handle(SimpleHttpResponse response) {
+			public Integer map(SimpleHttpResponse response) throws Exception {
 				String html = response.getBody();
-				Matcher m = Pattern.compile("<tr align=center><td>(\\d+)").matcher(html);
-				if (m.find()) {
-					maxRunId = Integer.parseInt(m.group(1));
-					System.out.println("maxRunId : " + maxRunId);
-				} else {
-					throw new RuntimeException();
-				}
+				Matcher matcher = Pattern.compile("<tr align=center><td>(\\d+)").matcher(html);
+				Validate.isTrue(matcher.find());
+				return Integer.parseInt(matcher.group(1));
 			}
 		});
+		System.out.println("maxRunId : " + maxRunId);
 	}
 	
 	private void login(String username, String password) throws ClientProtocolException, IOException {
-		HttpPost post = new HttpPost("/login");
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("B1", "login"));
 		nvps.add(new BasicNameValuePair("password1", password));
 		nvps.add(new BasicNameValuePair("url", "/"));
 		nvps.add(new BasicNameValuePair("user_id1", username));
-		post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
+		HttpEntity entity = new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8"));
 		
-		client.execute(post, new SimpleHttpResponseHandler() {
-			@Override
-			public void handle(SimpleHttpResponse response) {
-				Validate.isTrue(response.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
-			}
-		});
+		client.post("/login", entity, HttpStatusValidator.SC_MOVED_TEMPORARILY);
 	}
 
 	private boolean isLoggedIn() throws ClientProtocolException, IOException {
@@ -124,19 +115,13 @@ public class POJSubmitter extends Submitter {
 	private void submit() throws ClientProtocolException, IOException {
 		Problem problem = (Problem) baseService.query(Problem.class, submission.getProblem().getId());
 		
-		HttpPost post = new HttpPost("/submit");
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("language", submission.getLanguage()));
 		nvps.add(new BasicNameValuePair("problem_id", problem.getOriginProb()));
 		nvps.add(new BasicNameValuePair("source", submission.getSource()));
-		post.setEntity(new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8")));
-		
-		client.execute(post, new SimpleHttpResponseHandler() {
-			@Override
-			public void handle(SimpleHttpResponse response) {
-				Validate.isTrue(response.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY);
-			}
-		});
+		HttpEntity entity = new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8"));
+
+		client.post("/submit", entity, HttpStatusValidator.SC_MOVED_TEMPORARILY);
 	}
 
 	public void getResult(String username) throws Exception{

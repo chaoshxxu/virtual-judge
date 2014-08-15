@@ -2,8 +2,6 @@ package judge.submitter;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.httpclient.HttpClient;
-
 import judge.bean.Submission;
 import judge.service.IBaseService;
 import judge.service.JudgeService;
@@ -12,12 +10,11 @@ import judge.tool.SpringBean;
 
 public abstract class Submitter extends Thread {
 	static public ServletContext sc = ApplicationContainer.sc;
-	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService", sc);
-	static public JudgeService judgeService = (JudgeService) SpringBean.getBean("judgeService", sc);
+	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService");
+	static public JudgeService judgeService = (JudgeService) SpringBean.getBean("judgeService");
 
 	public Submission submission;
 
-	protected HttpClient httpClient;
 	protected int maxRunId = 0;
 	protected int idx;
 

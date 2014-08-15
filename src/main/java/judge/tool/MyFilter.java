@@ -47,15 +47,20 @@ public class MyFilter implements Filter{
 				session.invalidate();
 				myc.DelSession(session);
 				
-				response.sendRedirect("http://ip138.com/ips138.asp?ip=" + ip);
-			} else {
-				if (session.getAttribute("remoteAddr") == null) {
-					session.setAttribute("remoteAddr", ip);
-					session.setAttribute("user-agent", request.getHeader("user-agent"));
-					session.setAttribute("referer", request.getHeader("referer"));
-				}
-				chain.doFilter(req, res);
+				response.sendRedirect("http://ip138.com/ips138.asp?ip=" + ip.replaceAll(",.+", ""));
+				return;
 			}
+
+			if (session.getAttribute("remoteAddr") == null) {
+				session.setAttribute("remoteAddr", ip);
+			}
+			if (session.getAttribute("user-agent") == null) {
+				session.setAttribute("user-agent", request.getHeader("user-agent"));
+			}
+			if (session.getAttribute("referer") == null) {
+				session.setAttribute("referer", request.getHeader("referer"));
+			}
+			chain.doFilter(req, res);
 			
 //			Enumeration paramNames = request.getParameterNames();
 //			while (paramNames.hasMoreElements()) {

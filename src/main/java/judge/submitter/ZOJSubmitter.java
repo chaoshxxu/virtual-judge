@@ -12,8 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.bean.Problem;
+import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
-import judge.tool.MultipleProxyHttpClientFactory;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;

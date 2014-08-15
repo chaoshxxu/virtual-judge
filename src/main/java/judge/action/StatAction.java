@@ -45,7 +45,7 @@ public class StatAction extends ActionSupport {
 		List<HttpSession> sessionList = myc.getSessionList();
 		dataList = new ArrayList();
 		loginUsers = 0;
-		ipMapCnt = PhysicalAddressTool.addressMap.size();
+		ipMapCnt = PhysicalAddressTool.getIpMapSize();
 
 		for (int i = 0; i < sessionList.size(); ++i) {
 			HttpSession session = sessionList.get(i);
@@ -67,8 +67,8 @@ public class StatAction extends ActionSupport {
 				row.add(null);
 				row.add(null);
 			}
-			row.add(ip.replaceAll(",.+", " ..."));
-			row.add(PhysicalAddressTool.getPhysicalAddressTool(ip.replaceAll(",.+", "")));
+			row.add(ip);
+			row.add(PhysicalAddressTool.getPhysicalAddress(ip));
  			row.add(new Date(session.getCreationTime()));
 
 			long al = (session.getLastAccessedTime() - session.getCreationTime()) / 1000;

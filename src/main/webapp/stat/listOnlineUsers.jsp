@@ -7,7 +7,7 @@
 		<s:include value="/header.jsp" />
 	    <title>Online Users - Virtual Judge</title>
 		<script type="text/javascript" src="javascript/listOL.js?<%=application.getAttribute("version")%>"></script>
-	</head>
+    </head>
 
 	<body>
 		<s:include value="/top.jsp" />
@@ -35,13 +35,13 @@
 				<tr>
 					<th>Session ID</th>
 					<th>Username</th>
-					<th>IP</th>
+					<th class="ip">IP</th>
 					<th>Address</th>
 					<th>Arrive Time</th>
 					<th>Active Length</th>
 					<th>Freeze Length</th>
-					<th>Browser</th>
-					<th>OS</th>
+					<th class="browser">Browser</th>
+					<th class="os">OS</th>
 				</tr>
 			</thead>
 
@@ -55,10 +55,10 @@
 						<s:property value='dataList[#stat.index][1]' />
 					</a>
 				</td>
-				<td>
+				<td title="<s:property value='dataList[#stat.index][3]' />">
 					<s:property value="dataList[#stat.index][3]" />
 				</td>
-				<td>
+				<td class="address">
 					<s:property value="dataList[#stat.index][4]" />
 				</td>
 				<td><s:date name="dataList[#stat.index][5]" format="yyyy-MM-dd HH:mm:ss" /></td>

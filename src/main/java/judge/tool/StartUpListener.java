@@ -38,7 +38,7 @@ public class StartUpListener implements ServletContextListener {
 		sc.setAttribute("ContestSourceCodeZipFilePath", "/data/source");
 		sc.setAttribute("version", new Date().getTime() + "");
 
-		JudgeService judgeService = (JudgeService) SpringBean.getBean("judgeService", sc);
+		JudgeService judgeService = (JudgeService) SpringBean.getBean("judgeService");
         judgeService.initJudge();
         judgeService.initProblemSpiding();
 	}

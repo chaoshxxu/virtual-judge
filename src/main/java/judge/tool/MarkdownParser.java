@@ -2,6 +2,10 @@ package judge.tool;
 
 import java.io.UnsupportedEncodingException;
 
+import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.SimpleHttpResponse;
+import judge.httpclient.SimpleHttpResponseMapper;
+
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;

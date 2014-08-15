@@ -7,27 +7,6 @@ import java.util.Map;
 
 import judge.service.IBaseService;
 import judge.service.JudgeService;
-import judge.spider.AizuSpider;
-import judge.spider.CSUSpider;
-import judge.spider.CodeForcesSpider;
-import judge.spider.FZUSpider;
-import judge.spider.HDUSpider;
-import judge.spider.HUSTSpider;
-import judge.spider.HYSBZSpider;
-import judge.spider.LightOJSpider;
-import judge.spider.NBUTSpider;
-import judge.spider.POJSpider;
-import judge.spider.SCUSpider;
-import judge.spider.SGUSpider;
-import judge.spider.SPOJSpider;
-import judge.spider.Spider;
-import judge.spider.UESTCOldSpider;
-import judge.spider.UESTCSpider;
-import judge.spider.URALSpider;
-import judge.spider.UVALiveSpider;
-import judge.spider.UVASpider;
-import judge.spider.ZOJSpider;
-import judge.spider.ZTreningSpider;
 import judge.submitter.AizuSubmitter;
 import judge.submitter.CSUSubmitter;
 import judge.submitter.CodeForcesSubmitter;
@@ -104,30 +83,6 @@ public class BaseAction extends ActionSupport{
 	static {
 		OJListAll.add("All");
 		OJListAll.addAll(OJList);
-	}
-
-	static public Map<String, Spider> spiderMap = new HashMap<String, Spider>();
-	static {
-		spiderMap.put("POJ", new POJSpider());
-		spiderMap.put("ZOJ", new ZOJSpider());
-		spiderMap.put("UVALive", new UVALiveSpider());
-		spiderMap.put("SGU", new SGUSpider());
-		spiderMap.put("URAL", new URALSpider());
-		spiderMap.put("HUST", new HUSTSpider());
-		spiderMap.put("SPOJ", new SPOJSpider());
-		spiderMap.put("HDU", new HDUSpider());
-		spiderMap.put("HYSBZ", new HYSBZSpider());
-		spiderMap.put("UVA", new UVASpider());
-		spiderMap.put("CodeForces", new CodeForcesSpider());
-		spiderMap.put("Z-Trening", new ZTreningSpider());
-		spiderMap.put("Aizu", new AizuSpider());
-		spiderMap.put("LightOJ", new LightOJSpider());
-		spiderMap.put("UESTC-old", new UESTCOldSpider());
-		spiderMap.put("UESTC", new UESTCSpider());
-		spiderMap.put("NBUT", new NBUTSpider());
-		spiderMap.put("FZU", new FZUSpider());
-		spiderMap.put("CSU", new CSUSpider());
-		spiderMap.put("SCU", new SCUSpider());
 	}
 
 	static public Map<String, Submitter> submitterMap = new HashMap<String, Submitter>();

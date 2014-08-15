@@ -11,24 +11,24 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.struts2.ServletActionContext;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
-
 import judge.bean.Cproblem;
 import judge.bean.DataTablesPage;
 import judge.bean.Description;
 import judge.bean.Problem;
 import judge.bean.Submission;
 import judge.bean.User;
-import judge.spider.Spider;
+import judge.remote.crawler.common.ProblemInfoUpdateTask;
 import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
 import judge.tool.Tools;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.struts2.ServletActionContext;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 
 import com.opensymphony.xwork2.ActionContext;
 
@@ -179,50 +179,49 @@ public class ProblemAction extends BaseAction{
 
 		for (String probNum : probNumList) {
 			probNum = probNum.replaceAll("\\W", "");
-			description = null;
+			////////////////////////////////////////////////////////////
 			problem = judgeService.findProblem(OJId.trim(), probNum);
 			if (problem == null){
 				problem = new Problem();
 				problem.setOriginOJ(OJId.trim());
 				problem.setOriginProb(probNum.toUpperCase());
-				problem.setTitle("Crawling……");
-				baseService.addOrModify(problem);
-			} else {
-				for (Description desc : problem.getDescriptions()){
-					if ("0".equals(desc.getAuthor())){
-						description = desc;
-						break;
-					}
-				}
+				problem.setTitle("N/A");
 			}
-			if (description == null){
-				description = new Description();
-			}
-			description.setUpdateTime(new Date());
-			description.setAuthor("0");
-			description.setRemarks("Initialization.");
-			description.setVote(0);
-			description.setProblem(problem);
-			baseService.addOrModify(description);
-
-			problem.setTimeLimit(1);
-			problem.setTriggerTime(new Date());
-			baseService.addOrModify(problem);
-
-			Spider spider = spiderMap.get(OJId).getClass().newInstance();
-			spider.setProblem(problem);
-			spider.setDescription(description);
-			spider.start();
+			updateProblem(problem, true);
 		}
-
 		return id > 0 ? "recrawl" : SUCCESS;
 	}
+	
 
 	public String viewProblem(){
 		List list = baseService.query("select p from Problem p left join fetch p.descriptions where p.id = " + id);
 		problem = (Problem) list.get(0);
 		_64Format = lf.get(problem.getOriginOJ());
+		
+		updateProblem(problem, false);
+		
 		return SUCCESS;
+	}
+	
+	/**
+	 * (Re-)crawl problem if necessary
+	 * @param problem
+	 * @param enforce
+	 */
+	private void updateProblem(Problem problem, boolean enforce) {
+		long sinceTriggerTime = Long.MAX_VALUE;
+		if (problem.getTriggerTime() != null) {
+			sinceTriggerTime = System.currentTimeMillis() - problem.getTriggerTime().getTime();
+		}
+		boolean condition1 = sinceTriggerTime > 7L * 86400L * 1000L;
+		boolean condition2 = problem.getTimeLimit() == 2 && sinceTriggerTime > 600L * 1000L;
+		boolean condition3 = enforce && (problem.getTimeLimit() != 1 || sinceTriggerTime > 3600L * 1000L);
+		if (condition1 || condition2 || condition3) {
+			problem.setTimeLimit(1);
+			problem.setTriggerTime(new Date());
+			baseService.addOrModify(problem);
+			new ProblemInfoUpdateTask(problem, baseService).submit();
+		}
 	}
 
 	public String vote4Description(){

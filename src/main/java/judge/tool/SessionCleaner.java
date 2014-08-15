@@ -42,10 +42,10 @@ public class SessionCleaner {
 		
 		System.out.println(
 				"Clean sessions:" + 
-				"\tTOTAL:" + totalCnt + 
-				"\tLOGIN:" + loginCnt + 
-				"\tTRANSIENT:" + transientCnt + 
-				"\tLEAVE:" + leavnCnt);
+				"  TOTAL:" + totalCnt + 
+				"  LOGIN:" + loginCnt + 
+				"  TRANSIENT:" + transientCnt + 
+				"  LEAVE:" + leavnCnt);
 	}
 
 }

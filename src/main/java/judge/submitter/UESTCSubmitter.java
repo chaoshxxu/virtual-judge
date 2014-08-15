@@ -11,16 +11,17 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import judge.bean.Problem;
+import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.HttpStatusValidator;
+import judge.httpclient.SimpleHttpResponse;
+import judge.httpclient.SimpleHttpResponseMapper;
+import judge.httpclient.SimpleHttpResponseValidator;
 import judge.tool.ApplicationContainer;
-import judge.tool.DedicatedHttpClient;
-import judge.tool.SimpleHttpResponse;
-import judge.tool.SimpleHttpResponseHandler;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpPost;
@@ -88,12 +89,12 @@ public class UESTCSubmitter extends Submitter {
 		post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
 		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 		
-		client.execute(post, new SimpleHttpResponseHandler() {
+		maxRunId = client.execute(post, new SimpleHttpResponseMapper<Integer>() {
 			@Override
-			public void handle(SimpleHttpResponse response) throws JSONException {
+			public Integer map(SimpleHttpResponse response) throws JSONException {
 				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
 				Map<String, Object> latest = ((List<Map<String, Object>>)json.get("list")).get(0);
-				maxRunId = ((Long) latest.get("statusId")).intValue();
+				return ((Long) latest.get("statusId")).intValue();
 			}
 		});
 	}
@@ -107,12 +108,10 @@ public class UESTCSubmitter extends Submitter {
 		post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
 		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");  		
 
-		client.execute(post, new SimpleHttpResponseHandler() {
+		client.execute(post, HttpStatusValidator.SC_OK, new SimpleHttpResponseValidator() {
 			@Override
-			public void handle(SimpleHttpResponse response) throws JSONException {
+			public void validate(SimpleHttpResponse response) throws JSONException {
 				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
-
-				Validate.isTrue(response.getStatusCode() == HttpStatus.SC_OK);
 				Validate.isTrue(json.get("result").equals("success"));
 			}
 		});
@@ -137,9 +136,9 @@ public class UESTCSubmitter extends Submitter {
 		post.setEntity(new StringEntity(JSONUtil.serialize(payload), "UTF-8"));
 		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");  		
 
-		client.execute(post, new SimpleHttpResponseHandler() {
+		client.execute(post, new SimpleHttpResponseValidator() {
 			@Override
-			public void handle(SimpleHttpResponse response) throws JSONException {
+			public void validate(SimpleHttpResponse response) throws JSONException {
 				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
 				Validate.isTrue(json.get("result").equals("success"));		
 			}

@@ -16,9 +16,9 @@ public class Problem {
 	private String originOJ;	//原始OJ
 	private String originProb;	//原始OJ题号
 	private int memoryLimit;	//内存限制(KB)
-	private int timeLimit;		//时间限制(ms)
+	private int timeLimit;		//时间限制(ms)(1:crawling 2:crawl failed)
 
-	private Date triggerTime;	//上次激活(有新版本)时间
+	private Date triggerTime;	//上次尝试更新题目描述时间
 
 	private Set<Description> descriptions;
 	private Set<Cproblem> cproblems;

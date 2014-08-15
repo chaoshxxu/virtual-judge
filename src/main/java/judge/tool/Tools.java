@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,9 +14,9 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 
 /**
  * 公用工具类
@@ -73,46 +73,6 @@ public class Tools {
 	 */
 	public static String dropScript(String html) {
 		return html == null ? null : html.replaceAll("(?i)(?<=(\\b|java))script\\b", "ｓcript");
-	}
-
-	/**
-	 * 从html中判断字符编码并将内容转成String返回
-	 * @param method http方法
-	 * @param proposedCharset 推荐的charset
-	 * @return
-	 * @throws IOException
-	 */
-	public static String getHtml(HttpMethodBase method, String proposedCharset) throws IOException {
-		byte[] contentInByte = IOUtils.toByteArray(method.getResponseBodyAsStream());
-		Charset charset = null;
-		try {
-			charset = Charset.forName(proposedCharset);
-		} catch (Exception e) {}
-		if (charset == null) {
-			Header header = method.getResponseHeader("Content-Type");
-			if (header != null) {
-				Matcher matcher = Pattern.compile("(?i)charset=([-_\\w]+)").matcher(header.getValue());
-				if (matcher.find()) {
-					try {
-						charset = Charset.forName(matcher.group(1));
-					} catch (Exception e) {}
-				}
-			}
-		}
-		if (charset == null) {
-			String tmpHtml = new String(contentInByte, "UTF-8");
-			Matcher matcher = Pattern.compile("(?i)charset=([-_\\w]+)").matcher(tmpHtml);
-			if (matcher.find()) {
-				try {
-					charset = Charset.forName(matcher.group(1));
-				} catch (Exception e) {}
-			}
-		}
-		if (charset == null) {
-			charset = Charset.forName("UTF-8");
-		}
-		System.out.println(charset.name());
-		return new String(contentInByte, charset);
 	}
 
 	/**
@@ -250,6 +210,20 @@ public class Tools {
 		} else {
 			return "sh-c";
 		}
+	}
+	
+	public static <T> List<Class<? extends T>> findSubClasses(String packagePath, Class<T> parentClass) throws ClassNotFoundException {
+		List<Class<? extends T>> result = new ArrayList<Class<? extends T>>();
+		
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.addIncludeFilter(new AssignableTypeFilter(parentClass));
+
+		Set<BeanDefinition> components = provider.findCandidateComponents(packagePath);
+		for (BeanDefinition component : components) {
+			Class<? extends T> clazz = (Class<? extends T>) Class.forName(component.getBeanClassName());
+			result.add(clazz);
+		}
+		return result;
 	}
 
 
