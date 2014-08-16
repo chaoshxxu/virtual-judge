@@ -56,9 +56,9 @@
 						<s:property value='dataList[#stat.index][1]' />
 					</a>
 				</td>
-				<td class="ip" title="<s:property value='dataList[#stat.index][3]' />">
-					<s:property value="dataList[#stat.index][3]" />
-				</td>
+                <td class="ip" title="<s:property value='dataList[#stat.index][3]' escapeHtml='false' />">
+                    <s:property value="dataList[#stat.index][3]" escapeHtml="false" />
+                </td>
 				<td class="address">
 					<s:property value="dataList[#stat.index][4]" />
 				</td>
