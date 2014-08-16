@@ -41,7 +41,8 @@
 					<th>Active Length</th>
 					<th>Freeze Length</th>
 					<th class="browser">Browser</th>
-					<th class="os">OS</th>
+                    <th class="os">OS</th>
+                    <th></th>
 				</tr>
 			</thead>
 
@@ -65,7 +66,12 @@
 				<td><s:property value="dataList[#stat.index][6]" /></td>
 				<td><s:property value="dataList[#stat.index][7]" /></td>
 				<td><s:property value="dataList[#stat.index][8]" /></td>
-				<td><s:property value="dataList[#stat.index][9]" /></td>
+                <td><s:property value="dataList[#stat.index][9]" /></td>
+                <td>
+                    <s:if test="dataList[#stat.index][10] != null">
+                        <a href='<s:property value="dataList[#stat.index][10]" />' title='<s:property value="dataList[#stat.index][10]" />'>*</a>
+                    </s:if>
+                </td>
 			</tr>
 		</s:iterator>
 		</table>

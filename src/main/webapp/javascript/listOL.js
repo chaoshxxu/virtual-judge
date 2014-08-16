@@ -43,6 +43,7 @@ $(document).ready(function() {
 		              {"sType": "custom-time"},
 		              {"sType": "custom-time"},
 		              {"sType": "string"},
+		              {"sType": "string"},
 		              {"sType": "string"}
 					]
 	});

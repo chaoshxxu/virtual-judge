@@ -58,7 +58,11 @@ public class MyFilter implements Filter{
 				session.setAttribute("user-agent", request.getHeader("user-agent"));
 			}
 			if (session.getAttribute("referer") == null) {
-				session.setAttribute("referer", request.getHeader("referer"));
+				String host = request.getHeader("Host");
+				String referer = request.getHeader("referer");
+				if (!StringUtils.isBlank(referer) && !StringUtils.isBlank(host) && !referer.contains(host)) {
+					session.setAttribute("referer", referer);
+				}
 			}
 			chain.doFilter(req, res);
 			

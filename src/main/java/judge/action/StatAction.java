@@ -67,7 +67,7 @@ public class StatAction extends ActionSupport {
 				row.add(null);
 				row.add(null);
 			}
-			row.add(ip.replaceAll("\\s*,\\s*", "\n"));
+			row.add(ip.replaceAll("\\s*,\\s*", "<br />"));
 			row.add(PhysicalAddressTool.getPhysicalAddress(ip));
  			row.add(new Date(session.getCreationTime()));
 
@@ -79,6 +79,8 @@ public class StatAction extends ActionSupport {
 
 			row.add(findBrowser(ua));
 			row.add(findOS(ua));
+			row.add(session.getAttribute("referer"));
+			
 			dataList.add(row);
 		}
 
