@@ -17,7 +17,7 @@ import judge.bean.Description;
 import judge.bean.Problem;
 import judge.bean.Submission;
 import judge.bean.User;
-import judge.remote.crawler.common.ProblemInfoUpdateTask;
+import judge.service.ProblemService;
 import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
@@ -29,6 +29,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 
@@ -60,6 +61,9 @@ public class ProblemAction extends BaseAction{
 	private DataTablesPage dataTablesPage;
 	private Map<Object, String> languageList;
 	private String submissionInfo;
+	
+	@Autowired
+	private ProblemService problemService;
 
 	public String toListProblem() {
 		Map session = ActionContext.getContext().getSession();
@@ -187,7 +191,7 @@ public class ProblemAction extends BaseAction{
 				problem.setOriginProb(probNum.toUpperCase());
 				problem.setTitle("N/A");
 			}
-			updateProblem(problem, true);
+			problemService.updateProblem(problem, true);
 		}
 		return id > 0 ? "recrawl" : SUCCESS;
 	}
@@ -198,32 +202,11 @@ public class ProblemAction extends BaseAction{
 		problem = (Problem) list.get(0);
 		_64Format = lf.get(problem.getOriginOJ());
 		
-		updateProblem(problem, false);
+		problemService.updateProblem(problem, false);
 		
 		return SUCCESS;
 	}
 	
-	/**
-	 * (Re-)crawl problem if necessary
-	 * @param problem
-	 * @param enforce
-	 */
-	private void updateProblem(Problem problem, boolean enforce) {
-		long sinceTriggerTime = Long.MAX_VALUE;
-		if (problem.getTriggerTime() != null) {
-			sinceTriggerTime = System.currentTimeMillis() - problem.getTriggerTime().getTime();
-		}
-		boolean condition1 = sinceTriggerTime > 7L * 86400L * 1000L;
-		boolean condition2 = problem.getTimeLimit() == 2 && sinceTriggerTime > 600L * 1000L;
-		boolean condition3 = enforce && (problem.getTimeLimit() != 1 || sinceTriggerTime > 3600L * 1000L);
-		if (condition1 || condition2 || condition3) {
-			problem.setTimeLimit(1);
-			problem.setTriggerTime(new Date());
-			baseService.addOrModify(problem);
-			new ProblemInfoUpdateTask(problem, baseService).submit();
-		}
-	}
-
 	public String vote4Description(){
 		Map session = ActionContext.getContext().getSession();
 		Set votePids = (Set) session.get("votePids");

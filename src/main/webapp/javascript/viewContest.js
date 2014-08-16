@@ -413,17 +413,18 @@ function showProblem() {
 		$("#timeLimit").html(problem.timeLimit);
 		$("#memoryLimit").html(problem.memoryLimit);
 		$("#_64IOFormat").html(problem._64IOFormat);
-		$("#problem_status").attr("href", "contest/view.action?cid=" + cid + "#status//" + num + "/0");
-		if (problem.pid) {
-			$("#problem_practice").attr("href", "problem/viewProblem.action?id=" + problem.pid);
-		}
-		if (problem.originProblemNumber) {
-			$("#problem_origin").button("destroy");
-			$("#problem_origin").attr("href", problem.originURL).text(problem.originProblemNumber);
-			$("#problem_origin").button();
-		}
 		$("#crawlSuccess").show();
 	}
+	$("#problem_status").attr("href", "contest/view.action?cid=" + cid + "#status//" + num + "/0");
+	if (problem.pid) {
+		$("#problem_practice").attr("href", "problem/viewProblem.action?id=" + problem.pid);
+	}
+	if (problem.originProblemNumber) {
+		$("#problem_origin").button("destroy");
+		$("#problem_origin").attr("href", problem.originURL).text(problem.originProblemNumber);
+		$("#problem_origin").button();
+	}
+	
 	$("#desc_index").html("");
 	for (i in problem.descriptions) {
 		if (problem.descriptions[i].author == '0') {

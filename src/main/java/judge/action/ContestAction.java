@@ -29,6 +29,7 @@ import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
 import judge.service.IBaseService;
+import judge.service.ProblemService;
 import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.MD5;
@@ -40,6 +41,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 
@@ -99,6 +101,9 @@ public class ContestAction extends BaseAction {
 	private List statisticRank;
 
 	private File sourceFile;
+
+	@Autowired
+	private ProblemService problemService;
 
 	public InputStream getSourceInputStream() throws FileNotFoundException {
 		 return new FileInputStream(sourceFile);
@@ -528,42 +533,51 @@ public class ContestAction extends BaseAction {
 		if (authorizeStatus == 0) {
 			json.put("title", "<script type='text/javascript'>window.location.hash='#overview';window.location.reload()</script>");
 		} else {
-			Session session = baseService.getSession();
+			HashMap<String, Object> paraMap = new HashMap<String, Object>();
+			paraMap.put("cid", cid);
+			paraMap.put("num", num);
+
+			String hql =
+					  "select cp "
+					+ "from	Cproblem cp "
+					+ "	left join fetch cp.problem p "
+					+ "	left join fetch p.descriptions "
+					+ "	left join fetch cp.description "
+					+ "	left join fetch cp.contest "
+					+ "where"
+					+ "	cp.contest.id = :cid and cp.num = :num";
 			try {
-				String hql = "select cp from Cproblem cp left join fetch cp.problem left join fetch cp.description left join fetch cp.contest where cp.contest.id = :cid and cp.num = :num";
-				cproblem = (Cproblem) session.createQuery(hql).setParameter("cid", cid).setParameter("num", num).uniqueResult();
-				if (cproblem == null || authorizeStatus != 2 && new Date().compareTo(cproblem.getContest().getBeginTime()) < 0) {
-					json.put("title", "<script type='text/javascript'>window.location.hash='#overview';window.location.reload()</script>");
+				cproblem = (Cproblem) baseService.query(hql, paraMap).get(0);
+			} catch (Exception e) {}
+			if (cproblem == null || authorizeStatus != 2 && new Date().compareTo(cproblem.getContest().getBeginTime()) < 0) {
+				json.put("title", "<script type='text/javascript'>window.location.hash='#overview';window.location.reload()</script>");
+			} else {
+				problem = cproblem.getProblem();
+				List<Description> descriptions = new ArrayList<Description>();
+				if (authorizeStatus == 2) {
+					descriptions = new ArrayList<Description>(problem.getDescriptions());
 				} else {
-					problem = cproblem.getProblem();
-					List<Description> descriptions = new ArrayList<Description>();
-					if (authorizeStatus == 2) {
-						descriptions = new ArrayList<Description>(problem.getDescriptions());
-					} else {
-						descriptions.add(cproblem.getDescription());
-					}
-					for (int i = 0; i < descriptions.size(); i++) {
-						if (cproblem.getDescription().getId() == descriptions.get(i).getId()) {
-							json.put("desc_index", i);
-						}
-					}
-					json.put("descriptions", descriptions);
-					if (authorizeStatus == 2 || new Date().compareTo(cproblem.getContest().getEndTime()) > 0) {
-						json.put("pid", problem.getId());
-						json.put("originURL", problem.getUrl());
-						json.put("originProblemNumber", problem.getOriginOJ() + " " + problem.getOriginProb());
-					}
-					json.put("title", cproblem.getTitle());
-					json.put("timeLimit", problem.getTimeLimit());
-					json.put("memoryLimit", problem.getMemoryLimit());
-					json.put("_64IOFormat", lf.get(problem.getOriginOJ()));
-					json.put("languageList", ApplicationContainer.sc.getAttribute(problem.getOriginOJ()));
-					json.put("oj", problem.getOriginOJ());
+					descriptions.add(cproblem.getDescription());
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				baseService.releaseSession(session);
+				for (int i = 0; i < descriptions.size(); i++) {
+					if (cproblem.getDescription().getId() == descriptions.get(i).getId()) {
+						json.put("desc_index", i);
+					}
+				}
+				json.put("descriptions", descriptions);
+				if (authorizeStatus == 2 || new Date().compareTo(cproblem.getContest().getEndTime()) > 0) {
+					json.put("pid", problem.getId());
+					json.put("originURL", problem.getUrl());
+					json.put("originProblemNumber", problem.getOriginOJ() + " " + problem.getOriginProb());
+				}
+				json.put("title", cproblem.getTitle());
+				json.put("timeLimit", problem.getTimeLimit());
+				json.put("memoryLimit", problem.getMemoryLimit());
+				json.put("_64IOFormat", lf.get(problem.getOriginOJ()));
+				json.put("languageList", ApplicationContainer.sc.getAttribute(problem.getOriginOJ()));
+				json.put("oj", problem.getOriginOJ());
+				
+				problemService.updateProblem(problem, false);
 			}
 		}
 		this.json = json;
@@ -650,8 +664,10 @@ public class ContestAction extends BaseAction {
 		}
 
 		if (problem.getTimeLimit() == 1 || problem.getTimeLimit() == 2){
-			json = "Crawling of this problem has not finished";
-			return SUCCESS;
+			if (contest.getEndTime().compareTo(new Date()) < 0) {
+				json = "Crawling of this problem failed or hasn't finished";
+				return SUCCESS;
+			}
 		}
 
 		languageList = (Map<Object, String>) ApplicationContainer.sc.getAttribute(problem.getOriginOJ());
