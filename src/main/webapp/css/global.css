@@ -511,6 +511,12 @@ pre {
     overflow: hidden;
     padding: 3px 10px; 
 }
+#listOL td.ip {
+    white-space: normal;
+    word-break: break-all;
+    word-wrap: break-word;
+    width: 150px;
+}
 #listOL td.address {
     white-space: normal;
     word-break: break-all;

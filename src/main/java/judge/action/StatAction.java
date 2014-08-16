@@ -67,7 +67,7 @@ public class StatAction extends ActionSupport {
 				row.add(null);
 				row.add(null);
 			}
-			row.add(ip);
+			row.add(ip.replaceAll("\\s*,\\s*", "\n"));
 			row.add(PhysicalAddressTool.getPhysicalAddress(ip));
  			row.add(new Date(session.getCreationTime()));
 

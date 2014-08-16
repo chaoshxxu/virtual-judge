@@ -14,7 +14,7 @@ public abstract class SimpleCrawler implements Crawler {
 	public RawProblemInfo crawl(String problemId) throws Exception {
 		preValidate(problemId);
 		HttpHost host = getHost();
-		DedicatedHttpClient client = new DedicatedHttpClient(host);
+		DedicatedHttpClient client = new DedicatedHttpClient(host, getSiteCharset());
 
 		String problemUrl = getProblemUrl(problemId);
 		String pageContent = client.get(problemUrl, HttpStatusValidator.SC_OK).getBody();
@@ -40,6 +40,9 @@ public abstract class SimpleCrawler implements Crawler {
 	protected void preValidate(String problemId) {}
 	protected boolean autoTransformAbsoluteHref() {
 		return true;
+	}
+	protected String getSiteCharset() {
+		return "UTF-8";
 	}
 	
 	/**

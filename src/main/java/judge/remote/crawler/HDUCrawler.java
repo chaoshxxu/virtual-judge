@@ -31,6 +31,11 @@ public class HDUCrawler extends SimpleCrawler {
 	}
 
 	@Override
+	protected String getSiteCharset() {
+		return "gb2312";
+	}
+
+	@Override
 	protected void populateProblemInfo(RawProblemInfo info, String problemId, String html) {
 		info.title = Tools.regFind(html, "color:#1A5CC8\">([\\s\\S]*?)</h1>").trim();
 		info.timeLimit = (Integer.parseInt(Tools.regFind(html, "(\\d*) MS")));

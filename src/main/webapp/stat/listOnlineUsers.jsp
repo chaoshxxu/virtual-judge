@@ -55,7 +55,7 @@
 						<s:property value='dataList[#stat.index][1]' />
 					</a>
 				</td>
-				<td title="<s:property value='dataList[#stat.index][3]' />">
+				<td class="ip" title="<s:property value='dataList[#stat.index][3]' />">
 					<s:property value="dataList[#stat.index][3]" />
 				</td>
 				<td class="address">

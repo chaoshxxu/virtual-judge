@@ -22,7 +22,7 @@
 		<div id="problem_opt" style="font-size:12px;margin-top:10px">
 			<a id="submit" href="javascript:void(0)">Submit</a>
 			<a id="problem_status" href="javascript:void(0)">Status</a>
-			<s:if test="contestOver == 1 || #session.visitor.sup == 1 || #session.visitor.id == contest.id">
+			<s:if test="contestOver == 1 || #session.visitor.sup == 1 || #session.visitor.id == contest.manager.id">
 				<a id="problem_practice" target="_blank" href="">Practice</a>
 				<a id="problem_origin" target="_blank" href="">_</a>
 			</s:if>
