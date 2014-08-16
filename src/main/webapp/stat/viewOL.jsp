@@ -46,9 +46,9 @@
 			<tr>
 				<td>Referer:</td>
 				<td>
-					<a href="${referer}" >
-						${referer}
-					</a>
+                    <s:if test="referer != null">
+                        <a href='<s:property value="referer" />'><s:property value="referer" /></a>
+                    </s:if>
 				</td>
 			</tr>
 			<tr>
