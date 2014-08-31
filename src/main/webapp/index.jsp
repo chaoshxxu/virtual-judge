@@ -13,7 +13,7 @@
 		<div id="title">Virtual Judge</div>
 		<div style="width:900px;MARGIN-RIGHT:auto;MARGIN-LEFT:auto;">
 			<p>
-				Virtual Judge is not a real online judge. It can grabs problems from other regular online judges and simulate submissions to other online judges.
+				Virtual Judge is not a real online judge. It can grab problems from other regular online judges and simulate submissions to other online judges.
 				It aims to enable holding contests when you don't have the test data.<br /><br />
 				Currently, this system supports the following online judges:<br />
 			</p>
