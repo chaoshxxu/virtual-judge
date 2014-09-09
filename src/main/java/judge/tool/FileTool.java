@@ -7,32 +7,37 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
 
 import org.apache.struts2.ServletActionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileTool {
+	private final static Logger log = LoggerFactory.getLogger(FileTool.class);
+
 	// 保存上传文件
 	public static String saveUpload(File file, String fileName,
 			String savePath, String signID) throws Exception {
 		// 获得绝对路径
 		String realPath = ServletActionContext.getServletContext().getRealPath(savePath);
-		System.out.println(realPath);
+		log.info(realPath);
 		// 获取源文件后缀名
 		String extendName = fileName.substring(fileName.lastIndexOf("."));
-		System.out.println(extendName);
+		log.info(extendName);
 		// 获取系统时间并转成字符串
 		Date date = new Date();
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 		String dateformat = format.format(date);
 		// 生成新的文件名
 		String realName = dateformat + extendName;
-		// System.out.println(realPath + "\\" + realName);
+		// log.info(realPath + "\\" + realName);
 		// 以realPath和realName建立一个输出流
-		System.out.println(realPath + "/" + realName);
+		log.info(realPath + "/" + realName);
 		FileOutputStream fos = new FileOutputStream(realPath + "\\" + realName);
 		// 以上传文件建立一个输入流
 		FileInputStream fis = new FileInputStream(file);
@@ -85,5 +90,20 @@ public class FileTool {
         BufferedImage bid = new BufferedImage(nw, nh, BufferedImage.TYPE_3BYTE_BGR);
         ato.filter(bis,bid);
         ImageIO.write(bid, "jpeg", fo);
+	}
+	
+	public static void writeFile(String path, String content) throws IOException {
+		PrintWriter writer = null;
+		File file = new File(path);
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		log.info("Write file: " + file.getAbsolutePath());
+		try {
+			writer = new PrintWriter(path, "UTF-8");
+			writer.println(content);
+		} finally {
+			writer.close();
+		}
 	}
 }

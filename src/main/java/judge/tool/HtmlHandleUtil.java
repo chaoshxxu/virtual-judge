@@ -9,8 +9,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HtmlHandleUtil {
+	private final static Logger log = LoggerFactory.getLogger(HtmlHandleUtil.class);
 
 	private static final String[][] pairs = new String[][] {
 		{ "img", "src" },
@@ -58,7 +61,7 @@ public class HtmlHandleUtil {
 
 	public static void main(String[] args) {
 		String s = "<br>\n45";
-		System.out.println(s.replaceAll("(?<!pre)>\\s* \\s*(?=\\w)", "> "));
+		log.info(s.replaceAll("(?<!pre)>\\s* \\s*(?=\\w)", "> "));
 	}
 
 }

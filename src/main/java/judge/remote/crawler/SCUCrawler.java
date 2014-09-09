@@ -4,21 +4,29 @@ import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.crawler.common.Crawler;
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
+import judge.remote.crawler.common.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
+import org.springframework.stereotype.Component;
 
-public class SCUCrawler implements Crawler {
+@Component
+public class SCUCrawler extends SyncCrawler {
 
+	@Override
+	public RemoteOj getOj() {
+		return RemoteOj.SCU;
+	}
+	
 	public RawProblemInfo crawl(final String problemId) throws Exception {
 		Validate.isTrue(problemId.matches("[1-9]\\d*"));
-		final HttpHost host = new HttpHost("cstest.scu.edu.cn");
-		final DedicatedHttpClient client = new DedicatedHttpClient(host);
+		final HttpHost host = getOj().mainHost;
+		final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, getOj().defaultChaset);
 
 		final String outerUrl = host.toURI() + "/soj/problem.action?id=" + problemId;
 		Task<String> taskOuter = new Task<String>(ExecutorTaskType.GENERAL) {
@@ -48,11 +56,6 @@ public class SCUCrawler implements Crawler {
 		Validate.isTrue(!StringUtils.isBlank(info.title));
 
 		return info;
-	}
-
-	@Override
-	public String getOjName() {
-		return "SCU";
 	}
 
 }

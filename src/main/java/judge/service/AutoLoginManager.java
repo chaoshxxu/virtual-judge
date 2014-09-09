@@ -9,8 +9,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.annotation.PostConstruct;
+
 import judge.tool.LRUList;
 import judge.tool.RandomUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -18,6 +23,7 @@ import judge.tool.RandomUtil;
  *
  */
 public class AutoLoginManager {
+	private final static Logger log = LoggerFactory.getLogger(AutoLoginManager.class);
 	
 	private static final int MAX_TOKENS_PER_USER = 5;
 	private static final int TOKEN_LENGTH = 30;
@@ -42,6 +48,7 @@ public class AutoLoginManager {
     final Lock readLock = lock.readLock();
     final Lock writeLock = lock.writeLock();
 	
+    @PostConstruct
 	public void init() {
 		repo = new ConcurrentHashMap<String, LRUList<String>>();
 	}
@@ -144,7 +151,7 @@ public class AutoLoginManager {
 				return;
 			}
 			long begin = new Date().getTime();
-			System.out.println("Start reduce repo, size: " + repo.size());
+			log.info("Start reduce repo, size: " + repo.size());
 			
 			List<Date> dates = new ArrayList<Date>();
 			for (LRUList<String> tokens : repo.values()) {
@@ -160,7 +167,7 @@ public class AutoLoginManager {
 					tmpRepo.put(username, tokens);
 				}
 			}
-			System.out.println("Finish reduce repo, size: " + repo.size() + ", using " + (new Date().getTime() - begin) + "ms");
+			log.info("Finish reduce repo, size: " + repo.size() + ", using " + (new Date().getTime() - begin) + "ms");
 			
 			repo = tmpRepo;
 		} finally {

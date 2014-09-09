@@ -34,8 +34,11 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NBUTSubmitter extends Submitter {
+	private final static Logger log = LoggerFactory.getLogger(NBUTSubmitter.class);
 
 	static final String OJ_NAME = "NBUT";
 	static private boolean using[];
@@ -90,7 +93,7 @@ public class NBUTSubmitter extends Submitter {
 				return Integer.parseInt(matcher.group(1));
 			}
 		});
-		System.out.println("maxRunId : " + maxRunId);
+		log.info("maxRunId : " + maxRunId);
 	}
 	
 	private void login(String username, String password) throws ClientProtocolException, IOException {
@@ -101,7 +104,7 @@ public class NBUTSubmitter extends Submitter {
 		nvps.add(new BasicNameValuePair("__OJVERIFY__", ojVerify));
 		nvps.add(new BasicNameValuePair("password", password));
 		nvps.add(new BasicNameValuePair("username", username));
-		System.out.println(username + " - " + password);
+		log.info(username + " - " + password);
 		HttpEntity entity = new UrlEncodedFormEntity(nvps, Charset.forName("UTF-8"));
 		
 		client.post("/User/chklogin.xhtml", entity, new SimpleHttpResponseValidator() {

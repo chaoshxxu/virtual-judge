@@ -1,6 +1,5 @@
 package judge.action;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,8 +16,10 @@ import judge.bean.Description;
 import judge.bean.Problem;
 import judge.bean.Submission;
 import judge.bean.User;
+import judge.remote.status.RemoteStatusType;
+import judge.remote.status.RunningSubmissions;
+import judge.remote.submitter.common.SubmitCodeManager;
 import judge.service.ProblemService;
-import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
 import judge.tool.Tools;
@@ -64,6 +65,12 @@ public class ProblemAction extends BaseAction{
 	
 	@Autowired
 	private ProblemService problemService;
+	
+	@Autowired
+	private SubmitCodeManager submitManager;
+
+	@Autowired
+	private RunningSubmissions runningSubmissions;
 
 	public String toListProblem() {
 		Map session = ActionContext.getContext().getSession();
@@ -90,7 +97,7 @@ public class ProblemAction extends BaseAction{
 			hql.append(" and (problem.title like :keyword or problem.originProb like :keyword or problem.source like :keyword) ");
 		}
 		dataTablesPage.setITotalDisplayRecords(baseService.count(hql.toString(), paraMap));
-//		System.out.println("iSortCol_0 = " + iSortCol_0);
+//		log.info("iSortCol_0 = " + iSortCol_0);
 		if (iSortCol_0 != null){
 			if (!"desc".equals(sSortDir_0)) {
 				sSortDir_0 = "";
@@ -239,7 +246,7 @@ public class ProblemAction extends BaseAction{
 	}
 
 
-	public String submit() throws UnsupportedEncodingException{
+	public String submit() throws Exception{
 		Map session = ActionContext.getContext().getSession();
 		User user = (User) session.get("visitor");
 		if (user == null){
@@ -275,7 +282,8 @@ public class ProblemAction extends BaseAction{
 		submission.setSubTime(new Date());
 		submission.setProblem(problem);
 		submission.setUser(user);
-		submission.setStatus("Pending……");
+		submission.setStatus("Pending");
+		submission.setStatusCanonical(RemoteStatusType.PENDING.name());
 		submission.setLanguage(language);
 		submission.setSource(source);
 		submission.setIsOpen(isOpen);
@@ -288,14 +296,13 @@ public class ProblemAction extends BaseAction{
 			user.setShare(submission.getIsOpen());
 			baseService.addOrModify(user);
 		}
-		try {
-			Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
-			submitter.setSubmission(submission);
-			submitter.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ERROR;
-		}
+		
+		submitManager.submitCode(submission);
+
+//		Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
+//		submitter.setSubmission(submission);
+//		submitter.start();
+
 		return SUCCESS;
 	}
 
@@ -324,7 +331,26 @@ public class ProblemAction extends BaseAction{
 		int userId = user != null ? user.getId() : -1;
 		int sup = user != null ? user.getSup() : 0;
 
-		StringBuffer hql = new StringBuffer("select s.id, s.username, s.problem.id, s.status, s.memory, s.time, s.dispLanguage, length(s.source), s.subTime, s.user.id, s.isOpen, s.originOJ, s.originProb, s.contest.id, s.additionalInfo from Submission s ");
+		StringBuffer hql = new StringBuffer(
+				"select "
+				+ " s.id, " // 0
+				+ " s.username, "
+				+ " s.problem.id, "
+				+ " s.status, "
+				+ " s.memory, "
+				+ " s.time, " // 5
+				+ " s.dispLanguage, "
+				+ " length(s.source), "
+				+ " s.subTime, "
+				+ " s.user.id, "
+				+ " s.isOpen, " // 10
+				+ " s.originOJ, "
+				+ " s.originProb, "
+				+ " s.contest.id, "
+				+ " s.additionalInfo, " // 14
+				+ " s.statusCanonical, "
+				+ " s.id "
+				+ "from Submission s ");
 
 		dataTablesPage = new DataTablesPage();
 
@@ -356,19 +382,19 @@ public class ProblemAction extends BaseAction{
 		}
 
 		if (res == 1){
-			hql.append(" and s.status = 'Accepted' ");
+			hql.append(" and s.statusCanonical = 'AC' ");
 		} else if (res == 2) {
-			hql.append(" and s.status like 'wrong%' ");
+			hql.append(" and s.statusCanonical = 'WA' ");
 		} else if (res == 3) {
-			hql.append(" and s.status like 'time%' ");
+			hql.append(" and s.statusCanonical = 'TLE' ");
 		} else if (res == 4) {
-			hql.append(" and (s.status like 'runtime%' or s.status like 'segment%' or s.status like 'crash%') ");
+			hql.append(" and s.statusCanonical = 'RE' ");
 		} else if (res == 5) {
-			hql.append(" and (s.status like 'presentation%' or s.status like 'format%') ");
+			hql.append(" and s.statusCanonical = 'PE' ");
 		} else if (res == 6) {
-			hql.append(" and s.status like 'compil%' ");
+			hql.append(" and s.statusCanonical = 'CE' ");
 		} else if (res == 7) {
-			hql.append(" and s.status like '%ing%' ");
+			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMIT_FAILED_TEMP', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
 		}
 
 		hql.append(" order by s.id desc ");
@@ -381,6 +407,12 @@ public class ProblemAction extends BaseAction{
 			o[8] = ((Date)o[8]).getTime();
 			o[10] = (Integer)o[10] > 0 ? 2 : sup > 0 || (Integer)o[9] == userId ? 1 : 0;
 			o[14] = o[14] == null ? 0 : 1;
+			
+			RemoteStatusType statusType = RemoteStatusType.valueOf((String)o[15]);
+			o[15] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2; // 0-green 1-red 2-purple
+			
+			int submissionId = (Integer) o[0];
+			o[16] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking
 		}
 
 		dataTablesPage.setAaData(aaData);
@@ -498,11 +530,12 @@ public class ProblemAction extends BaseAction{
 		if (!submissionList.isEmpty()) {
 			submission = submissionList.get(0);
 		}
-		if (submission == null || !submission.getStatus().equals("Judging Error 1") && (user == null || user.getSup() == 0)){
+		if (submission == null){
 			return ERROR;
+		} else {
+			judgeService.rejudge(submission, false);
+			return SUCCESS;
 		}
-		judgeService.rejudge(submission);
-		return SUCCESS;
 	}
 
 	public String toggleOpen() {

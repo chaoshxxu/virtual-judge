@@ -3,25 +3,28 @@ package judge.executor;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Embed an ExecutorService upon initialization.
- * @author isun
+ * @author Isun
  *
  * @param <V>
  */
 public abstract class Task<V> implements Callable<V>{
 
 	protected ExecutorTaskType taskType;
-	protected ThreadPoolExecutor executor;
 	protected Future<V> finishSignal;
-	
+	protected int delaySeconds;
 	
 	public Task(ExecutorTaskType taskType) {
+		this(taskType, 0);
+	}
+
+	public Task(ExecutorTaskType taskType, int delaySeconds) {
 		super();
 		this.taskType = taskType;
-		this.executor = ExecutorsHolder.getExecutor(taskType);
+		this.delaySeconds = delaySeconds;
 	}
 
 	/**
@@ -29,7 +32,11 @@ public abstract class Task<V> implements Callable<V>{
 	 */
 	public void submit() {
 		if (!submitted()) {
-			finishSignal = executor.submit(this);
+			if (delaySeconds > 0) {
+				finishSignal = ExecutorsHolder.getScheduledExecutor().schedule(this, delaySeconds, TimeUnit.SECONDS);
+			} else {
+				finishSignal = ExecutorsHolder.getExecutor(taskType).submit(this);
+			}
 		}
 	}
 	

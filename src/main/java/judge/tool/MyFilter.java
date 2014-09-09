@@ -76,7 +76,7 @@ public class MyFilter implements Filter{
 //				}
 //				System.out.println();
 //			}
-//			System.out.println("");
+//			log.info("");
 
 		} catch (Exception e) {
 			e.printStackTrace();

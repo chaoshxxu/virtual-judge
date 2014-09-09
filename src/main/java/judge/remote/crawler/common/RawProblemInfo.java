@@ -2,7 +2,7 @@ package judge.remote.crawler.common;
 
 /**
  * Direct crawling result from original OJ 
- * @author isun
+ * @author Isun
  *
  */
 public class RawProblemInfo {

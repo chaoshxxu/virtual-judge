@@ -19,23 +19,40 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import judge.action.BaseAction;
 import judge.bean.Contest;
 import judge.bean.Problem;
 import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
-import judge.submitter.Submitter;
+import judge.remote.querier.common.QueryStatusManager;
+import judge.remote.status.RemoteStatusType;
+import judge.remote.status.RunningSubmissions;
+import judge.remote.submitter.common.SubmitCodeManager;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 
 @SuppressWarnings("unchecked")
-public class JudgeService extends BaseService {
+public class JudgeService {
+	
+	@Autowired
+	private QueryStatusManager queryStatusManager;
+
+	@Autowired
+	private SubmitCodeManager submitManager;
+
+	@Autowired
+	private RunningSubmissions runningSubmissions;
+
+	@Autowired
+	private BaseService baseService;
+
 
 	private static final String cellOptions []= {
 		"No submisson",																//0		0
@@ -87,21 +104,31 @@ public class JudgeService extends BaseService {
 	/**
 	 * 根据提交ID查询结果
 	 * @param id
-	 * @return 0:ID 1:结果 2:内存 3:时间 4:额外信息
+	 * @return 0:ID 1:结果 2:内存 3:时间 4:额外信息 5:[0-green 1-red 2-purple] 6:[1-working 0-notWorking]
 	 */
 	public Object[] getResult(int id){
-		Object[] ret = new Object[5];
-		Submission s = (Submission) query(Submission.class, id);
+		Object[] ret = new Object[7];
+		Submission s = null;
+		if (runningSubmissions.contains(id)) {
+			s = runningSubmissions.get(id);
+			ret[6] = 1;
+		} else {
+			s = (Submission) baseService.query(Submission.class, id);
+			ret[6] = 0;
+		}
+		RemoteStatusType statusType = RemoteStatusType.valueOf(s.getStatusCanonical());
+		
 		ret[0] = id;
 		ret[1] = s.getStatus();
 		ret[2] = s.getMemory();
 		ret[3] = s.getTime();
 		ret[4] = s.getAdditionalInfo() == null ? 0 : 1;
+		ret[5] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2;
 		return ret;
 	}
 
 	public Set fetchDescriptions(int id){
-		List list = query("select p from Problem p left join fetch p.descriptions where p.id = " + id);
+		List list = baseService.query("select p from Problem p left join fetch p.descriptions where p.id = " + id);
 		return list.isEmpty() ? null : ((Problem)list.get(0)).getDescriptions();
 	}
 
@@ -109,7 +136,7 @@ public class JudgeService extends BaseService {
 		Map paraMap = new HashMap<String, String>();
 		paraMap.put("OJ", OJ.trim());
 		paraMap.put("pid", problemId.trim());
-		List list = query("select p from Problem p left join fetch p.descriptions where p.originOJ = :OJ and p.originProb = :pid", paraMap);
+		List list = baseService.query("select p from Problem p left join fetch p.descriptions where p.originOJ = :OJ and p.originProb = :pid", paraMap);
 		return list.isEmpty() ? null : (Problem)list.get(0);
 	}
 
@@ -117,7 +144,7 @@ public class JudgeService extends BaseService {
 		Map paraMap = new HashMap<String, String>();
 		paraMap.put("OJ", OJ.trim());
 		paraMap.put("pid", problemId.trim());
-		List<Object[]> list = query("select p.id, p.title, p.timeLimit from Problem p where p.originOJ = :OJ and p.originProb = :pid", paraMap);
+		List<Object[]> list = baseService.query("select p.id, p.title, p.timeLimit from Problem p where p.originOJ = :OJ and p.originProb = :pid", paraMap);
 		if (list.isEmpty() || (Integer)list.get(0)[2] == 1 || (Integer)list.get(0)[2] == 2){
 			return null;
 		}
@@ -127,35 +154,47 @@ public class JudgeService extends BaseService {
 		return res;
 	}
 
-	public void rejudge(Submission submission){
+	/**
+	 * 
+	 * @param submission
+	 * @param enforce
+	 * 			if true, it will try resubmit to original OJ;
+	 * 			if false, it will query if there is already remoteRunId or resubmit if not.
+	 */
+	public void rejudge(Submission submission, boolean enforce){
 		if (submission.getId() == 0){
 			return;
 		}
-		submission.setStatus("Pending Rejudge");
-		submission.setAdditionalInfo(null);
-		submission.setSource(submission.getSource().replaceAll("/\\*[\\s\\S]*?\\*/", ""));
-		this.addOrModify(submission);
-		try {
-			Submitter submitter = BaseAction.submitterMap.get(submission.getOriginOJ()).getClass().newInstance();
-			submitter.setSubmission(submission);
-			submitter.start();
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (enforce || submission.getRealRunId() == null || submission.getRemoteAccountId() == null) {
+			submission.reset();
+			baseService.addOrModify(submission);
+			submitManager.submitCode(submission);
+		} else {
+			SpringBean.getBean(QueryStatusManager.class).createQuery(submission);
 		}
+		
+
+//		try {
+//			Submitter submitter = BaseAction.submitterMap.get(submission.getOriginOJ()).getClass().newInstance();
+//			submitter.setSubmission(submission);
+//			submitter.start();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
 	 * 将上次停止服务时正在判的提交置为Judging Error 1
 	 */
 	public void initJudge(){
-		this.execute("update Submission s set s.status = 'Judging Error 1' where s.status like '%ing%' and s.status not like '%rror%'");
+		baseService.execute("update Submission s set s.status = 'Judging Error 1' where s.status like '%ing%' and s.status not like '%rror%'");
 	}
 
 	/**
 	 * 将上次停止服务时正在抓取的题目置为“抓取失败”
 	 */
 	public void initProblemSpiding() {
-		this.execute("update Problem p set p.timeLimit = 2 where p.timeLimit = 1");
+		baseService.execute("update Problem p set p.timeLimit = 2 where p.timeLimit = 1");
 	}
 
 	/**
@@ -168,7 +207,7 @@ public class JudgeService extends BaseService {
 	public Map updateRankData(Integer cid, boolean force) throws Exception{
 		Contest contest = null;
 		try {
-			contest = (Contest) this.query("select contest from Contest contest left join fetch contest.replayStatus left join fetch contest.manager where contest.id = " + cid).get(0);
+			contest = (Contest) baseService.query("select contest from Contest contest left join fetch contest.replayStatus left join fetch contest.manager where contest.id = " + cid).get(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Map res = new HashMap();
@@ -210,7 +249,7 @@ public class JudgeService extends BaseService {
 			//原data内无contest ID信息，特此加上
 			out.write("[" + contest.getId() + "," + contest.getReplayStatus().getData().substring(1));
 		} else {
-			List<Object[]> submissionList = this.query("select s.user.id, cp.num, s.status, s.subTime, s.username, s.user.nickname from Submission s, Cproblem cp where s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id order by s.id asc");
+			List<Object[]> submissionList = baseService.query("select s.user.id, cp.num, s.status, s.subTime, s.username, s.user.nickname from Submission s, Cproblem cp where s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id order by s.id asc");
 			long beginTime = contest.getBeginTime().getTime();
 
 			StringBuffer submissionData = new StringBuffer("");
@@ -256,7 +295,7 @@ public class JudgeService extends BaseService {
 	 * @return 0:比赛总时间(s)		1:比赛已进行时间(s)
 	 */
 	public Long[] getContestTimeInfo(Integer cid){
-		List<Object[]> list = this.query("select c.beginTime, c.endTime from Contest c where c.id = " + cid);
+		List<Object[]> list = baseService.query("select c.beginTime, c.endTime from Contest c where c.id = " + cid);
 		Long beginTime = ((Date) list.get(0)[0]).getTime();
 		Long endTime = ((Date) list.get(0)[1]).getTime();
 		Long totalTime = endTime - beginTime;
@@ -270,10 +309,10 @@ public class JudgeService extends BaseService {
 	 */
 	public void toggleOpen(Integer sid) {
 		User user = OnlineTool.getCurrentUser();
-		Submission submission = (Submission) this.query(Submission.class, sid);
+		Submission submission = (Submission) baseService.query(Submission.class, sid);
 		if (submission != null && user != null && (user.getSup() != 0 || user.getId() == submission.getUser().getId())){
 			submission.setIsOpen(1 - submission.getIsOpen());
-			this.addOrModify(submission);
+			baseService.addOrModify(submission);
 		}
 	}
 
@@ -636,9 +675,9 @@ public class JudgeService extends BaseService {
 			return authorizeStatus;
 		}
 
-		Session session = this.getSession();
+		Session session = baseService.getSession();
 		Object[] info = (Object[]) session.createQuery("select c.manager.id, c.password from Contest c where c.id = " + cid).uniqueResult();
-		this.releaseSession(session);
+		baseService.releaseSession(session);
 		if (info == null) {
 			return 0;
 		}

@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
  * It accepts binding child tasks and has a short cut to wait until all the
  * children tasks complete.
  * 
- * @author isun
+ * @author Isun
  * 
  */
 public abstract class CascadeTask<V> extends Task<V> {

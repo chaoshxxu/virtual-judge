@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import judge.bean.Problem;
 import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,15 +41,18 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HUSTSubmitter extends Submitter {
+	private final static Logger log = LoggerFactory.getLogger(HUSTSubmitter.class);
 
 	static final String OJ_NAME = "HUST";
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient client = SpringBean.getBean(MultipleProxyHttpClientFactory.class).getInstance(OJ_NAME);
 	
 	static public String[] captachaStrings;
 	static public File[] captchaImages;
@@ -124,7 +128,7 @@ public class HUSTSubmitter extends Submitter {
 		} else {
 			throw new RuntimeException();
 		}
-		System.out.println("maxRunId : " + maxRunId);
+		log.info("maxRunId : " + maxRunId);
 	}
 	
 	private void login(String username, String password) throws ClientProtocolException, IOException {

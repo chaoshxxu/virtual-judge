@@ -1,23 +1,20 @@
 package judge.remote.crawler;
 
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
 import judge.remote.crawler.common.SimpleCrawler;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.http.HttpHost;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SGUCrawler extends SimpleCrawler {
 
 	@Override
-	public String getOjName() {
-		return "SGU";
-	}
-
-	@Override
-	protected HttpHost getHost() {
-		return new HttpHost("acm.sgu.ru");
+	public RemoteOj getOj() {
+		return RemoteOj.SGU;
 	}
 
 	@Override

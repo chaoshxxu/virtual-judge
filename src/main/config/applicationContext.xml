@@ -129,19 +129,15 @@
 	    <property name="baseDao" ref="baseDao" />
 	</bean>
 
-	<bean id="userService" class="judge.service.UserService">
-	    <property name="baseDao" ref="baseDao" />
-	</bean>
+	<bean id="userService" class="judge.service.UserService" />
 
-    <bean id="judgeService" class="judge.service.JudgeService">
-        <property name="baseDao" ref="baseDao" />
-    </bean>
+    <bean id="judgeService" class="judge.service.JudgeService" />
     
-    <bean id="forbiddenVisitorRuler" class="judge.tool.ForbiddenVisitorRuler" init-method="init">
+    <bean id="forbiddenVisitorRuler" class="judge.tool.ForbiddenVisitorRuler">
         <constructor-arg value="classpath:forbiddenVisitorRules.xml" />
     </bean>
     
-    <bean id="autoLoginManager" class="judge.service.AutoLoginManager" init-method="init">
+    <bean id="autoLoginManager" class="judge.service.AutoLoginManager">
     </bean>
 
 
@@ -175,8 +171,12 @@
     </bean>
     
     
-    <bean id="remoteAccountTaskExecutorFactory" class="judge.account.RemoteAccountTaskExecutorFactory">
-        <constructor-arg value="${accounts.location}"/>
+    <bean id="multipleProxyHttpClientFactory" class="judge.httpclient.MultipleProxyHttpClientFactory">
+        <constructor-arg value="${httpClientConfig.location}"/>
+    </bean>
+    
+    <bean id="remoteAccountTaskExecutorFactory" class="judge.remote.account.RemoteAccountTaskExecutorFactory">
+        <constructor-arg value="${remoteAccountsConfig.location}"/>
     </bean>
     
     <bean id="remoteAccountTaskExecutor" factory-bean="remoteAccountTaskExecutorFactory" factory-method="create" init-method="init" />

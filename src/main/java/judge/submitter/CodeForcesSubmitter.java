@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.http.Consts;
@@ -44,7 +45,7 @@ public class CodeForcesSubmitter extends Submitter {
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient client = SpringBean.getBean(MultipleProxyHttpClientFactory.class).getInstance(OJ_NAME);
 
 	private HttpGet get;
 	private HttpPost post;

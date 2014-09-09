@@ -14,9 +14,12 @@ import judge.service.IBaseService;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class Customize {
+	private final static Logger log = LoggerFactory.getLogger(Customize.class);
 
 	static public ServletContext sc = ApplicationContainer.sc;
 	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService");
@@ -44,7 +47,7 @@ public class Customize {
 				if (i == list.size() - 1 || !contestId.equals(list.get(i + 1)[0])) {
 					String hashCode = MD5.getMD5(contestSign + problemCnt);
 					session.createQuery("update Contest contest set contest.hashCode = :hashCode where contest.id = :contestId").setParameter("hashCode", hashCode).setParameter("contestId", contestId).executeUpdate();
-					System.out.println(i + "/" + list.size());
+					log.info(i + "/" + list.size());
 				}
 			}
 			session.flush();
@@ -64,9 +67,9 @@ public class Customize {
 			for (int i = 0; i < list.size() - 1; i++) {
 				Description thisDescription = list.get(i);
 				Description nextDescription = list.get(i + 1);
-				//System.out.println(thisDescription.getProblem().getId());
+				//log.info(thisDescription.getProblem().getId());
 				if (thisDescription.getId() == nextDescription.getId()) {
-					System.out.println(thisDescription.getProblem().getId());
+					log.info(thisDescription.getProblem().getId() + "");
 					session.delete(thisDescription);
 				}
 			}
@@ -106,7 +109,7 @@ public class Customize {
 		List dataList;
 
 		for (int i = 9500; i < 100000; i += interval){
-			System.out.println(i);
+			log.info(i + "");
 			dataList = new ArrayList();
 			list = baseService.query("select s, c from Submission s left join s.contest c where s.id between " + i + " and " + (i + interval - 1));
 			for (Object[] o : list) {
@@ -136,7 +139,7 @@ public class Customize {
 		List dataList;
 
 		for (int i = 9500; i < 100000; i += interval){
-			System.out.println(i);
+			log.info(i + "");
 			dataList = new ArrayList();
 			list = baseService.query("select s, p.originOJ, p.originProb, c.password from Submission s left join s.problem p left join s.contest c where s.id between " + i + " and " + (i + interval - 1));
 			for (Object[] o : list) {

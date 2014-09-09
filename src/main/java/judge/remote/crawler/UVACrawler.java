@@ -13,23 +13,32 @@ import judge.executor.CascadeTask;
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
 import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
+import judge.httpclient.SimpleHttpResponse;
+import judge.remote.RemoteOj;
 import judge.remote.crawler.UVaProblemIdCrawlTask.UVaProblemInfo;
-import judge.remote.crawler.common.Crawler;
 import judge.remote.crawler.common.RawProblemInfo;
+import judge.remote.crawler.common.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class UVACrawler implements Crawler {
+@Component
+public class UVACrawler extends SyncCrawler {
 	
 	private static UVaProblemIdMapHelper helper = new UVaProblemIdMapHelper();
 
 	@Override
-	public String getOjName() {
-		return "UVA";
+	public RemoteOj getOj() {
+		return RemoteOj.UVA;
 	}
 
 	@Override
@@ -37,7 +46,7 @@ public class UVACrawler implements Crawler {
 		final UVaProblemInfo uvaProblemInfo = helper.getProblemInfo(problemId1);
 		
 		final HttpHost host = new HttpHost("uva.onlinejudge.org");
-		final DedicatedHttpClient client = new DedicatedHttpClient(host);
+		final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host);
 
 		final String outerUrl = host.toURI() + "/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=" + uvaProblemInfo.problemId2;
 		Task<String> taskOuter = new Task<String>(ExecutorTaskType.GENERAL) {
@@ -52,8 +61,13 @@ public class UVACrawler implements Crawler {
 			@Override
 			public String call() {
 				String url = host.toURI() + "/external/" + Integer.parseInt(problemId1) / 100 + "/" + problemId1 + ".html";
-				String html = client.get(url, HttpStatusValidator.SC_OK).getBody();
-				return HtmlHandleUtil.transformUrlToAbs(html, url);
+				SimpleHttpResponse response = client.get(url);
+				if (response.getStatusCode() == HttpStatus.SC_OK) {
+					String html = response.getBody();
+					return HtmlHandleUtil.transformUrlToAbs(html, url);
+				} else {
+					return "";
+				}
 			}
 		};
 		
@@ -109,10 +123,11 @@ public class UVACrawler implements Crawler {
  * To distinguish them, I'd like to call "100" problem_id_1, and call "36" problem_id_2.
  * </pre>
  * 
- * @author isun
+ * @author Isun
  * 
  */
 class UVaProblemIdMapHelper {
+	private final static Logger log = LoggerFactory.getLogger(UVaProblemIdMapHelper.class);
 
 	/**
 	 * category -> source
@@ -144,11 +159,12 @@ class UVaProblemIdMapHelper {
 		long begin = System.currentTimeMillis();
 		UVaProblemIdCrawlTask task = new UVaProblemIdCrawlTask("0", problemInfo, categoryInfo);
 		task.get();
-		System.out.println("UVa problem id map init cost " + (System.currentTimeMillis() - begin) + "ms");
+		log.info("UVa problem id map init cost " + (System.currentTimeMillis() - begin) + "ms");
 	}
 }
 
 class UVaProblemIdCrawlTask extends CascadeTask<Void> {
+	private final static Logger log = LoggerFactory.getLogger(UVaProblemIdCrawlTask.class);
 
 	private String category;
 	private Map<String, UVaProblemInfo> problemInfo;
@@ -170,10 +186,10 @@ class UVaProblemIdCrawlTask extends CascadeTask<Void> {
 			return null;
 		}
 		
-		System.out.println("> UVa problem id mapping, category = " + category);
+		log.info("> UVa problem id mapping, category = " + category);
 		
 		HttpHost host = new HttpHost("uva.onlinejudge.org");
-		DedicatedHttpClient client = new DedicatedHttpClient(host);
+		DedicatedHttpClient client = SpringBean.getBean(DedicatedHttpClientFactory.class).build(host);
 		String listPageUrl = "/index.php?option=com_onlinejudge&Itemid=8&limit=1000&limitstart=0&category=" + category;
 		String html = client.get(listPageUrl, HttpStatusValidator.SC_OK).getBody();
 		String tranformedHtml = HtmlHandleUtil.transformUrlToAbs(html, host.toURI() + listPageUrl);
@@ -213,7 +229,7 @@ class UVaProblemIdCrawlTask extends CascadeTask<Void> {
 			UVaProblemIdCrawlTask childTask = new UVaProblemIdCrawlTask(newCategory, problemInfo, categoryInfo);
 			addChildTask(childTask);
 		}
-		System.out.println("< UVa problem id mapping, category = " + category);
+		log.info("< UVa problem id mapping, category = " + category);
 		return null;
 	}
 	

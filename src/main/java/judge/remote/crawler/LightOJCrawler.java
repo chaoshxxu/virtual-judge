@@ -2,43 +2,63 @@ package judge.remote.crawler;
 
 import java.util.List;
 
-import judge.account.RemoteAccount;
-import judge.account.RemoteAccountTask;
 import judge.executor.ExecutorTaskType;
 import judge.httpclient.DedicatedHttpClient;
+import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
+import judge.remote.RemoteOj;
+import judge.remote.account.RemoteAccount;
+import judge.remote.account.RemoteAccountTask;
 import judge.remote.crawler.common.Crawler;
 import judge.remote.crawler.common.RawProblemInfo;
-import judge.remote.loginer.LightOJLoginer;
+import judge.remote.loginer.common.LoginersHolder;
+import judge.tool.Handler;
 import judge.tool.HtmlHandleUtil;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class LightOJCrawler implements Crawler {
 	
+	@Autowired
+	private DedicatedHttpClientFactory dedicatedHttpClientFactory;
+
 	@Override
-	public RawProblemInfo crawl(String problemId) throws Exception {
-		Validate.isTrue(problemId.matches("[1-9]\\d*"));
-		return new CrawlTask(problemId, ExecutorTaskType.UPDATE_PROBLEM_INFO, getOjName(), null, null).get();
+	public RemoteOj getOj() {
+		return RemoteOj.LightOJ;
+	}
+
+	@Override
+	public void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception {
+		try {
+			Validate.isTrue(problemId.matches("[1-9]\\d*"));
+		} catch (Throwable t) {
+			handler.onError(t);
+			return;
+		}
+		
+		new CrawlTask(problemId, handler).submit();
 	}
 	
 	class CrawlTask extends RemoteAccountTask<RawProblemInfo> {
 		private String problemId;
 
-		public CrawlTask(String problemId, ExecutorTaskType executorTaskType, String remoteOj, String accountId, String exclusiveCode) {
-			super(executorTaskType, remoteOj, accountId, exclusiveCode);
+		public CrawlTask(String problemId, Handler<RawProblemInfo> handler) {
+			super(ExecutorTaskType.UPDATE_PROBLEM_INFO, getOj(), null, null, handler);
 			this.problemId = problemId;
 		}
 
 		@Override
-		protected RawProblemInfo call(RemoteAccount remoteAccount) {
-			new LightOJLoginer().login(remoteAccount);
+		protected RawProblemInfo call(RemoteAccount remoteAccount) throws Exception {
+			LoginersHolder.getLoginer(getOj()).login(remoteAccount);
 			
-			HttpHost host = new HttpHost("lightoj.com");
-			DedicatedHttpClient client = new DedicatedHttpClient(host, remoteAccount.getContext());
+			HttpHost host = getOj().mainHost;
+			DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, remoteAccount.getContext(), getOj().defaultChaset);
 			
 			String problemUrl = host.toURI() + "/volume_showproblem.php?problem=" + problemId;
 			String pageContent = client.get(problemUrl, HttpStatusValidator.SC_OK).getBody();
@@ -75,11 +95,6 @@ public class LightOJCrawler implements Crawler {
 		info.source = (Tools.regFind(html, "(<div id=\"problem_setter\">[\\s\\S]*?)</div>\\s*</div>\\s*<span id=\"showNavigation\""));
 
 		Validate.isTrue(!StringUtils.isBlank(info.title));
-	}
-
-	@Override
-	public String getOjName() {
-		return "LightOJ";
 	}
 	
 }

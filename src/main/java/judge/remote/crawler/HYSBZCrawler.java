@@ -5,17 +5,25 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.crawler.common.Crawler;
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
+import judge.remote.crawler.common.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
+import org.springframework.stereotype.Component;
 
-public class HYSBZCrawler implements Crawler {
+@Component
+public class HYSBZCrawler extends SyncCrawler {
 	
+	@Override
+	public RemoteOj getOj() {
+		return RemoteOj.HYSBZ;
+	}
+
 	private static final HttpHost HOSTS[] = new HttpHost[] {
 		new HttpHost("www.lydsy.com"),
 		new HttpHost("www.lydsy.com", 808, "http"),
@@ -29,12 +37,12 @@ public class HYSBZCrawler implements Crawler {
 		String html = null;
 		for (HttpHost host : HOSTS) {
 			try {
-				DedicatedHttpClient client = new DedicatedHttpClient(host);
+				DedicatedHttpClient client = dedicatedHttpClientFactory.build(host);
 				problemUrl = getProblemUrl(host, problemId);
 				html = client.get(problemUrl, HttpStatusValidator.SC_OK).getBody();
 				html = HtmlHandleUtil.transformUrlToAbs(html, problemUrl);
 				break;
-			} catch (Exception e) {
+			} catch (Throwable t) {
 			}
 		}
 		Validate.notBlank(html);
@@ -59,11 +67,6 @@ public class HYSBZCrawler implements Crawler {
 		Validate.isTrue(!StringUtils.isBlank(info.title));
 
 		return info;
-	}
-
-	@Override
-	public String getOjName() {
-		return "HYSBZ";
 	}
 
 	protected String getProblemUrl(HttpHost host, String problemId) {

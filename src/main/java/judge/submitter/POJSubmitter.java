@@ -33,8 +33,11 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class POJSubmitter extends Submitter {
+	private final static Logger log = LoggerFactory.getLogger(POJSubmitter.class);
 
 	static final String OJ_NAME = "POJ";
 	static private boolean using[];
@@ -93,7 +96,7 @@ public class POJSubmitter extends Submitter {
 				return Integer.parseInt(matcher.group(1));
 			}
 		});
-		System.out.println("maxRunId : " + maxRunId);
+		log.info("maxRunId : " + maxRunId);
 	}
 	
 	private void login(String username, String password) throws ClientProtocolException, IOException {

@@ -21,6 +21,7 @@ public class HttpStatusValidator implements SimpleHttpResponseValidator {
 	/////////////////////////////////////////////////////////////////
 	
 	public static HttpStatusValidator SC_OK = new HttpStatusValidator(HttpStatus.SC_OK);
+	public static HttpStatusValidator SC_MOVED_PERMANENTLY = new HttpStatusValidator(HttpStatus.SC_MOVED_PERMANENTLY);
 	public static HttpStatusValidator SC_MOVED_TEMPORARILY = new HttpStatusValidator(HttpStatus.SC_MOVED_TEMPORARILY);
 
 }

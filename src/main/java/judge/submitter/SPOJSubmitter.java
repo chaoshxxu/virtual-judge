@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import judge.bean.Problem;
 import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +28,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -44,7 +46,7 @@ public class SPOJSubmitter extends Submitter {
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient client = SpringBean.getBean(MultipleProxyHttpClientFactory.class).getInstance(OJ_NAME);
 	
 	private HttpGet get;
 	private HttpPost post;
@@ -137,6 +139,7 @@ public class SPOJSubmitter extends Submitter {
 	private boolean isLoggedIn() throws ClientProtocolException, IOException {
 		try {
 			get = new HttpGet("/");
+			get.setConfig(RequestConfig.custom().setCircularRedirectsAllowed(true).build());
 			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);
@@ -251,6 +254,7 @@ public class SPOJSubmitter extends Submitter {
 	private void getAdditionalInfo() throws HttpException, IOException {
 		try {
 			get = new HttpGet("/error/" + runId);
+			get.setConfig(RequestConfig.custom().setCircularRedirectsAllowed(true).build());
 			response = client.execute(host, get, contexts[idx]);
 			entity = response.getEntity();
 			html = EntityUtils.toString(entity);

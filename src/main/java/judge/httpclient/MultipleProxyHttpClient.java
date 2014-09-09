@@ -18,39 +18,43 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("deprecation")
 public class MultipleProxyHttpClient implements HttpClient {
-	
+	private final static Logger log = LoggerFactory.getLogger(MultipleProxyHttpClient.class);
+
 	private String identifier;
 	private List<HttpClient> delegates;
 	
 	/**
 	 * How long the last request costs. If an exception is throw, take the value as the longest cost time in the past hour.
 	 */
-	private Integer[] lastCostTime;
+	private long[] lastCostTime;
 	
 	private int lastHour;
-	private int longestCostTimeInLastHour;
+	private long longestCostTimeInLastHour;
 	
 	public MultipleProxyHttpClient(String identifier, List<HttpClient> delegates) {
 		this.identifier = identifier;
 		this.delegates = delegates;
 
-		lastCostTime = new Integer[delegates.size()];
+		lastCostTime = new long[delegates.size()];
 		Arrays.fill(lastCostTime, 0);
 	}
-
+	
 	/**
 	 * Use the client that has the shortest lastCostTime
 	 */
 	@Override
-	public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws IOException, ClientProtocolException {
+	public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context) {
 		Calendar calendar = Calendar.getInstance();
 		if (calendar.get(Calendar.HOUR) != lastHour) {
 			lastHour = calendar.get(Calendar.HOUR);
 			longestCostTimeInLastHour = 0;
 		}
-
+		
 		List<Integer> indices = new ArrayList<Integer>();
 		for (int i = 0; i < delegates.size(); i++) {
 			indices.add(i);
@@ -58,7 +62,7 @@ public class MultipleProxyHttpClient implements HttpClient {
 		Collections.sort(indices, new Comparator<Integer>() {
 			@Override
 			public int compare(Integer a, Integer b) {
-				return lastCostTime[a].compareTo(lastCostTime[b]);
+				return (int) (lastCostTime[a] - lastCostTime[b]);
 			}
 		});
 		Exception finalException = null;
@@ -66,17 +70,32 @@ public class MultipleProxyHttpClient implements HttpClient {
 			HttpClient client = delegates.get(i);
 			try {
 				long beginTime = System.currentTimeMillis();
-				HttpResponse response = client.execute(target, request, context);
-				lastCostTime[i] = (int) (System.currentTimeMillis() - beginTime);
+				T result = client.execute(target, request, responseHandler, context);
+				lastCostTime[i] = System.currentTimeMillis() - beginTime;
 				longestCostTimeInLastHour = Math.max(longestCostTimeInLastHour, lastCostTime[i]);
-				return response;
+				
+//				for (int j = 0; j < delegates.size(); j++) {
+//					if (j == i) {
+//						System.out.print("(" + lastCostTime[j] + ") ");
+//					} else {
+//						System.out.print(lastCostTime[j] + " ");
+//					}
+//				}
+//				System.out.println();
+				
+				return result;
 			} catch (Exception e) {
-				lastCostTime[i] = 2 * longestCostTimeInLastHour;
+				lastCostTime[i] = Math.max(2 * longestCostTimeInLastHour, 30000);
 				finalException = e;
 			}
 		}
-		System.err.println("All clients of " + identifier + " failed.");
+		log.error("All clients of " + identifier + " failed.");
 		throw new RuntimeException(finalException);
+	}
+
+	@Override
+	public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws IOException, ClientProtocolException {
+		throw new RuntimeException("Not supported");
 	}
 	
 	@Override
@@ -107,50 +126,6 @@ public class MultipleProxyHttpClient implements HttpClient {
 	@Override
 	public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler) throws IOException, ClientProtocolException {
 		throw new RuntimeException("Not supported");
-	}
-
-	/**
-	 * Use the client that has the shortest lastCostTime
-	 */
-	@Override
-	public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context) {
-//		for (int time : lastCostTime) {
-//			System.out.print(time + " ");
-//		}
-//		System.out.println();
-		
-		Calendar calendar = Calendar.getInstance();
-		if (calendar.get(Calendar.HOUR) != lastHour) {
-			lastHour = calendar.get(Calendar.HOUR);
-			longestCostTimeInLastHour = 0;
-		}
-		
-		List<Integer> indices = new ArrayList<Integer>();
-		for (int i = 0; i < delegates.size(); i++) {
-			indices.add(i);
-		}
-		Collections.sort(indices, new Comparator<Integer>() {
-			@Override
-			public int compare(Integer a, Integer b) {
-				return lastCostTime[a].compareTo(lastCostTime[b]);
-			}
-		});
-		Exception finalException = null;
-		for (int i : indices) {
-			HttpClient client = delegates.get(i);
-			try {
-				long beginTime = System.currentTimeMillis();
-				T result = client.execute(target, request, responseHandler, context);
-				lastCostTime[i] = (int) (System.currentTimeMillis() - beginTime);
-				longestCostTimeInLastHour = Math.max(longestCostTimeInLastHour, lastCostTime[i]);
-				return result;
-			} catch (Exception e) {
-				lastCostTime[i] = 2 * longestCostTimeInLastHour;
-				finalException = e;
-			}
-		}
-		System.err.println("All clients of " + identifier + " failed.");
-		throw new RuntimeException(finalException);
 	}
 
 	@Override

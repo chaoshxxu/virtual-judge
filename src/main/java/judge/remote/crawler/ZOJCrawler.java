@@ -1,22 +1,19 @@
 package judge.remote.crawler;
 
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
 import judge.remote.crawler.common.SimpleCrawler;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.http.HttpHost;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ZOJCrawler extends SimpleCrawler {
 
 	@Override
-	public String getOjName() {
-		return "ZOJ";
-	}
-
-	@Override
-	protected HttpHost getHost() {
-		return new HttpHost("acm.zju.edu.cn");
+	public RemoteOj getOj() {
+		return RemoteOj.ZOJ;
 	}
 
 	@Override

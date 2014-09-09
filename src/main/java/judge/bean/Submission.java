@@ -2,6 +2,8 @@ package judge.bean;
 
 import java.util.Date;
 
+import judge.remote.status.RemoteStatusType;
+
 /**
  * 提交记录
  * @author Isun
@@ -9,17 +11,10 @@ import java.util.Date;
  */
 public class Submission {
 	private int id;			//Hibernate统编ID
-	private String status;		//状态
-	//Pending,
-	//Judging,
-	//Accepted,
-	//Wrong Answer,
-	//Time Limit Exceeded,
-	//Memory Limit Exceeded
-	//Output Limit Exceeded
-	//Runtime Error
-	//Compile Error
 
+	private String status;		//状态
+	private String statusCanonical;
+	
 	private String additionalInfo;	//额外信息，记录编译错误等信息
 	private String realRunId;	//在原OJ的RunId
 
@@ -37,12 +32,31 @@ public class Submission {
 	private String originOJ;	//原始OJ
 	private String originProb;	//原始OJ题号
 	private int isPrivate;		//是否不公开
-
+	
+	private String remoteAccountId; //交题账号
+	private Date remoteSubmitTime;	//原始OJ提交时间
+	private int queryCount;			//累计查询状态次数
+	private Date statusUpdateTime;	//最后查询状态时间
+	private int failCase = -1;
+	
 
 	private Problem problem;	//外键	题目
 	private User user;			//外键	提交人
 	private Contest contest;	//外键	比赛
 
+	public void reset() {
+		setStatus("Pending");
+		setStatusCanonical(RemoteStatusType.PENDING.name());
+		setAdditionalInfo(null);
+		setRealRunId(null);
+		setTime(0);
+		setMemory(0);
+		setRemoteAccountId(null);
+		setRemoteSubmitTime(null);
+		setQueryCount(0);
+		setStatusUpdateTime(null);
+		setFailCase(-1);
+	}
 
 	public int getIsOpen() {
 		return isOpen;
@@ -144,9 +158,6 @@ public class Submission {
 		return additionalInfo;
 	}
 	public void setAdditionalInfo(String additionalInfo) {
-		if (additionalInfo != null && additionalInfo.length() > 10000) {
-			additionalInfo = additionalInfo.substring(0, 10000) + "\n\n…………";
-		}
 		this.additionalInfo = additionalInfo;
 	}
 	public String getRealRunId() {
@@ -155,4 +166,41 @@ public class Submission {
 	public void setRealRunId(String realRunId) {
 		this.realRunId = realRunId;
 	}
+	public String getRemoteAccountId() {
+		return remoteAccountId;
+	}
+	public void setRemoteAccountId(String remoteAccountId) {
+		this.remoteAccountId = remoteAccountId;
+	}
+	public int getQueryCount() {
+		return queryCount;
+	}
+	public void setQueryCount(int queryCount) {
+		this.queryCount = queryCount;
+	}
+	public Date getStatusUpdateTime() {
+		return statusUpdateTime;
+	}
+	public void setStatusUpdateTime(Date statusUpdateTime) {
+		this.statusUpdateTime = statusUpdateTime;
+	}
+	public Date getRemoteSubmitTime() {
+		return remoteSubmitTime;
+	}
+	public void setRemoteSubmitTime(Date remoteSubmitTime) {
+		this.remoteSubmitTime = remoteSubmitTime;
+	}
+	public String getStatusCanonical() {
+		return statusCanonical;
+	}
+	public void setStatusCanonical(String statusCanonical) {
+		this.statusCanonical = statusCanonical;
+	}
+	public int getFailCase() {
+		return failCase;
+	}
+	public void setFailCase(int failCase) {
+		this.failCase = failCase;
+	}
+	
 }

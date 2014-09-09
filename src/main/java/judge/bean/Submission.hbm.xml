@@ -10,10 +10,13 @@
             <column name="C_ID"/>
             <generator class="native" />
         </id>
-		<property name="status" type="java.lang.String">
-		    <column name="C_STATUS" />
-		</property>
-		<property name="additionalInfo" type="java.lang.String">
+        <property name="status" type="java.lang.String">
+            <column name="C_STATUS" />
+        </property>
+        <property name="statusCanonical" type="java.lang.String">
+            <column name="C_STATUS_CANONICAL" />
+        </property>
+   		<property name="additionalInfo" type="java.lang.String">
 		    <column name="C_ADDITIONAL_INFO" />
 		</property>
 		<property name="realRunId" type="java.lang.String">
@@ -46,9 +49,21 @@
 		<property name="originOJ" type="java.lang.String">
 		    <column name="C_ORIGIN_OJ" />
 		</property>
-		<property name="originProb" type="java.lang.String">
-		    <column name="C_ORIGIN_PROB" />
-		</property>
+        <property name="originProb" type="java.lang.String">
+            <column name="C_ORIGIN_PROB" />
+        </property>
+        <property name="remoteAccountId" type="java.lang.String">
+            <column name="C_REMOTE_ACCOUNT_ID" />
+        </property>
+        <property name="remoteSubmitTime" type="java.sql.Timestamp">
+            <column name="C_REMOTE_SUBMIT_TIME" />
+        </property>
+        <property name="queryCount" type="java.lang.Integer">
+            <column name="C_QUERY_COUNT" />
+        </property>
+        <property name="statusUpdateTime" type="java.sql.Timestamp">
+            <column name="C_STATUS_UPDATE_TIME" />
+        </property>
 		<property name="isPrivate" type="java.lang.Integer">
 		    <column name="C_IS_PRIVATE" />
 		</property>

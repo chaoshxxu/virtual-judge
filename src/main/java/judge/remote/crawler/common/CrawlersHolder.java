@@ -3,30 +3,32 @@ package judge.remote.crawler.common;
 import java.util.HashMap;
 import java.util.List;
 
+import judge.remote.RemoteOj;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 public class CrawlersHolder {
 
-	private static HashMap<String, Crawler> crawlers = new HashMap<String, Crawler>();
+	private static HashMap<RemoteOj, Crawler> crawlers = new HashMap<RemoteOj, Crawler>();
 
-	public static Crawler getCrawler(String ojName) {
-		if (crawlers.isEmpty()) {
+	public static Crawler getCrawler(RemoteOj remoteOj) {
+		if (!crawlers.containsKey(remoteOj)) {
 			synchronized (crawlers) {
-				if (crawlers.isEmpty()) {
+				if (!crawlers.containsKey(remoteOj)) {
 					try {
 						List<Class<? extends Crawler>> crawlerClasses = Tools.findSubClasses("judge/remote/crawler", Crawler.class);
 						for (Class<? extends Crawler> crawlerClass : crawlerClasses) {
-							Crawler crawler = crawlerClass.newInstance();
-							crawlers.put(crawler.getOjName(), crawler);
+							Crawler crawler = SpringBean.getBean(crawlerClass);
+							crawlers.put(crawler.getOj(), crawler);
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw new RuntimeException(e);
+					} catch (Throwable t) {
+						t.printStackTrace();
+						System.exit(-1);
 					}
 				}
 			}
 		}
-		return crawlers.get(ojName);
+		return crawlers.get(remoteOj);
 	}
 
 }

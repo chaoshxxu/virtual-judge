@@ -15,7 +15,6 @@ import org.hibernate.Session;
 
 import judge.dao.IBaseDao;
 
-@SuppressWarnings("unchecked")
 public class BaseService implements IBaseService {
 
 	static private IBaseDao baseDao;

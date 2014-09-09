@@ -1,23 +1,20 @@
 package judge.remote.crawler;
 
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
 import judge.remote.crawler.common.SimpleCrawler;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.http.HttpHost;
+import org.springframework.stereotype.Component;
 
+@Component
 public class HDUCrawler extends SimpleCrawler {
 
 	@Override
-	public String getOjName() {
-		return "HDU";
-	}
-
-	@Override
-	protected HttpHost getHost() {
-		return new HttpHost("acm.hdu.edu.cn");
+	public RemoteOj getOj() {
+		return RemoteOj.HDU;
 	}
 
 	@Override
@@ -28,11 +25,6 @@ public class HDUCrawler extends SimpleCrawler {
 	@Override
 	protected void preValidate(String problemId) {
 		Validate.isTrue(problemId.matches("[1-9]\\d*"));
-	}
-
-	@Override
-	protected String getSiteCharset() {
-		return "gb2312";
 	}
 
 	@Override

@@ -5,28 +5,23 @@ import java.util.concurrent.ExecutionException;
 
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
 import judge.remote.crawler.common.SimpleCrawler;
 import judge.tool.HtmlHandleUtil;
 import judge.tool.MarkdownParser;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.http.HttpHost;
 import org.apache.struts2.json.JSONException;
 import org.apache.struts2.json.JSONUtil;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UESTCCrawler extends SimpleCrawler {
 	
-	private static final HttpHost HOST = new HttpHost("acm.uestc.edu.cn");
-
 	@Override
-	public String getOjName() {
-		return "UESTC";
-	}
-
-	@Override
-	protected HttpHost getHost() {
-		return HOST;
+	public RemoteOj getOj() {
+		return RemoteOj.UESTC;
 	}
 
 	@Override
@@ -87,7 +82,7 @@ public class UESTCCrawler extends SimpleCrawler {
 		info.sampleOutput = parseSampleOutputTask.get();
 		info.hint = parseHintTask.get();
 		info.source = ((String) problemJson.get("source"));
-		info.url = (HOST.toURI() + "/#/problem/show/" + problemId);	
+		info.url = (getHost().toURI() + "/#/problem/show/" + problemId);	
 	}
 	
 	class ParseTask extends Task<String> {
@@ -104,7 +99,7 @@ public class UESTCCrawler extends SimpleCrawler {
 		@Override
 		public String call() throws Exception {
 			String mdParsed = MarkdownParser.parse(str);
-			String transformed = HtmlHandleUtil.transformUrlToAbsBody(mdParsed, HOST.toURI() + "/#/problem/show/" + problemId);
+			String transformed = HtmlHandleUtil.transformUrlToAbsBody(mdParsed, getHost().toURI() + "/#/problem/show/" + problemId);
 			return transformed;
 		}
 		

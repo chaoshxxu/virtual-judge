@@ -1,23 +1,20 @@
 package judge.remote.crawler;
 
+import org.springframework.stereotype.Component;
+
+import judge.remote.RemoteOj;
 import judge.remote.crawler.common.RawProblemInfo;
 import judge.remote.crawler.common.SimpleCrawler;
 import judge.tool.Tools;
 
-import org.apache.http.HttpHost;
-
+@Component
 public class AizuCrawler extends SimpleCrawler {
 
 	@Override
-	public String getOjName() {
-		return "Aizu";
+	public RemoteOj getOj() {
+		return RemoteOj.Aizu;
 	}
 	
-	@Override
-	protected HttpHost getHost() {
-		return new HttpHost("judge.u-aizu.ac.jp");
-	}
-
 	@Override
 	protected String getProblemUrl(String problemId) {
 		return getHost().toURI() + "/onlinejudge/description.jsp?id=" + problemId;
@@ -25,7 +22,7 @@ public class AizuCrawler extends SimpleCrawler {
 
 	@Override
 	protected void populateProblemInfo(RawProblemInfo info, String problemId, String html) {
-		info.title = Tools.regFind(html, "<h1 class=\"title\">([\\s\\S]*?)</h1>").trim();
+		info.title = Tools.regFind(html, "<h1 class=\"title\">(?:.+</a> -)?([\\s\\S]*?)</h1>").trim();
 		info.timeLimit = 1000 * Integer.parseInt(Tools.regFind(html, "Time Limit : (\\d+) sec"));
 		info.memoryLimit = Integer.parseInt(Tools.regFind(html, "Memory Limit : (\\d+) KB"));
 		info.description = Tools.regFind(html, "<div class=\"description\">([\\s\\S]*?)<hr />").replaceAll("^[\\s\\S]*</h1>", "");

@@ -15,7 +15,11 @@ public class ProblemService {
 	private BaseService baseService;
 	
 	/**
-	 * (Re-)crawl problem if necessary
+	 * (Re-)crawl problem if any of the following is satisfied:
+	 * 1. Haven't tried crawling for more than 7 days;
+	 * 2. Haven't tried crawling for more than 10 minutes, since the last crawling, which failed,  
+	 * 3. Enforce == true, and ((not crawling) or (crawling for more than 1 hour)) 
+	 * 
 	 * @param problem
 	 * @param enforce
 	 */
@@ -31,8 +35,8 @@ public class ProblemService {
 			problem.setTimeLimit(1);
 			problem.setTriggerTime(new Date());
 			baseService.addOrModify(problem);
-			new ProblemInfoUpdateTask(problem, baseService).submit();
+			new ProblemInfoUpdateTask(problem).submit();
 		}
 	}
-
+	
 }

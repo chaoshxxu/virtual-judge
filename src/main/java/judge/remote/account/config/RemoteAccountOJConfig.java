@@ -1,4 +1,4 @@
-package judge.account.config;
+package judge.remote.account.config;
 
 import java.util.List;
 

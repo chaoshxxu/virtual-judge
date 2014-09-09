@@ -1,15 +1,21 @@
 package judge.remote.crawler.common;
 
-import judge.remote.RemoteOJAware;
+import judge.remote.RemoteOjAware;
+import judge.tool.Handler;
 
-public interface Crawler extends RemoteOJAware {
+/**
+ * Implementation should be stateless.
+ * @author Isun
+ *
+ */
+public interface Crawler extends RemoteOjAware {
 	
 	/**
 	 * 
-	 * @param problemId problem id on the original OJ
-	 * @return
+	 * @param problemId 
+	 * @param handler
 	 * @throws Exception
 	 */
-	RawProblemInfo crawl(String problemId) throws Exception;
+	void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception;
 
 }

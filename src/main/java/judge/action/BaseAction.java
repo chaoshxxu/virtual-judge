@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import judge.remote.RemoteOj;
 import judge.service.IBaseService;
 import judge.service.JudgeService;
 import judge.submitter.AizuSubmitter;
@@ -57,26 +58,26 @@ public class BaseAction extends ActionSupport{
 
 	static public List<String> OJList = new ArrayList<String>();
 	static {
-		OJList.add("POJ");
-		OJList.add("ZOJ");
-		OJList.add("UVALive");
-		OJList.add("SGU");
-		OJList.add("URAL");
-		OJList.add("HUST");
-		OJList.add("SPOJ");
-		OJList.add("HDU");
-		OJList.add("HYSBZ");
-		OJList.add("UVA");
-		OJList.add("CodeForces");
-		OJList.add("Z-Trening");
-		OJList.add("Aizu");
-		OJList.add("LightOJ");
-		OJList.add("UESTC-old");
-		OJList.add("UESTC");
-		OJList.add("NBUT");
-		OJList.add("FZU");
-		OJList.add("CSU");
-		OJList.add("SCU");
+		OJList.add(RemoteOj.POJ.toString());
+		OJList.add(RemoteOj.ZOJ.toString());
+		OJList.add(RemoteOj.UVALive.toString());
+		OJList.add(RemoteOj.SGU.toString());
+		OJList.add(RemoteOj.URAL.toString());
+		OJList.add(RemoteOj.HUST.toString());
+		OJList.add(RemoteOj.SPOJ.toString());
+		OJList.add(RemoteOj.HDU.toString());
+		OJList.add(RemoteOj.HYSBZ.toString());
+		OJList.add(RemoteOj.UVA.toString());
+		OJList.add(RemoteOj.CodeForces.toString());
+		OJList.add(RemoteOj.ZTrening.toString());
+		OJList.add(RemoteOj.Aizu.toString());
+		OJList.add(RemoteOj.LightOJ.toString());
+		OJList.add(RemoteOj.UESTCOld.toString());
+		OJList.add(RemoteOj.UESTC.toString());
+		OJList.add(RemoteOj.NBUT.toString());
+		OJList.add(RemoteOj.FZU.toString());
+		OJList.add(RemoteOj.CSU.toString());
+		OJList.add(RemoteOj.SCU.toString());
 	}
 
 	static private List<String> OJListAll = new ArrayList<String>();

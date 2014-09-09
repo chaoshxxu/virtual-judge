@@ -8,21 +8,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
 
-public abstract class SimpleCrawler implements Crawler {
-	
+public abstract class SimpleCrawler extends SyncCrawler {
+
 	@Override
-	public RawProblemInfo crawl(String problemId) throws Exception {
+	protected RawProblemInfo crawl(String problemId) throws Exception {
 		preValidate(problemId);
-		HttpHost host = getHost();
-		DedicatedHttpClient client = new DedicatedHttpClient(host, getSiteCharset());
+		DedicatedHttpClient client = dedicatedHttpClientFactory.build(getHost(), getCharset());
 
 		String problemUrl = getProblemUrl(problemId);
 		String pageContent = client.get(problemUrl, HttpStatusValidator.SC_OK).getBody();
 		if (autoTransformAbsoluteHref()) {
-//			System.out.println(pageContent);
+//			log.info(pageContent);
 			pageContent = HtmlHandleUtil.transformUrlToAbs(pageContent, problemUrl);
-//			System.out.println("\n\n------------------------------------\n\n");
-//			System.out.println(pageContent);
+//			log.info("\n\n------------------------------------\n\n");
+//			log.info(pageContent);
 		}
 
 		RawProblemInfo info = new RawProblemInfo();
@@ -31,18 +30,30 @@ public abstract class SimpleCrawler implements Crawler {
 		
 		Validate.isTrue(!StringUtils.isBlank(info.title));
 		Validate.isTrue(info.timeLimit > 2);
-
+		
 		return info;
 	}
 	
-	protected abstract HttpHost getHost();
+	/**
+	 * Can be overridden
+	 * @return
+	 */
+	protected HttpHost getHost() {
+		return getOj().mainHost;
+	}
+	
+	/**
+	 * Can be overridden
+	 * @return
+	 */
+	protected String getCharset() {
+		return getOj().defaultChaset;
+	}
+
 	protected abstract String getProblemUrl(String problemId);
 	protected void preValidate(String problemId) {}
 	protected boolean autoTransformAbsoluteHref() {
 		return true;
-	}
-	protected String getSiteCharset() {
-		return "UTF-8";
 	}
 	
 	/**
@@ -66,5 +77,7 @@ public abstract class SimpleCrawler implements Crawler {
 	 * @param html
 	 */
 	protected abstract void populateProblemInfo(RawProblemInfo info, String problemId, String html) throws Exception;
+
+
 	
 }

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.http.Consts;
@@ -33,15 +34,18 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AizuSubmitter extends Submitter {
+	private final static Logger log = LoggerFactory.getLogger(AizuSubmitter.class);
 
 	static final String OJ_NAME = "Aizu";
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient client = SpringBean.getBean(MultipleProxyHttpClientFactory.class).getInstance(OJ_NAME);
 	
 	private HttpGet get;
 	private HttpPost post;
@@ -181,7 +185,7 @@ public class AizuSubmitter extends Submitter {
 	}
 	
 	private int calcTime(String s) {
-		System.out.println(s);
+		log.info(s);
 		Matcher matcher = Pattern.compile("(\\d+):(\\d+)").matcher(s);
 		if (matcher.find()) {
 			Integer a = Integer.parseInt(matcher.group(1), 10);

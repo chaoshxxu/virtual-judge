@@ -1,123 +1,146 @@
 package judge.httpclient;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-/**
- * Note: Be careful that this factory may not be generic! 
- * @author Isun
- *
- */
-@SuppressWarnings("deprecation")
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+
 public class MultipleProxyHttpClientFactory {
+//	private final static Logger log = LoggerFactory.getLogger(MultipleProxyHttpClientFactory.class);
+	
+	private List<HttpClient> delegates;
+	private Map<String, MultipleProxyHttpClient> instances = new HashMap<String, MultipleProxyHttpClient>();
+	private File jsonConfig;
+	
+	public MultipleProxyHttpClientFactory(String jsonConfigPath) {
+		this.jsonConfig = new File(jsonConfigPath);
+	}
 
-	private static List<HttpClient> delegates = new ArrayList<HttpClient>();
-	private static Map<String, MultipleProxyHttpClient> instances = new HashMap<String, MultipleProxyHttpClient>();
+	private HttpClientBuilder getBaseBuilder() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+		SSLContextBuilder contextBuilder = SSLContexts.custom();
+		contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+			@Override
+			public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				return true;
+			}
+		});
+		SSLContext sslContext = contextBuilder.build();
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, new X509HostnameVerifier() {
+			@Override
+			public void verify(String host, SSLSocket ssl) throws IOException {
+			}
 
-	static {
-		Scheme sslScheme = null;
-		try {
-			X509TrustManager tm = new X509TrustManager() {
-				public void checkClientTrusted(X509Certificate[] xcs, String string) {
-				}
+			@Override
+			public void verify(String host, X509Certificate cert) throws SSLException {
+			}
 
-				public void checkServerTrusted(X509Certificate[] xcs, String string) {
-				}
+			@Override
+			public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
+			}
 
-				public X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-			};
+			@Override
+			public boolean verify(String s, SSLSession sslSession) {
+				return true;
+			}
+		});
 
-			SSLContext sslcontext;
-			sslcontext = SSLContext.getInstance("TLS");
+		Registry<ConnectionSocketFactory> socketFactoryRegistry = 
+				RegistryBuilder.<ConnectionSocketFactory> create()
+				.register("https", sslsf)
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.build();
 
-			sslcontext.init(null, new TrustManager[] { tm }, null);
-
-			SSLSocketFactory socketFactory = new SSLSocketFactory(sslcontext, SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
-			// 不校验域名
-			socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-			sslScheme = new Scheme("https", 443, socketFactory);
-
-			SchemeRegistry schemeRegistry = new SchemeRegistry();
-			schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-			schemeRegistry.register(sslScheme);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		}
-
-		Scheme paramSocksScheme = new Scheme("http", 80, new SocksSchemeSocketFactory());
-
-		// ////////////////////////////////////////////////////////////////
-
-		PoolingClientConnectionManager plainCM = new PoolingClientConnectionManager();
-		plainCM.setMaxTotal(200);
-		plainCM.setDefaultMaxPerRoute(40);
-		plainCM.getSchemeRegistry().register(sslScheme);
-
-		PoolingClientConnectionManager paramSocksCM = new PoolingClientConnectionManager();
-		paramSocksCM.setMaxTotal(200);
-		paramSocksCM.setDefaultMaxPerRoute(40);
-		paramSocksCM.getSchemeRegistry().register(sslScheme);
-		paramSocksCM.getSchemeRegistry().register(paramSocksScheme);
-
-		// ////////////////////////////////////////////////////////////////
-
-		// 0
-		final HttpClient lrqHttpProxyClient = new DefaultHttpClient(plainCM);
-		HttpHost lrqHttpProxyHost = new HttpHost("106.186.23.182", 25);
-		lrqHttpProxyClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, lrqHttpProxyHost);
-
-		// 1
-		final HttpClient lrqSocksProxyClient = new DefaultHttpClient(paramSocksCM);
-		lrqSocksProxyClient.getParams().setParameter("socks.host", "106.186.23.182");
-		lrqSocksProxyClient.getParams().setParameter("socks.port", 21);
-
-		// 2
-		final HttpClient localssProxyClient = new DefaultHttpClient(paramSocksCM);
-		localssProxyClient.getParams().setParameter("socks.host", "127.0.0.1");
-		localssProxyClient.getParams().setParameter("socks.port", 1080);
-
-		// 3
-		final HttpClient plainClient = new DefaultHttpClient(plainCM);
-
-		delegates.add(lrqHttpProxyClient);
-		delegates.add(lrqSocksProxyClient);
-		delegates.add(localssProxyClient);
-		delegates.add(plainClient);
-
-		for (HttpClient client : delegates) {
-			((DefaultHttpClient) client).getParams().setParameter(CoreProtocolPNames.USER_AGENT,
-					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
-			((DefaultHttpClient) client).getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 30000);
-			((DefaultHttpClient) client).getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 30000);
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+		return HttpClients.custom().setConnectionManager(cm);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@PostConstruct
+	public void init() throws JsonIOException, JsonSyntaxException, FileNotFoundException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+		Map<String, Object> proto = new HashMap<String, Object>();
+		Map<String, Object> httpClientConfigs = new Gson().fromJson(new FileReader(jsonConfig), proto.getClass());
+		
+		int socketTimeout = ((Double)httpClientConfigs.get("socket_timeout")).intValue();
+		int connectionTimeout = ((Double)httpClientConfigs.get("connection_timeout")).intValue();
+		int maxConnTotal = ((Double)httpClientConfigs.get("max_conn_total")).intValue();
+		int maxConnPerRoute = ((Double)httpClientConfigs.get("max_conn_per_route")).intValue();
+		String userAgent = (String) httpClientConfigs.get("user_agent");
+		ArrayList<ArrayList<Object>> proxyConfigs = (ArrayList<ArrayList<Object>>) httpClientConfigs.get("proxies");
+		
+		RequestConfig config = RequestConfig.custom()
+			    .setSocketTimeout(socketTimeout)
+			    .setConnectTimeout(connectionTimeout)
+			    .build();
+		
+		HttpClientBuilder baseBuilder = getBaseBuilder()
+			.setMaxConnTotal(maxConnTotal)
+			.setMaxConnPerRoute(maxConnPerRoute)
+			.setUserAgent(userAgent)
+			.setDefaultRequestConfig(config);
+			
+		delegates = new ArrayList<HttpClient>();
+		delegates.add(baseBuilder.build());
+		for (ArrayList<Object> proxyConfig : proxyConfigs) {
+			String address = (String) proxyConfig.get(0);
+			int port = ((Double)proxyConfig.get(1)).intValue();
+			HttpHost proxyHost = new HttpHost(address, port);
+			
+			if (proxyConfig.size() >= 4) {
+				String username = (String) proxyConfig.get(2);
+				String password = (String) proxyConfig.get(3);
+				CredentialsProvider credsProvider = new BasicCredentialsProvider();
+				credsProvider.setCredentials(
+						new AuthScope(address, port),
+						new UsernamePasswordCredentials(username, password));
+				baseBuilder.setDefaultCredentialsProvider(credsProvider);
+			}
+			
+	        CloseableHttpClient httpclient = baseBuilder.setProxy(proxyHost).build();
+	        delegates.add(httpclient);
 		}
 	}
 
-	static public MultipleProxyHttpClient getInstance(String identifier) {
+	public MultipleProxyHttpClient getInstance(String identifier) {
 		if (!instances.containsKey(identifier)) {
 			synchronized (instances) {
 				if (!instances.containsKey(identifier)) {

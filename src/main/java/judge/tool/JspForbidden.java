@@ -20,11 +20,11 @@ public class JspForbidden implements Filter {
 
 		/* 获取客户端请求的上下文根 */
 		String path = request.getContextPath();
-		// System.out.println(path);
+		// log.info(path);
 
 		/* 获取客户端请求的url */
 		String url = request.getRequestURI();
-		// System.out.println(url);
+		// log.info(url);
 
 		if (url.endsWith("jsp")) {
 			response.sendRedirect(path + "/toIndex.action");

@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import judge.bean.Problem;
 import judge.httpclient.MultipleProxyHttpClientFactory;
 import judge.tool.ApplicationContainer;
+import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.apache.http.HttpEntity;
@@ -34,15 +35,18 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZOJSubmitter extends Submitter {
+	private final static Logger log = LoggerFactory.getLogger(ZOJSubmitter.class);
 
 	static final String OJ_NAME = "ZOJ";
 	static private boolean using[];
 	static private String[] usernameList;
 	static private String[] passwordList;
 	static private HttpContext[] contexts;
-	static private HttpClient client = MultipleProxyHttpClientFactory.getInstance(OJ_NAME);
+	static private HttpClient client = SpringBean.getBean(MultipleProxyHttpClientFactory.class).getInstance(OJ_NAME);
 	
 	private HttpGet get;
 	private HttpPost post;
@@ -105,7 +109,7 @@ public class ZOJSubmitter extends Submitter {
 		Matcher m = p.matcher(html);
 		if (m.find()) {
 			maxRunId = Integer.parseInt(m.group(1));
-			System.out.println("maxRunId : " + maxRunId);
+			log.info("maxRunId : " + maxRunId);
 		} else {
 			throw new RuntimeException();
 		}

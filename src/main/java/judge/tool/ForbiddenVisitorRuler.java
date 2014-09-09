@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -24,6 +26,7 @@ public class ForbiddenVisitorRuler {
 		this.config = config;
 	}
 	
+	@PostConstruct
 	public void init() throws DocumentException, IOException {
 		SAXReader reader = new SAXReader();
         Document document = reader.read(config.getInputStream());

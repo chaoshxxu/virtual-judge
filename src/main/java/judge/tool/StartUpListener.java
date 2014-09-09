@@ -11,11 +11,15 @@ import javax.servlet.ServletContextListener;
 
 import judge.service.JudgeService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StartUpListener implements ServletContextListener {
+	private final static Logger log = LoggerFactory.getLogger(StartUpListener.class);
 
 	/* 监听服务器启动 */
 	public void contextInitialized(ServletContextEvent event) {
-		System.out.println("系统启动");
+		log.info("系统启动");
 
 		ServletContext sc = event.getServletContext();
 		ApplicationContainer.sc = sc;
@@ -39,12 +43,12 @@ public class StartUpListener implements ServletContextListener {
 		sc.setAttribute("version", new Date().getTime() + "");
 
 		JudgeService judgeService = (JudgeService) SpringBean.getBean("judgeService");
-        judgeService.initJudge();
+//        judgeService.initJudge();
         judgeService.initProblemSpiding();
 	}
 
 	/* 监听服务器关闭 */
 	public void contextDestroyed(ServletContextEvent event) {
-		System.out.println("系统关闭");
+		log.info("系统关闭");
 	}
 }

@@ -1,10 +1,15 @@
 package judge.remote.loginer.common;
 
-import judge.account.RemoteAccount;
-import judge.remote.RemoteOJAware;
+import judge.remote.RemoteOjAware;
+import judge.remote.account.RemoteAccount;
 
-public interface Loginer extends RemoteOJAware {
+/**
+ * Implementation should be stateless.
+ * @author Isun
+ *
+ */
+public interface Loginer extends RemoteOjAware {
 
-	void login(RemoteAccount account);
+	void login(RemoteAccount account) throws Exception;
 
 }

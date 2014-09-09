@@ -9,17 +9,18 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-
-import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.interceptor.ServletRequestAware;
-
 import judge.bean.User;
 import judge.interceptor.AutoLoginInterceptor;
 import judge.service.AutoLoginManager;
+import judge.service.BaseService;
 import judge.service.UserService;
 import judge.tool.CookieUtil;
 import judge.tool.MD5;
 import judge.tool.OnlineTool;
+
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 
@@ -41,10 +42,13 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 	private String newpassword;
 	private String redir;
 	private HttpServletRequest request;
-	private UserService userService;
 	
 	private AutoLoginManager autoLoginManager;
 
+	@Autowired
+	private BaseService baseService;
+
+	private UserService userService;
 
 	public String login(){
 		Map session = ActionContext.getContext().getSession();
@@ -119,7 +123,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 		user.setEmail(email);
 		user.setBlog(blog);
 		user.setShare(share);
-		userService.addOrModify(user);
+		baseService.addOrModify(user);
 		Map session = ActionContext.getContext().getSession();
 		session.put("visitor", user);
 
@@ -132,7 +136,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 	}
 
 	public String toUpdate(){
-		user = (User) userService.query(User.class, uid);
+		user = (User) baseService.query(User.class, uid);
 		username = user.getUsername();
 		nickname = user.getNickname();
 		school = user.getSchool();
@@ -147,7 +151,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 
 
 	public String update(){
-		user = (User) userService.query(User.class, uid);
+		user = (User) baseService.query(User.class, uid);
 		Map session = ActionContext.getContext().getSession();
 		User cUser = (User) session.get("visitor");
 		if (user == null || cUser == null || cUser.getId() != user.getId()){
@@ -196,14 +200,14 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 		user.setEmail(email);
 		user.setBlog(blog);
 		user.setShare(share);
-		userService.addOrModify(user);
+		baseService.addOrModify(user);
 		session.put("visitor", user);
 		return SUCCESS;
 	}
 
 
 	public String profile() {
-		user = (User) userService.query(User.class, uid);
+		user = (User) baseService.query(User.class, uid);
 		return SUCCESS;
 	}
 

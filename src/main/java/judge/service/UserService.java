@@ -6,8 +6,13 @@ import java.util.Map;
 
 import judge.bean.User;
 
-public class UserService extends BaseService {
+import org.springframework.beans.factory.annotation.Autowired;
 
+public class UserService {
+
+	@Autowired
+	private BaseService baseService;
+	
 	// ==============================================================
 	// 函数名：checkUsername
 	// 函数描述：检测用户名是否存在
@@ -17,7 +22,7 @@ public class UserService extends BaseService {
 	public boolean checkUsername(String username) {
 		Map paraMap = new HashMap();
 		paraMap.put("username", username);
-		List re = this.query("select user.username from User user where user.username = :username ", paraMap);
+		List re = baseService.query("select user.username from User user where user.username = :username ", paraMap);
 		return re.size() > 0;
 	}
 
@@ -32,7 +37,7 @@ public class UserService extends BaseService {
 		Map paraMap = new HashMap();
 		paraMap.put("username", username);
 		paraMap.put("password", password);
-		List re = this.query("select user from User user where user.username = :username and user.password = :password", paraMap);
+		List re = baseService.query("select user from User user where user.username = :username and user.password = :password", paraMap);
 		return re.size() > 0;
 	}
 
@@ -46,7 +51,7 @@ public class UserService extends BaseService {
 	public User getByUsername(String username) {
 		Map paraMap = new HashMap();
 		paraMap.put("username", username);
-		List list = this.query("select user from User user where user.username = :username ", paraMap);
+		List list = baseService.query("select user from User user where user.username = :username ", paraMap);
 		return  list.size() > 0 ? (User) list.get(0) : null;
 	}
 }
