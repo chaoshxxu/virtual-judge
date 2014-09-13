@@ -31,7 +31,7 @@ public class QueryStatusManager {
 	 * If s submission is queried failed and was submitted such milliseconds
 	 * ago, regard it as a dead submission and allow resubmit.
 	 */
-	private final static long MAX_CONFIDENCE_LENGTH = 86400000L;
+	private final static long MAX_CONFIDENCE_LENGTH = 3 * 86400L * 1000L;
 
 	@Autowired
 	private IBaseService baseService;
@@ -124,7 +124,7 @@ public class QueryStatusManager {
 				@Override
 				public void onError(Throwable t) {
 					log.error(t.getMessage(), t);
-					if (submission.getSubTime() == null || System.currentTimeMillis() - submission.getSubTime().getTime() > MAX_CONFIDENCE_LENGTH) {
+					if (submission.getSubTime() == null || System.currentTimeMillis() - submission.getRemoteSubmitTime().getTime() > MAX_CONFIDENCE_LENGTH) {
 						submission.reset();
 					}
 					stopQuery(submission);

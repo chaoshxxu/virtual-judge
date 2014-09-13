@@ -54,9 +54,9 @@ public class TaskExecutor {
 	}
 	
 	public void shutdown() {
-		delayedTaskDispatcher.shutdown();
+		delayedTaskDispatcher.shutdownNow();
 		for (ThreadPoolExecutor executor : executors.values()) {
-			executor.shutdown();
+			executor.shutdownNow();
 		}
 	}
 	
