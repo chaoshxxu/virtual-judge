@@ -10,8 +10,8 @@ import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
-import judge.remote.misc.CodeForcesUtil;
-import judge.remote.misc.CodeForcesUtil.CodeForcesToken;
+import judge.remote.misc.CodeForcesTokenUtil;
+import judge.remote.misc.CodeForcesTokenUtil.CodeForcesToken;
 import judge.remote.submitter.common.CanonicalSubmitter;
 import judge.remote.submitter.common.SubmissionInfo;
 
@@ -42,7 +42,7 @@ public class CodeForcesSubmitter extends CanonicalSubmitter {
 
 	@Override
 	protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws IOException, InterruptedException {
-		CodeForcesToken token = CodeForcesUtil.getTokens(client);
+		CodeForcesToken token = CodeForcesTokenUtil.getTokens(client);
 		
 		HttpEntity entity = SimpleNameValueEntityFactory.create( //
 			"csrf_token", token.csrf_token, //

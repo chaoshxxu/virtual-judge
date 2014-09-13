@@ -61,18 +61,7 @@ public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
 	}
 	
 	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"queue", RemoteStatusType.QUEUEING, //
 			"Sent to judge", RemoteStatusType.QUEUEING, //
-			"Received", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"Accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong answer", RemoteStatusType.WA, //
-			"Time limit exceeded", RemoteStatusType.TLE, //
-			"Memory limit exceeded", RemoteStatusType.MLE, //
-			"Output Limit Exceeded", RemoteStatusType.OLE, //
-			"Runtime error", RemoteStatusType.RE, //
-			"Compilation error", RemoteStatusType.CE //
+			"Received", RemoteStatusType.QUEUEING //
 	);
 }

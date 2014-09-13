@@ -6,8 +6,8 @@ import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.common.RetentiveLoginer;
-import judge.remote.misc.CodeForcesUtil;
-import judge.remote.misc.CodeForcesUtil.CodeForcesToken;
+import judge.remote.misc.CodeForcesTokenUtil;
+import judge.remote.misc.CodeForcesTokenUtil.CodeForcesToken;
 
 import org.apache.http.HttpEntity;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class CodeForcesLoginer extends RetentiveLoginer {
 			return;
 		}
 
-		CodeForcesToken token = CodeForcesUtil.getTokens(client);
+		CodeForcesToken token = CodeForcesTokenUtil.getTokens(client);
 		HttpEntity entity = SimpleNameValueEntityFactory.create( //
 				"csrf_token", token.csrf_token, //
 				"_tta", token._tta, //

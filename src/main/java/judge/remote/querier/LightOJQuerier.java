@@ -59,17 +59,8 @@ public class LightOJQuerier extends AuthenticatedQuerier {
 	}
 	
 	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"Pending", RemoteStatusType.QUEUEING, //
-			"Not Judged Yet", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"Accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong Answer", RemoteStatusType.WA, //
-			"Time Limit Exceeded", RemoteStatusType.TLE, //
-			"Memory Limit Exceed", RemoteStatusType.MLE, //
-			"Output Limit Exceed", RemoteStatusType.OLE, //
-			"Runtime Error", RemoteStatusType.RE, //
-			"Compilation Error", RemoteStatusType.CE //
+			"Not Judged Yet", RemoteStatusType.QUEUEING //
 	);
+
+	
 }

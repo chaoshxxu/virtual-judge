@@ -8,27 +8,6 @@ import java.util.Map;
 import judge.remote.RemoteOj;
 import judge.service.IBaseService;
 import judge.service.JudgeService;
-import judge.submitter.AizuSubmitter;
-import judge.submitter.CSUSubmitter;
-import judge.submitter.CodeForcesSubmitter;
-import judge.submitter.FZUSubmitter;
-import judge.submitter.HDUSubmitter;
-import judge.submitter.HUSTSubmitter;
-import judge.submitter.HYSBZSubmitter;
-import judge.submitter.LightOJSubmitter;
-import judge.submitter.NBUTSubmitter;
-import judge.submitter.POJSubmitter;
-import judge.submitter.SCUSubmitter;
-import judge.submitter.SGUSubmitter;
-import judge.submitter.SPOJSubmitter;
-import judge.submitter.Submitter;
-import judge.submitter.UESTCOldSubmitter;
-import judge.submitter.UESTCSubmitter;
-import judge.submitter.URALSubmitter;
-import judge.submitter.UVALiveSubmitter;
-import judge.submitter.UVASubmitter;
-import judge.submitter.ZOJSubmitter;
-import judge.submitter.ZTreningSubmitter;
 
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -86,29 +65,29 @@ public class BaseAction extends ActionSupport{
 		OJListAll.addAll(OJList);
 	}
 
-	static public Map<String, Submitter> submitterMap = new HashMap<String, Submitter>();
-	static {
-		submitterMap.put("POJ", new POJSubmitter());
-		submitterMap.put("ZOJ", new ZOJSubmitter());
-		submitterMap.put("UVALive", new UVALiveSubmitter());
-		submitterMap.put("SGU", new SGUSubmitter());
-		submitterMap.put("URAL", new URALSubmitter());
-		submitterMap.put("HUST", new HUSTSubmitter());
-		submitterMap.put("SPOJ", new SPOJSubmitter());
-		submitterMap.put("HDU", new HDUSubmitter());
-		submitterMap.put("HYSBZ", new HYSBZSubmitter());
-		submitterMap.put("UVA", new UVASubmitter());
-		submitterMap.put("CodeForces", new CodeForcesSubmitter());
-		submitterMap.put("Z-Trening", new ZTreningSubmitter());
-		submitterMap.put("Aizu", new AizuSubmitter());
-		submitterMap.put("LightOJ", new LightOJSubmitter());
-		submitterMap.put("UESTC-old", new UESTCOldSubmitter());
-		submitterMap.put("UESTC", new UESTCSubmitter());
-		submitterMap.put("NBUT", new NBUTSubmitter());
-		submitterMap.put("FZU", new FZUSubmitter());
-		submitterMap.put("CSU", new CSUSubmitter());
-		submitterMap.put("SCU", new SCUSubmitter());
-	}
+//	static public Map<String, Submitter> submitterMap = new HashMap<String, Submitter>();
+//	static {
+//		submitterMap.put("POJ", new POJSubmitter());
+//		submitterMap.put("ZOJ", new ZOJSubmitter());
+//		submitterMap.put("UVALive", new UVALiveSubmitter());
+//		submitterMap.put("SGU", new SGUSubmitter());
+//		submitterMap.put("URAL", new URALSubmitter());
+//		submitterMap.put("HUST", new HUSTSubmitter());
+//		submitterMap.put("SPOJ", new SPOJSubmitter());
+//		submitterMap.put("HDU", new HDUSubmitter());
+//		submitterMap.put("HYSBZ", new HYSBZSubmitter());
+//		submitterMap.put("UVA", new UVASubmitter());
+//		submitterMap.put("CodeForces", new CodeForcesSubmitter());
+//		submitterMap.put("Z-Trening", new ZTreningSubmitter());
+//		submitterMap.put("Aizu", new AizuSubmitter());
+//		submitterMap.put("LightOJ", new LightOJSubmitter());
+//		submitterMap.put("UESTC-old", new UESTCOldSubmitter());
+//		submitterMap.put("UESTC", new UESTCSubmitter());
+//		submitterMap.put("NBUT", new NBUTSubmitter());
+//		submitterMap.put("FZU", new FZUSubmitter());
+//		submitterMap.put("CSU", new CSUSubmitter());
+//		submitterMap.put("SCU", new SCUSubmitter());
+//	}
 
 	static public Map<String, String> lf = new HashMap<String, String>();
 	static {

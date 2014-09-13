@@ -17,6 +17,7 @@ var sliderUpdater;
 var statusTimeoutInstance = {};	//status fetch
 var oFH;
 var exportRankHtml;
+var timeoutHandle;
 
 $(function(){
 	
@@ -236,18 +237,24 @@ $(function(){
 		return false;
 	});
 	
-	$("a.rejudge").live("click", function(){
-		var $row = $(this).parent().parent();
+	$(".rejudge").live("click", function(){
+		var $this = $(this);
+		var $row = $this.is("td") ? $this.parent() : $this;
 		var id = $row.attr("id");
 		$row.removeClass("no");
 		$row.removeClass("yes");
-		$row.addClass("pending");
+		$row.addClass("working");
+		$row.removeClass("rejudge");
 		$.post("problem/rejudge.action", {id: id}, function() {
-			getResult(id);
+			clearTimeout(timeoutHandle);
+			timeoutHandle = setTimeout(getResult, 1000);
 		});
-		return false;
 	});
-	
+
+	$(".rejudge a").live("click", function(event){
+		event.stopPropagation();
+	});
+
 	/////////////////////     Rank      //////////////////////
 	
 	$("#rank").css("width", 400 + $("table#viewContest tr").length * 80 + "px");
@@ -472,9 +479,9 @@ function showStatus() {
 				},
 				{
 					"fnRender": function ( oObj ) {
-						var info = oObj.aData[3] == 'Judging Error 1' || oObj.aData[3] == 'Judging Error 2' && $("[name='isSup']").val() != 0 ? oObj.aData[3] + " <a href='#' class='rejudge' ><img border=0 height='15' src='images/refresh.png'/></a>" : oObj.aData[3];
+						var info = oObj.aData[3];
 						if (oObj.aData[12]) {
-							info = "<a href='contest/fetchSubmissionInfo.action?id=" + oObj.aData[0] + "' rel='facebox'>" + info + "</a>";
+							info = "<a href='problem/fetchSubmissionInfo.action?id=" + oObj.aData[0] + "' rel='facebox'>" + info + "</a>";
 						}
 						return info;
 					},
@@ -513,6 +520,8 @@ function showStatus() {
 				{"bVisible": false},
 				{"bVisible": false},
 				{"bVisible": false},
+				{"bVisible": false},
+				{"bVisible": false},
 				{"bVisible": false}
 			],
 			"fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -533,17 +542,27 @@ function showStatus() {
 				} );
 			},
 			"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-				$(nRow).addClass(aData[3]=="Accepted" ? "yes" : aData[3].indexOf("ing") < 0 || aData[3].indexOf("rror") >= 0 ? "no" : "pending");
+				$(nRow).addClass(aData[13] == 0 ? "yes" : aData[13] == 1 ? "no" : "pending");
+				if (aData[14]) {
+					$(nRow).addClass("working");
+				}
 				$(nRow).attr("id", aData[0]);
 				$('a[rel=facebox]', $(nRow)).facebox({
 					loadingImage : 'facebox/loading.gif',
 					closeImage   : 'facebox/closelabel.png'
 				});
-				if ($(nRow).hasClass("pending")){
-					getResult(aData[0]);
+				if (aData[13] == 2 && aData[14] == 0) {
+					$(nRow).addClass("rejudge");
+				} else if (isSup) {
+					$("td:eq(8)", $(nRow)).addClass("rejudge");
 				}
 				return nRow;
+			},
+			
+			"fnDrawCallback": function( oSettings ) {
+				getResult();
 			}
+			
 		});
 		$("#table_status_last").remove();
 	} else if (location.hash != oldStatusHash || statusTable.fnSettings()._iDisplayStart == 0) {
@@ -919,39 +938,65 @@ function showDescription(num, desc_index) {
 	problem.desc_index = desc_index;
 }
 
-function getResult(id){
-	judgeService.getResult(id, cb);
+
+function getResult(){
+	var workingRunIds = [];
+	$("tr.working").each(function(){
+		workingRunIds.push($(this).attr("id"));
+	});
+	if (!workingRunIds.length) {
+		return;
+	}
+
+	judgeService.getResult(workingRunIds, function(back){
+		for (var rowBack in back) {
+			cbRow(back[rowBack]);
+		}
+		clearTimeout(timeoutHandle);
+		timeoutHandle = setTimeout(getResult, 2000);
+	});
 }
 
-function cb(back){
+function cbRow(back){
 	var id = back[0];
 	var result = back[1];
 	var memory = back[2];
 	var time = back[3];
 	var info = back[4];
+	var color = back[5];
+	var working = back[6];
+	
 	var $row = $("#" + id);
-	if ($row.length){
-		if (info) {
-			result = "<a href='problem/fetchSubmissionInfo.action?id=" + id + "' rel='facebox'>" + result + "</a>";
-		}
-		$(".result", $row).html(result);
-		$('a[rel=facebox]', $row).facebox({
-			loadingImage : 'facebox/loading.gif',
-			closeImage   : 'facebox/closelabel.png'
-		});
-		if (result.indexOf("ing") >= 0 && result.indexOf("rror") < 0){
-			clearTimeout(statusTimeoutInstance[id]);
-			statusTimeoutInstance[id] = setTimeout("getResult(" + id + ")", 3000);
-		} else if (result == "Accepted"){
-			$row.removeClass("pending");
-			$row.addClass("yes");
-			$(".memory", $row).html(memory + " KB");
-			$(".time", $row).html(time + " ms");
-		} else {
-			$row.removeClass("pending");
-			$row.addClass("no");
-		}
+	if (!$row.length){
+		return;
 	}
+	if (info) {
+		result = "<a href='problem/fetchSubmissionInfo.action?id=" + id + "' rel='facebox'>" + result + "</a>";
+	}
+	$row.removeClass("pending");
+	$row.removeClass("no");
+	$row.removeClass("yes");
+	$row.removeClass("working");
+	if (color == 0) {
+		$row.addClass("yes");
+		$(".memory", $row).html(memory + " KB");
+		$(".time", $row).html(time + " ms");
+	} else if (color == 1) {
+		$row.addClass("no");
+	} else {
+		$row.addClass("pending");
+	}
+	if (working) {
+		$row.addClass("working");
+	} else if (color == 2) {
+		$row.addClass("rejudge");
+	}
+	
+	$(".result", $row).html(result);
+	$('a[rel=facebox]', $row).facebox({
+		loadingImage : 'facebox/loading.gif',
+		closeImage   : 'facebox/closelabel.png'
+	});
 }
 
 function grayDepth(ratio) {

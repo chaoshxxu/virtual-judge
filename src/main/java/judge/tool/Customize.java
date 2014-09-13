@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class Customize {
 	private final static Logger log = LoggerFactory.getLogger(Customize.class);
 
-	static public ServletContext sc = ApplicationContainer.sc;
+	static public ServletContext sc = ApplicationContainer.serveletContext;
 	static public IBaseService baseService = (IBaseService) SpringBean.getBean("baseService");
 
 	static public void recalculateContestHash() {

@@ -1,13 +1,12 @@
 package judge.tool;
 
-import javax.servlet.http.HttpSessionListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSession;
-
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
 public class SessionListener implements HttpSessionListener {
 	public static Map userMap = new HashMap();
 	private SessionContext myc = SessionContext.getInstance();

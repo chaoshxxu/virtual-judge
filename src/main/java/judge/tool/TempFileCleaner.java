@@ -14,8 +14,8 @@ import org.apache.commons.io.FileUtils;
 public class TempFileCleaner {
 
 	public void clean() throws IOException {
-		String relativePath = (String) ApplicationContainer.sc.getAttribute("DataPath");
-		String path = ApplicationContainer.sc.getRealPath(relativePath);
+		String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("DataPath");
+		String path = ApplicationContainer.serveletContext.getRealPath(relativePath);
 		FileUtils.deleteDirectory(new File(path));
 	}
 

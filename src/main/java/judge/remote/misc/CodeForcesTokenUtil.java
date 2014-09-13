@@ -7,7 +7,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.Cookie;
 
-public class CodeForcesUtil {
+public class CodeForcesTokenUtil {
 	
 	public static class CodeForcesToken {
 		public String _tta;

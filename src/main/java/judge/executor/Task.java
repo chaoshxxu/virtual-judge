@@ -3,19 +3,27 @@ package judge.executor;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledFuture;
 
-/**
- * Embed an ExecutorService upon initialization.
- * @author Isun
- *
- * @param <V>
- */
+import judge.tool.SpringBean;
+
 public abstract class Task<V> implements Callable<V>{
 
 	protected ExecutorTaskType taskType;
-	protected Future<V> finishSignal;
 	protected int delaySeconds;
+	
+	/**
+	 * For immediate executing task
+	 */
+	private Future<V> finishSignal;
+	
+	/**
+	 * For delayed executing task
+	 */
+	private ScheduledFuture<Future<V>> scheduledFinishSignal;
+
+	
+	//////////////////////////////////////////////////////////////////////////////
 	
 	public Task(ExecutorTaskType taskType) {
 		this(taskType, 0);
@@ -27,21 +35,24 @@ public abstract class Task<V> implements Callable<V>{
 		this.delaySeconds = delaySeconds;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Submit if it hasn't
 	 */
 	public void submit() {
 		if (!submitted()) {
+			TaskExecutor executor = SpringBean.getBean(TaskExecutor.class);
 			if (delaySeconds > 0) {
-				finishSignal = ExecutorsHolder.getScheduledExecutor().schedule(this, delaySeconds, TimeUnit.SECONDS);
+				scheduledFinishSignal = executor.submitDelay(this);
 			} else {
-				finishSignal = ExecutorsHolder.getExecutor(taskType).submit(this);
+				finishSignal = executor.submitNoDelay(this);
 			}
 		}
 	}
 	
 	public boolean submitted() {
-		return finishSignal != null;
+		return finishSignal != null || scheduledFinishSignal != null;
 	}
 	
 	/**
@@ -52,6 +63,9 @@ public abstract class Task<V> implements Callable<V>{
 	 */
 	public V get() throws InterruptedException, ExecutionException {
 		submit();
+		if (finishSignal == null) {
+			finishSignal = scheduledFinishSignal.get();
+		}
 		return finishSignal.get();
 	}
 

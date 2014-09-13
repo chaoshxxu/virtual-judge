@@ -3,6 +3,7 @@ package judge.remote.querier.common;
 import judge.bean.Submission;
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
+import judge.remote.status.RemoteStatusUpdateEvent;
 import judge.remote.status.RunningSubmissions;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.submitter.common.SubmissionInfo;
@@ -26,11 +27,20 @@ public class QueryStatusManager {
 	 */
 	private final static long MAX_PATIENCE_LENGTH = 60000L;
 
+	/**
+	 * If s submission is queried failed and was submitted such milliseconds
+	 * ago, regard it as a dead submission and allow resubmit.
+	 */
+	private final static long MAX_CONFIDENCE_LENGTH = 86400000L;
+
 	@Autowired
 	private IBaseService baseService;
 
 	@Autowired
 	protected RunningSubmissions runningSubmissions;
+	
+	@Autowired
+	private RemoteStatusUpdateEvent updateEvent;
 
 	public void createQuery(final Submission submission) {
 		if (submission.getId() == 0) {
@@ -88,7 +98,7 @@ public class QueryStatusManager {
 				private void _handle(SubmissionRemoteStatus remoteStatus) {
 					String originalRawStatus = submission.getStatus();
 					submission.setStatusCanonical(remoteStatus.statusType.name());
-					submission.setStatus(remoteStatus.rawStatus);
+					submission.setStatus(StringUtils.capitalize(remoteStatus.rawStatus));
 					submission.setTime(remoteStatus.executionTime);
 					submission.setMemory(remoteStatus.executionMemory);
 					submission.setAdditionalInfo(StringUtils.left(remoteStatus.compilationErrorInfo, 10000));
@@ -114,7 +124,7 @@ public class QueryStatusManager {
 				@Override
 				public void onError(Throwable t) {
 					log.error(t.getMessage(), t);
-					if (submission.getSubTime() == null || System.currentTimeMillis() - submission.getSubTime().getTime() > 86400000L) {
+					if (submission.getSubTime() == null || System.currentTimeMillis() - submission.getSubTime().getTime() > MAX_CONFIDENCE_LENGTH) {
 						submission.reset();
 					}
 					stopQuery(submission);
@@ -127,6 +137,7 @@ public class QueryStatusManager {
 			if (runningSubmissions.remove(submission.getId()) != null) {
 				baseService.addOrModify(submission);
 			}
+			updateEvent.fireStatusUpdate(submission);
 		}
 
 	}

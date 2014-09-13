@@ -28,9 +28,12 @@ import judge.bean.Problem;
 import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
+import judge.remote.language.common.LanguageManager;
+import judge.remote.status.RemoteStatusType;
+import judge.remote.status.RunningSubmissions;
+import judge.remote.submitter.common.SubmitCodeManager;
 import judge.service.IBaseService;
 import judge.service.ProblemService;
-import judge.submitter.Submitter;
 import judge.tool.ApplicationContainer;
 import judge.tool.MD5;
 import judge.tool.OnlineTool;
@@ -39,6 +42,7 @@ import judge.tool.ZipUtil;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +72,7 @@ public class ContestAction extends BaseAction {
 	private String un, num;
 	private Date curDate;
 	private Map<String, String> numList;
-	private Map<Object, String> languageList;
+	private Map<String, String> languageList;
 	private String _64Format;
 	private int contestOver;
 	private List<Object[]> sameContests;
@@ -104,6 +108,15 @@ public class ContestAction extends BaseAction {
 
 	@Autowired
 	private ProblemService problemService;
+
+	@Autowired
+	private SubmitCodeManager submitManager;
+
+	@Autowired
+	private LanguageManager languageManager;
+
+	@Autowired
+	private RunningSubmissions runningSubmissions;
 
 	public InputStream getSourceInputStream() throws FileNotFoundException {
 		 return new FileInputStream(sourceFile);
@@ -470,8 +483,8 @@ public class ContestAction extends BaseAction {
 			baseService.addOrModify(dataList);
 
 			//删除原有的replayStatus文件
-			String relativePath = (String) ApplicationContainer.sc.getAttribute("StandingDataPath");
-			String path = ApplicationContainer.sc.getRealPath(relativePath);
+			String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("StandingDataPath");
+			String path = ApplicationContainer.serveletContext.getRealPath(relativePath);
 			File data = new File(path, contest.getId() + ".json");
 			if (data.exists()) {
 				data.delete();
@@ -527,6 +540,7 @@ public class ContestAction extends BaseAction {
 		return SUCCESS;
 	}
 
+	@SuppressWarnings("unchecked")
 	public String showProblem() {
 		Map json = new HashMap();
 		int authorizeStatus = judgeService.checkAuthorizeStatus(cid);
@@ -574,7 +588,7 @@ public class ContestAction extends BaseAction {
 				json.put("timeLimit", problem.getTimeLimit());
 				json.put("memoryLimit", problem.getMemoryLimit());
 				json.put("_64IOFormat", lf.get(problem.getOriginOJ()));
-				json.put("languageList", ApplicationContainer.sc.getAttribute(problem.getOriginOJ()));
+				json.put("languageList", languageManager.getLanguages(problem.getOriginOJ()));
 				json.put("oj", problem.getOriginOJ());
 				
 				problemService.updateProblem(problem, false);
@@ -670,7 +684,8 @@ public class ContestAction extends BaseAction {
 			}
 		}
 
-		languageList = (Map<Object, String>) ApplicationContainer.sc.getAttribute(problem.getOriginOJ());
+		languageList = languageManager.getLanguages(problem.getOriginOJ());
+//		languageList = (Map<Object, String>) ApplicationContainer.serveletContext.getAttribute(problem.getOriginOJ());
 		if (!languageList.containsKey(language)){
 			json = "No such language";
 			return SUCCESS;
@@ -689,10 +704,11 @@ public class ContestAction extends BaseAction {
 		Submission submission = new Submission();
 		submission.setSubTime(new Date());
 		submission.setProblem(problem);
+		submission.setUser(user);
 		submission.setContest(contest);
 		submission.setIsPrivate(contest.getPassword() == null ? 0 : 1);
-		submission.setUser(user);
-		submission.setStatus("Pending……");
+		submission.setStatus("Pending");
+		submission.setStatusCanonical(RemoteStatusType.PENDING.name());
 		submission.setLanguage(language);
 		submission.setSource(source);
 		submission.setIsOpen(isOpen);
@@ -705,14 +721,15 @@ public class ContestAction extends BaseAction {
 			user.setShare(submission.getIsOpen());
 			baseService.addOrModify(user);
 		}
-		try {
-			Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
-			submitter.setSubmission(submission);
-			submitter.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ERROR;
-		}
+		submitManager.submitCode(submission);
+//		try {
+//			Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
+//			submitter.setSubmission(submission);
+//			submitter.start();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return ERROR;
+//		}
 		json = SUCCESS;
 		return SUCCESS;
 	}
@@ -727,7 +744,27 @@ public class ContestAction extends BaseAction {
 		User user = OnlineTool.getCurrentUser();
 		int userId = user != null ? user.getId() : -1;
 
-		StringBuffer hql = new StringBuffer("select s.id, s.username, cp.num, s.status, s.memory, s.time, s.dispLanguage, length(s.source), s.subTime, s.user.id, s.isOpen, cp.id, s.additionalInfo from Submission s, Cproblem cp where s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id ");
+		StringBuffer hql = new StringBuffer(
+				"select "
+				+ " s.id, "  // 0
+				+ " s.username, "
+				+ " cp.num, "
+				+ " s.status, "
+				+ " s.memory, "
+				+ " s.time, " // 5
+				+ " s.dispLanguage, "
+				+ " length(s.source), "
+				+ " s.subTime, "
+				+ " s.user.id, "
+				+ " s.isOpen, " // 10
+				+ " cp.id, "
+				+ " s.additionalInfo, "
+				+ " s.statusCanonical, "
+				+ " s.id "  // 14
+				+ "from "
+				+ "  Submission s, Cproblem cp "
+				+ "where "
+				+ " s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id ");
 
 		dataTablesPage = new DataTablesPage();
 
@@ -739,23 +776,24 @@ public class ContestAction extends BaseAction {
 		}
 
 		if (!num.equals("-")){
+			Validate.isTrue(num.length() == 1);
 			hql.append(" and cp.num = '" + num + "' ");
 		}
 
 		if (res == 1){
-			hql.append(" and s.status = 'Accepted' ");
+			hql.append(" and s.statusCanonical = 'AC' ");
 		} else if (res == 2) {
-			hql.append(" and s.status like 'wrong%' ");
+			hql.append(" and s.statusCanonical = 'WA' ");
 		} else if (res == 3) {
-			hql.append(" and s.status like 'time%' ");
+			hql.append(" and s.statusCanonical = 'TLE' ");
 		} else if (res == 4) {
-			hql.append(" and (s.status like 'runtime%' or s.status like 'segment%' or s.status like 'crash%') ");
+			hql.append(" and s.statusCanonical = 'RE' ");
 		} else if (res == 5) {
-			hql.append(" and (s.status like 'presentation%' or s.status like 'format%') ");
+			hql.append(" and s.statusCanonical = 'PE' ");
 		} else if (res == 6) {
-			hql.append(" and s.status like 'compil%' ");
+			hql.append(" and s.statusCanonical = 'CE' ");
 		} else if (res == 7) {
-			hql.append(" and s.status like '%ing%' and s.status not like '%ting%' ");
+			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMIT_FAILED_TEMP', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
 		}
 
 		hql.append(" order by s.id desc ");
@@ -768,6 +806,12 @@ public class ContestAction extends BaseAction {
 			o[8] = ((Date)o[8]).getTime();
 			o[10] = (Integer)o[10] > 0 ? 2 : o[9].equals(userId) || authorizeStatus == 2 ? 1 : 0;
 			o[12] = o[12] == null ? 0 : 1;
+
+			RemoteStatusType statusType = RemoteStatusType.valueOf((String)o[13]);
+			o[13] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2; // 0-green 1-red 2-purple
+			
+			int submissionId = (Integer) o[0];
+			o[14] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking
 		}
 
 		dataTablesPage.setAaData(aaData);
@@ -1123,8 +1167,8 @@ public class ContestAction extends BaseAction {
 			return ERROR;
 		}
 
-		String relativePath = (String) ApplicationContainer.sc.getAttribute("ContestSourceCodeZipFilePath");
-		String basePath = ApplicationContainer.sc.getRealPath(relativePath);
+		String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("ContestSourceCodeZipFilePath");
+		String basePath = ApplicationContainer.serveletContext.getRealPath(relativePath);
 
 		sourceFile = new File(basePath + "/" + cid + ".zip");
 		if (sourceFile.exists()) {
@@ -1299,10 +1343,10 @@ public class ContestAction extends BaseAction {
 	public void setLanguage(String language) {
 		this.language = language;
 	}
-	public Map<Object, String> getLanguageList() {
+	public Map<String, String> getLanguageList() {
 		return languageList;
 	}
-	public void setLanguageList(Map<Object, String> languageList) {
+	public void setLanguageList(Map<String, String> languageList) {
 		this.languageList = languageList;
 	}
 	public Problem getProblem() {

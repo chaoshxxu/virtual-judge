@@ -28,7 +28,7 @@ public class AnonymousHttpContextRepository {
 	private ReentrantLock lock = new ReentrantLock(); 
 
 	private final static String RESERVED_FLAG = "trcnkq";
-	private final int MAX_SIZE = 200;
+	private final int MAX_SIZE = 100;
 	
 	public HttpContext acquire() {
 		lock.lock();

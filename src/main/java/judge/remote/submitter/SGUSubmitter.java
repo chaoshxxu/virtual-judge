@@ -4,12 +4,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.httpclient.HttpBodyValidator;
+import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
-import judge.remote.submitter.common.SubmissionInfo;
 import judge.remote.submitter.common.CanonicalSubmitter;
+import judge.remote.submitter.common.SubmissionInfo;
 
 import org.apache.http.HttpEntity;
 import org.springframework.stereotype.Component;
@@ -43,7 +43,15 @@ public class SGUSubmitter extends CanonicalSubmitter {
 			"problem", info.remoteProblemId, //
 			"source", info.sourceCode
 		);
-		client.post("/sendfile.php?contest=0", entity, new HttpBodyValidator("successfully submitted"));
+
+		SimpleHttpResponse response = client.post("/sendfile.php?contest=0", entity);
+		if (!response.getBody().contains("successfully submitted")) {
+			if (response.getBody().contains("Your source seems to be dangerous")) {
+				return "Dangerous Code Error";
+			}
+			throw new RuntimeException();
+		}
+
 		return null;
 	}
 

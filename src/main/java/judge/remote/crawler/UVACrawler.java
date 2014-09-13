@@ -46,12 +46,12 @@ public class UVACrawler extends SyncCrawler {
 		final UVaProblemInfo uvaProblemInfo = helper.getProblemInfo(problemId1);
 		
 		final HttpHost host = new HttpHost("uva.onlinejudge.org");
-		final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host);
 
 		final String outerUrl = host.toURI() + "/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=" + uvaProblemInfo.problemId2;
 		Task<String> taskOuter = new Task<String>(ExecutorTaskType.GENERAL) {
 			@Override
 			public String call() {
+				DedicatedHttpClient client = dedicatedHttpClientFactory.build(host);
 				String html = client.get(outerUrl, HttpStatusValidator.SC_OK).getBody();
 				return HtmlHandleUtil.transformUrlToAbs(html, outerUrl);
 			}
@@ -60,6 +60,7 @@ public class UVACrawler extends SyncCrawler {
 		Task<String> taskInner = new Task<String>(ExecutorTaskType.GENERAL) {
 			@Override
 			public String call() {
+				DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, "Windows-1252");
 				String url = host.toURI() + "/external/" + Integer.parseInt(problemId1) / 100 + "/" + problemId1 + ".html";
 				SimpleHttpResponse response = client.get(url);
 				if (response.getStatusCode() == HttpStatus.SC_OK) {

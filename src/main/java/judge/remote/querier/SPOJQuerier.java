@@ -8,7 +8,6 @@ import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.common.AuthenticatedQuerier;
-import judge.remote.status.RemoteStatusNormalizer;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.status.SubstringNormalizer;
@@ -41,7 +40,7 @@ public class SPOJQuerier extends AuthenticatedQuerier {
 		
 		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
 		status.rawStatus = StringUtils.capitalize(matcher.group(1).trim());
-		status.statusType = statusNormalizer.getStatusType(status.rawStatus);
+		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
 		if (status.statusType == RemoteStatusType.AC) {
 			int mul = matcher.group(3).contains("M") ? 1024 : 1;
 			status.executionMemory = (int) (0.5 + mul * Double.parseDouble(matcher.group(3).replaceAll("[Mk]", "").trim()));
@@ -53,19 +52,4 @@ public class SPOJQuerier extends AuthenticatedQuerier {
 		return status;
 	}
 	
-	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"Queuing", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong Answer", RemoteStatusType.WA, //
-			"time limit exceeded", RemoteStatusType.TLE, //
-			"Memory Limit Exceed", RemoteStatusType.MLE, //
-			"Output Limit Exceed", RemoteStatusType.OLE, //
-			"Segmentation Fault", RemoteStatusType.RE, //
-			"runtime error", RemoteStatusType.RE, //
-			"compilation error", RemoteStatusType.CE //
-	);
-
 }

@@ -8,10 +8,9 @@ import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
-import judge.remote.misc.CodeForcesUtil;
-import judge.remote.misc.CodeForcesUtil.CodeForcesToken;
+import judge.remote.misc.CodeForcesTokenUtil;
+import judge.remote.misc.CodeForcesTokenUtil.CodeForcesToken;
 import judge.remote.querier.common.AuthenticatedQuerier;
-import judge.remote.status.RemoteStatusNormalizer;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.status.SubstringNormalizer;
@@ -50,9 +49,9 @@ public class CodeForcesQuerier extends AuthenticatedQuerier {
 		status.rawStatus = matcher.group(1).replaceAll("<.*?>", "").trim();
 		status.executionTime = Integer.parseInt(matcher.group(2).replaceAll("\\D+", ""));
 		status.executionMemory = Integer.parseInt(matcher.group(3).replaceAll("\\D+", ""));
-		status.statusType = statusNormalizer.getStatusType(status.rawStatus);
+		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
 		if (status.statusType == RemoteStatusType.CE) {
-			CodeForcesToken token = CodeForcesUtil.getTokens(client);
+			CodeForcesToken token = CodeForcesTokenUtil.getTokens(client);
 			HttpEntity entity = SimpleNameValueEntityFactory.create( //
 					"submissionId", info.remoteRunId, //
 					"csrf_token", token.csrf_token //
@@ -69,17 +68,4 @@ public class CodeForcesQuerier extends AuthenticatedQuerier {
 		return status;
 	}
 	
-	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"Pending", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"Accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong Answer", RemoteStatusType.WA, //
-			"Time limit exceeded", RemoteStatusType.TLE, //
-			"Memory Limit Exceed", RemoteStatusType.MLE, //
-			"Output Limit Exceed", RemoteStatusType.OLE, //
-			"Runtime Error", RemoteStatusType.RE, //
-			"Compilation error", RemoteStatusType.CE //
-	);
 }

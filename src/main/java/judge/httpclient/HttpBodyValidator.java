@@ -21,7 +21,7 @@ public class HttpBodyValidator implements SimpleHttpResponseValidator {
 		try {
 			Validate.isTrue(response.getBody().contains(subString) ^ negate);
 		} catch (Exception e) {
-			System.err.println(response.getBody());
+//			System.err.println(response.getBody());
 			throw new RuntimeException(e);
 		}
 	}

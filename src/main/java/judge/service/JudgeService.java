@@ -2,6 +2,7 @@ package judge.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -34,13 +35,16 @@ import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 
 @SuppressWarnings("unchecked")
 public class JudgeService {
-	
+	private final static Logger log = LoggerFactory.getLogger(JudgeService.class);
+
 	@Autowired
 	private QueryStatusManager queryStatusManager;
 
@@ -52,6 +56,9 @@ public class JudgeService {
 
 	@Autowired
 	private BaseService baseService;
+	
+	@Autowired
+	private ContestSubmissionMonitor contestSubmissionMonitor;
 
 
 	private static final String cellOptions []= {
@@ -100,31 +107,41 @@ public class JudgeService {
 		"Not solved, with [2] wrong submissions, the last one at [0] minute [1] second"	//3		34
 
 	};
+	
+	public void init() {
+//		initJudge();
+		initProblemSpiding();
+	}
 
 	/**
 	 * 根据提交ID查询结果
 	 * @param id
 	 * @return 0:ID 1:结果 2:内存 3:时间 4:额外信息 5:[0-green 1-red 2-purple] 6:[1-working 0-notWorking]
 	 */
-	public Object[] getResult(int id){
-		Object[] ret = new Object[7];
-		Submission s = null;
-		if (runningSubmissions.contains(id)) {
-			s = runningSubmissions.get(id);
-			ret[6] = 1;
-		} else {
-			s = (Submission) baseService.query(Submission.class, id);
-			ret[6] = 0;
+	public List<Object[]> getResult(List<Integer> ids){
+		List<Object[]> result = new ArrayList<Object[]>();
+		for (int runId : ids) {
+			Object[] ret = new Object[7];
+			result.add(ret);
+			
+			Submission s = null;
+			if (runningSubmissions.contains(runId)) {
+				s = runningSubmissions.get(runId);
+				ret[6] = 1;
+			} else {
+				s = (Submission) baseService.query(Submission.class, runId);
+				ret[6] = 0;
+			}
+			RemoteStatusType statusType = RemoteStatusType.valueOf(s.getStatusCanonical());
+			
+			ret[0] = runId;
+			ret[1] = s.getStatus();
+			ret[2] = s.getMemory();
+			ret[3] = s.getTime();
+			ret[4] = s.getAdditionalInfo() == null ? 0 : 1;
+			ret[5] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2;
 		}
-		RemoteStatusType statusType = RemoteStatusType.valueOf(s.getStatusCanonical());
-		
-		ret[0] = id;
-		ret[1] = s.getStatus();
-		ret[2] = s.getMemory();
-		ret[3] = s.getTime();
-		ret[4] = s.getAdditionalInfo() == null ? 0 : 1;
-		ret[5] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2;
-		return ret;
+		return result;
 	}
 
 	public Set fetchDescriptions(int id){
@@ -200,56 +217,37 @@ public class JudgeService {
 	/**
 	 * 更新比赛排行数据
 	 * @param cid 比赛id
-	 * @param force 是否强制更新，为false则只有当文件不存在时才更新
 	 * @return 0:比赛id		1:数据文件url		2:还有多少ms比赛结束		3:开始时间		4:比赛长度		5:是否replay		6:比赛标题
+	 * @throws IOException 
 	 * @throws Exception
 	 */
-	public Map updateRankData(Integer cid, boolean force) throws Exception{
-		Contest contest = null;
-		try {
-			contest = (Contest) baseService.query("select contest from Contest contest left join fetch contest.replayStatus left join fetch contest.manager where contest.id = " + cid).get(0);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Map res = new HashMap();
-			res.put("cid", cid);
-			res.put("length", 0);
-			return res;
-		}
-
-		String relativePath = (String) ApplicationContainer.sc.getAttribute("StandingDataPath");
-		String path = ApplicationContainer.sc.getRealPath(relativePath);
+	public File updateRankData(Contest contest) throws IOException {
+		String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("StandingDataPath");
+		String path = ApplicationContainer.serveletContext.getRealPath(relativePath);
 		File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		File data = new File(dir, cid + ".json");
 
-		Map res = new HashMap();
-		res.put("cid", cid);
-		res.put("dataURL", relativePath.substring(1) + "/" + cid + ".json");
-		res.put("isReplay", contest.getReplayStatus() == null ? 0 : 1);
-		res.put("title", contest.getTitle());
-		res.put("managerId", contest.getManager().getId());
-		res.put("managerName", contest.getManager().getUsername());
-		res.put("remainingLength", contest.getEndTime().getTime() - new Date().getTime());
-		res.put("beginTime", contest.getBeginTime().getTime());
-		res.put("length", contest.getEndTime().getTime() - contest.getBeginTime().getTime());
-
-		if (data.exists()){
-			if (!force) {
-				return res;
-			}
-		} else {
+		File data = new File(dir, contest.getId() + ".json");
+		long fileUpdateTime = data.exists() ? data.lastModified() : 0;
+		long statusUpdateTime = contestSubmissionMonitor.getLastSubmissionUpdateTime(contest.getId());
+		if (fileUpdateTime > statusUpdateTime) {
+			return data;
+		}
+		log.info(String.format("Update rank for contest %d, fileUpdateTime = %d, statusUpdateTime = %d", contest.getId(), fileUpdateTime, statusUpdateTime));
+		if (!data.exists()){
 			data.createNewFile();
 		}
 		FileOutputStream fos = new FileOutputStream(data);
 		Writer out = new OutputStreamWriter(fos, "UTF-8");
 
 		if (contest.getReplayStatus() != null) {
+			ReplayStatus replayStatus = (ReplayStatus) baseService.query(ReplayStatus.class, contest.getReplayStatus().getId());
 			//原data内无contest ID信息，特此加上
-			out.write("[" + contest.getId() + "," + contest.getReplayStatus().getData().substring(1));
+			out.write("[" + contest.getId() + "," + replayStatus.getData().substring(1));
 		} else {
-			List<Object[]> submissionList = baseService.query("select s.user.id, cp.num, s.status, s.subTime, s.username, s.user.nickname from Submission s, Cproblem cp where s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id order by s.id asc");
+			List<Object[]> submissionList = baseService.query("select s.user.id, cp.num, s.status, s.subTime, s.username, s.user.nickname, s.statusCanonical from Submission s, Cproblem cp where s.contest.id = " + contest.getId() + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id order by s.id asc");
 			long beginTime = contest.getBeginTime().getTime();
 
 			StringBuffer submissionData = new StringBuffer("");
@@ -259,7 +257,16 @@ public class JudgeService {
 
 			for (int i = 0; i < submissionList.size(); i++){
 				Object[] info = submissionList.get(i);
-				submissionData.append(",[").append(info[0]).append(",").append(((String)info[1]).charAt(0) - 'A').append(",").append("Accepted".equals(info[2]) ? 1 : 0).append(",").append((((Date)info[3]).getTime() - beginTime) / 1000L).append("]");
+				String statusCononical = (String) info[6];
+				if (statusCononical == null) {
+					continue;
+				}
+				RemoteStatusType statusType = RemoteStatusType.valueOf(statusCononical);
+				if (!statusType.finalized) {
+					continue;
+				}
+				
+				submissionData.append(",[").append(info[0]).append(",").append(((String)info[1]).charAt(0) - 'A').append(",").append(statusType == RemoteStatusType.AC ? 1 : 0).append(",").append((((Date)info[3]).getTime() - beginTime) / 1000L).append("]");
 				userMap.put(info[0], new Object[]{info[4], info[5]});
 			}
 
@@ -275,18 +282,40 @@ public class JudgeService {
 				nameData.append("\"").append(uid).append("\":[\"").append(name[0]).append("\",\"").append(((String)name[1]).replace("\\", "\\\\").replace("\"", "\\\"")).append("\"]");
 			}
 
-			StringBuffer standingData = new StringBuffer("[").append(cid).append(",{").append(nameData).append("}").append(submissionData).append("]");
+			StringBuffer standingData = new StringBuffer("[").append(contest.getId()).append(",{").append(nameData).append("}").append(submissionData).append("]");
 
 			out.write(standingData.toString());
 		}
 		out.close();
 		fos.close();
-
-		return res;
+		return data;
 	}
 
 	public Map getRankInfo(Integer cid) throws Exception{
-		return updateRankData(cid, false);
+		Contest contest = null;
+		try {
+			contest = (Contest) baseService.query("select contest from Contest contest left join fetch contest.manager where contest.id = " + cid).get(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Map res = new HashMap();
+			res.put("cid", cid);
+			res.put("length", 0);
+			return res;
+		}
+		String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("StandingDataPath");
+		File rankFile = updateRankData(contest);
+
+		Map res = new HashMap();
+		res.put("cid", cid);
+		res.put("dataURL", relativePath.substring(1) + "/" + rankFile.getName());
+		res.put("isReplay", contest.getReplayStatus() == null ? 0 : 1);
+		res.put("title", contest.getTitle());
+		res.put("managerId", contest.getManager().getId());
+		res.put("managerName", contest.getManager().getUsername());
+		res.put("remainingLength", contest.getEndTime().getTime() - new Date().getTime());
+		res.put("beginTime", contest.getBeginTime().getTime());
+		res.put("length", contest.getEndTime().getTime() - contest.getBeginTime().getTime());
+		return res;
 	}
 
 	/**

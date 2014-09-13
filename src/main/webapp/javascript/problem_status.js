@@ -1,4 +1,5 @@
-var first = 1, timeoutInstance = {};
+var first = 1;
+var timeoutHandle;
 
 $(document).ready(function() {
 
@@ -121,17 +122,18 @@ $(document).ready(function() {
 				loadingImage : 'facebox/loading.gif',
 				closeImage   : 'facebox/closelabel.png'
 			});
-			if ($(nRow).hasClass("working")){
-				getResult(aData[0]);
-			}
 			if (aData[15] == 2 && aData[16] == 0) {
 				$(nRow).addClass("rejudge");
-			}
-			if (isSup) {
+			} else if (isSup) {
 				$("td:eq(8)", $(nRow)).addClass("rejudge");
 			}
 			return nRow;
+		},
+		
+		"fnDrawCallback": function( oSettings ) {
+			getResult();
 		}
+		
 	});
 	
 	$("#status_last").remove();
@@ -167,14 +169,14 @@ $(document).ready(function() {
 		$row.addClass("working");
 		$row.removeClass("rejudge");
 		$.post("problem/rejudge.action", {id: id}, function() {
-			getResult(id);
+			clearTimeout(timeoutHandle);
+			timeoutHandle = setTimeout(getResult, 1000);
 		});
 	});
 	
 	$(".rejudge a").live("click", function(event){
 		event.stopPropagation();
 	});
-
 
 	if (location.href.indexOf("reset") >= 0 || location.href.indexOf("id=") >= 0){
 		oTable.fnPageChange( 'first' );
@@ -184,11 +186,25 @@ $(document).ready(function() {
 	
 });
 
-function getResult(id){
-	judgeService.getResult(id, cb);
+function getResult(){
+	var workingRunIds = [];
+	$("tr.working").each(function(){
+		workingRunIds.push($(this).attr("id"));
+	});
+	if (!workingRunIds.length) {
+		return;
+	}
+
+	judgeService.getResult(workingRunIds, function(back){
+		for (var rowBack in back) {
+			cbRow(back[rowBack]);
+		}
+		clearTimeout(timeoutHandle);
+		timeoutHandle = setTimeout(getResult, 2000);
+	});
 }
 
-function cb(back){
+function cbRow(back){
 	var id = back[0];
 	var result = back[1];
 	var memory = back[2];
@@ -198,35 +214,34 @@ function cb(back){
 	var working = back[6];
 	
 	var $row = $("#" + id);
-	if ($row.length){
-		if (info) {
-			result = "<a href='problem/fetchSubmissionInfo.action?id=" + id + "' rel='facebox'>" + result + "</a>";
-		}
-		$row.removeClass("pending");
-		$row.removeClass("no");
-		$row.removeClass("yes");
-		$row.removeClass("working");
-		if (color == 0) {
-			$row.addClass("yes");
-			$(".memory", $row).html(memory + " KB");
-			$(".time", $row).html(time + " ms");
-		} else if (color == 1) {
-			$row.addClass("no");
-		} else {
-			$row.addClass("pending");
-		}
-		if (working) {
-			$row.addClass("working");
-			clearTimeout(timeoutInstance[id]);
-			timeoutInstance[id] = setTimeout("getResult(" + id + ")", 1000);
-		} else if (color == 2) {
-			$row.addClass("rejudge");
-		}
-		
-		$(".result", $row).html(result);
-		$('a[rel=facebox]', $row).facebox({
-			loadingImage : 'facebox/loading.gif',
-			closeImage   : 'facebox/closelabel.png'
-		});
+	if (!$row.length){
+		return;
 	}
+	if (info) {
+		result = "<a href='problem/fetchSubmissionInfo.action?id=" + id + "' rel='facebox'>" + result + "</a>";
+	}
+	$row.removeClass("pending");
+	$row.removeClass("no");
+	$row.removeClass("yes");
+	$row.removeClass("working");
+	if (color == 0) {
+		$row.addClass("yes");
+		$(".memory", $row).html(memory + " KB");
+		$(".time", $row).html(time + " ms");
+	} else if (color == 1) {
+		$row.addClass("no");
+	} else {
+		$row.addClass("pending");
+	}
+	if (working) {
+		$row.addClass("working");
+	} else if (color == 2) {
+		$row.addClass("rejudge");
+	}
+	
+	$(".result", $row).html(result);
+	$('a[rel=facebox]', $row).facebox({
+		loadingImage : 'facebox/loading.gif',
+		closeImage   : 'facebox/closelabel.png'
+	});
 }

@@ -23,6 +23,13 @@
             <value>classpath:config.properties</value>
         </property> 
     </bean>
+    
+	<bean id="configProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location">
+            <value>classpath:config.properties</value>
+		</property>
+	</bean>
 
 	<!-- datasource, don't direct use jdbc config in hibernate.cfg.xml --> 
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"> 
@@ -59,7 +66,6 @@
 				<value>judge/bean/Problem.hbm.xml</value>
 				<value>judge/bean/Submission.hbm.xml</value>
 				<value>judge/bean/User.hbm.xml</value>
-				<value>judge/bean/Vlog.hbm.xml</value>
 				<value>judge/bean/Description.hbm.xml</value>
 				<value>judge/bean/ReplayStatus.hbm.xml</value>
 			</list>

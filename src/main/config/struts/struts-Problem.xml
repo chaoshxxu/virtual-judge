@@ -5,7 +5,7 @@
 	<package name="problem" extends="default" namespace="/problem">
 
 		<!-- 罗列题目 -->
-		<action name="toListProblem" class="problemAction" method="listProblem">
+		<action name="toListProblem" class="problemAction" method="toListProblem">
 			<result name="success">/problem/listProblem.jsp</result>
 		</action>
 
@@ -98,7 +98,9 @@
 
 		<!-- 重判代码 -->
 		<action name="rejudge" class="problemAction" method="rejudge">
-			<result name="success" type="redirect">/toIndex.action</result>
+			<result name="success" type="httpheader">
+				<param name="status">200</param>
+			</result>
 		</action>
 
 		<!-- 切花代码公开性 -->

@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.remote.RemoteOj;
 import judge.remote.querier.common.SyncQuerier;
-import judge.remote.status.RemoteStatusNormalizer;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.status.SubstringNormalizer;
@@ -49,7 +48,7 @@ public class AizuQuerier extends SyncQuerier {
 		
 		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
 		status.rawStatus = matcher.group(1).replaceAll("<[^<>]*>", "").trim();
-		status.statusType = statusNormalizer.getStatusType(status.rawStatus);
+		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
 		
 		if (status.statusType == RemoteStatusType.AC) {
 			status.executionTime = calcTime(matcher.group(2));
@@ -76,20 +75,5 @@ public class AizuQuerier extends SyncQuerier {
 		String memory = Tools.regFind(str, "(\\d+)");
 		return memory.isEmpty() ? 0 : Integer.parseInt(memory);
 	}
-	
-	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"Queuing", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"Running", RemoteStatusType.JUDGING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"Accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong Answer", RemoteStatusType.WA, //
-			"Time Limit Exceeded", RemoteStatusType.TLE, //
-			"Memory Limit Exceeded", RemoteStatusType.MLE, //
-			"Output Limit Exceeded", RemoteStatusType.OLE, //
-			"Runtime Error", RemoteStatusType.RE, //
-			"Compile Error", RemoteStatusType.CE //
-	);
 
 }

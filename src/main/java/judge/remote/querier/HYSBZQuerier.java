@@ -7,7 +7,6 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.common.AuthenticatedQuerier;
-import judge.remote.status.RemoteStatusNormalizer;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.status.SubstringNormalizer;
@@ -34,7 +33,7 @@ public class HYSBZQuerier extends AuthenticatedQuerier {
 		
 		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
 		status.rawStatus = matcher.group(1).replaceAll("<.*?>", "").replace('_', ' ').trim();
-		status.statusType = statusNormalizer.getStatusType(status.rawStatus);
+		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
 		if (status.statusType == RemoteStatusType.AC) {
 			status.executionMemory = Integer.parseInt(matcher.group(2).replaceAll("\\D", ""));
 			status.executionTime = Integer.parseInt(matcher.group(3).replaceAll("\\D", ""));
@@ -42,23 +41,7 @@ public class HYSBZQuerier extends AuthenticatedQuerier {
 			html = client.get("/JudgeOnline/ceinfo.php?sid=" + info.remoteRunId).getBody();
 			status.compilationErrorInfo = Tools.regFind(html, "(<pre>[\\s\\S]*?</pre>)");
 		}
-		
 		return status;
 	}
-	
-	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
-			"Pending", RemoteStatusType.QUEUEING, //
-			"Queuing", RemoteStatusType.QUEUEING, //
-			"Compiling", RemoteStatusType.COMPILING, //
-			"ing", RemoteStatusType.JUDGING, //
-			"Accepted", RemoteStatusType.AC, //
-			"Presentation Error", RemoteStatusType.PE, //
-			"Wrong Answer", RemoteStatusType.WA, //
-			"Time Limit Exceed", RemoteStatusType.TLE, //
-			"Memory Limit Exceed", RemoteStatusType.MLE, //
-			"Output Limit Exceed", RemoteStatusType.OLE, //
-			"Runtime Error", RemoteStatusType.RE, //
-			"Compile Error", RemoteStatusType.CE //
-	);
 
 }

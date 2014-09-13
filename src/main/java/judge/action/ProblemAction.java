@@ -16,11 +16,11 @@ import judge.bean.Description;
 import judge.bean.Problem;
 import judge.bean.Submission;
 import judge.bean.User;
+import judge.remote.language.common.LanguageManager;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.RunningSubmissions;
 import judge.remote.submitter.common.SubmitCodeManager;
 import judge.service.ProblemService;
-import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
 import judge.tool.Tools;
 
@@ -60,7 +60,7 @@ public class ProblemAction extends BaseAction{
 	private String _64Format;
 	private Integer isSup;
 	private DataTablesPage dataTablesPage;
-	private Map<Object, String> languageList;
+	private Map<String, String> languageList;
 	private String submissionInfo;
 	
 	@Autowired
@@ -71,6 +71,9 @@ public class ProblemAction extends BaseAction{
 
 	@Autowired
 	private RunningSubmissions runningSubmissions;
+
+	@Autowired
+	private LanguageManager languageManager;
 
 	public String toListProblem() {
 		Map session = ActionContext.getContext().getSession();
@@ -240,7 +243,9 @@ public class ProblemAction extends BaseAction{
 		if (problem == null) {
 			return ERROR;
 		}
-		languageList = (Map<Object, String>) sc.getAttribute(problem.getOriginOJ());
+		
+		languageList = languageManager.getLanguages(problem.getOriginOJ());
+//		languageList = (Map<Object, String>) sc.getAttribute(problem.getOriginOJ());
 		isOpen = user.getShare();
 		return SUCCESS;
 	}
@@ -253,8 +258,9 @@ public class ProblemAction extends BaseAction{
 			return ERROR;
 		}
 		problem = (Problem) baseService.query(Problem.class, id);
-		ServletContext sc = ServletActionContext.getServletContext();
-		languageList = (Map<Object, String>) sc.getAttribute(problem.getOriginOJ());
+//		ServletContext sc = ServletActionContext.getServletContext();
+//		languageList = (Map<Object, String>) sc.getAttribute(problem.getOriginOJ());
+		languageList = languageManager.getLanguages(problem.getOriginOJ());
 
 		if (problem == null){
 			this.addActionError("Please submit via normal approach!");
@@ -287,7 +293,7 @@ public class ProblemAction extends BaseAction{
 		submission.setLanguage(language);
 		submission.setSource(source);
 		submission.setIsOpen(isOpen);
-		submission.setDispLanguage(((Map<String, String>)sc.getAttribute(problem.getOriginOJ())).get(language));
+		submission.setDispLanguage(languageManager.getLanguages(problem.getOriginOJ()).get(language));
 		submission.setUsername(user.getUsername());
 		submission.setOriginOJ(problem.getOriginOJ());
 		submission.setOriginProb(problem.getOriginProb());
@@ -510,7 +516,8 @@ public class ProblemAction extends BaseAction{
 		}
 		problem = submission.getProblem();
 		submission.setSource(Tools.toHTMLChar(submission.getSource()));
-		languageList = (Map<Object, String>) ApplicationContainer.sc.getAttribute(problem.getOriginOJ());
+		languageList = languageManager.getLanguages(problem.getOriginOJ());
+//		languageList = (Map<Object, String>) ApplicationContainer.serveletContext.getAttribute(problem.getOriginOJ());
 		submission.setLanguage(languageList.get(submission.getLanguage()));
 		uid = submission.getUser().getId();
 		un = submission.getUser().getUsername();
@@ -574,10 +581,10 @@ public class ProblemAction extends BaseAction{
 	public void setDataList(List dataList) {
 		this.dataList = dataList;
 	}
-	public Map<Object, String> getLanguageList() {
+	public Map<String, String> getLanguageList() {
 		return languageList;
 	}
-	public void setLanguageList(Map<Object, String> languageList) {
+	public void setLanguageList(Map<String, String> languageList) {
 		this.languageList = languageList;
 	}
 	public String getRedir() {
