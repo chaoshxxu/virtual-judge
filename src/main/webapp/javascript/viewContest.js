@@ -272,7 +272,7 @@ $(function(){
 		});
 	}
 
-	$("div.meta_td").live("click", function() {
+	$("div.meta_td.rank, div.meta_td.id").live("click", function() {
 		var curCid = $(this).parent().attr("cid");
 		var rank = ranks[curCid];
 		var end = new Date().valueOf() > rank.endTime;
@@ -286,12 +286,25 @@ $(function(){
 		$("#facebox .content").css("width", "500px");
 	});
 	
+	$("div.meta_td a").live("click", function(event){
+		event.stopPropagation();
+	});
+	
 	$("div.penalty_td").live({
 		mouseenter: function() {
 			$(this).text($(this).attr("v0"));
 		},
 		mouseleave:	function() {
 			$(this).text($(this).attr("v1"));
+		}
+	});
+	
+	$("div.standing_time, div.solve").live("click", function(){
+		var _cid = $(this).parent().attr("cid");
+		if (_cid == cid) {
+			var pid = parseInt($(this).attr("pid"));
+			var username = $(this).parent().attr("u");
+			location.hash = "#status/" + username + "/" + String.fromCharCode(65 + pid) + "/0";
 		}
 	});
 	
@@ -774,7 +787,7 @@ function calcRankTable() {
 				sbHtml.push(" my_tr");
 			}
 		}
-		sbHtml.push("' cid='" + curCid + "'><div class='meta_td rank'>" + (i + 1) + "</div><div class='meta_td id");
+		sbHtml.push("' cid='" + curCid + "' u='" + username[uid] + "'><div class='meta_td rank'>" + (i + 1) + "</div><div class='meta_td id");
 		if (username[uid]) {
 			var displayTitle =
 				showNick == showUsername ?
@@ -814,7 +827,7 @@ function calcRankTable() {
 				} else {
 					sbHtml.push("class='green");
 				}
-				sbHtml.push(" standing_time'>" + dateFormat(probInfo[0], 0, 1) + "<br />" + (probInfo[1] ? "<span>(-" + probInfo[1] + ")</span>" : "　") + "</div>");
+				sbHtml.push(" standing_time' pid='" + j + "'>" + dateFormat(probInfo[0], 0, 1) + "<br />" + (probInfo[1] ? "<span>(-" + probInfo[1] + ")</span>" : "　") + "</div>");
 			}
 		}
 		sbHtml.push("</div>");
@@ -875,7 +888,16 @@ function calcRankTable() {
 	for (var j = 0; j < pnum; ++j) {
 		if (totalSubmission[j]) {
 			var ratio = maxCorrectNumber ? correctSubmission[j] / maxCorrectNumber : 0.0;
-			$("#rank_foot div").eq(j + 4).css("background-color", grayDepth(ratio)).css("color", ratio < .5 ? "black" : "white").html((myStatus[j] == 2 ? "<img src='images/yes.png' height='20'/>" : myStatus[j] == 1 ? "<img src='images/no.png' height='20'/>" : "　") + 	"<br />" + correctSubmission[j] + "/" + totalSubmission[j] + "<br />" + Math.floor(100 * correctSubmission[j] / totalSubmission[j]) + "%");
+			$("#rank_foot div").eq(j + 4)
+				.css("background-color", grayDepth(ratio))
+				.removeClass("white-font")
+				.removeClass("black-font")
+				.addClass(ratio < .5 ? "black-font" : "white-font")
+				.html((myStatus[j] == 2 ? "<img src='images/yes.png' height='20'/>" : myStatus[j] == 1 ? "<img src='images/no.png' height='20'/>" : "　") + 	"<br />" +
+					"<a href='contest/view.action?cid=" + cid + "#status//" + String.fromCharCode(65 + j) + "/1'>" + correctSubmission[j] + "</a>" +
+					"/" +
+					"<a href='contest/view.action?cid=" + cid + "#status//" + String.fromCharCode(65 + j) + "/0'>" + totalSubmission[j] + "</a>" +
+					"<br />" + Math.floor(100 * correctSubmission[j] / totalSubmission[j]) + "%");
 		} else {
 			$("#rank_foot div").eq(j + 4).css("background", "transparent").html("");
 		}

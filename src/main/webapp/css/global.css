@@ -327,10 +327,14 @@ div.disp {
 
 #rank div.solve {
 	width: 60px;
+    cursor: pointer;
+    cursor: hand;
 }
 
 #rank div.standing_time {
 	width: 80px;
+    cursor: pointer;
+    cursor: hand;
 }
 
 table#time_machine tr.my_tr {
@@ -390,6 +394,30 @@ div.solvedfirst {
 
 div.solvedfirst span {
 	color: #E3E3E3;
+}
+
+.black-font {
+    color: black;
+}
+
+.black-font a:visited {
+    color: black !important;
+}
+
+.black-font a:link {
+    color: black !important;
+}
+
+.white-font {
+    color: white;
+}
+
+.white-font a:visited {
+    color: white !important;
+}
+
+.white-font a:link {
+    color: white !important;
 }
 
 /********************Status*********************/
