@@ -1,5 +1,9 @@
 package judge.httpclient;
 
+import java.io.IOException;
+
+import judge.tool.FileTool;
+
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpStatus;
 
@@ -13,10 +17,15 @@ public class HttpStatusValidator implements SimpleHttpResponseValidator {
 	}
 
 	@Override
-	public void validate(SimpleHttpResponse response) {
-		Validate.isTrue(response.getStatusCode() == httpStatusCode);
+	public void validate(SimpleHttpResponse response) throws IOException {
+		if (response.getStatusCode() != httpStatusCode) {
+			FileTool.writeFile(response.getStatusCode() + "-" + httpStatusCode, response.getBody());
+		}
+		Validate.isTrue( //
+				response.getStatusCode() == httpStatusCode, //
+				String.format("expected=%s, received=%s", httpStatusCode, response.getStatusCode()) //
+		);
 	}
-	
 
 	/////////////////////////////////////////////////////////////////
 	

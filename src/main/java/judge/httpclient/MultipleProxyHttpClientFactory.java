@@ -56,7 +56,7 @@ public class MultipleProxyHttpClientFactory {
 		this.jsonConfig = new File(jsonConfigPath);
 	}
 
-	private HttpClientBuilder getBaseBuilder() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+	private HttpClientBuilder getBaseBuilder(int socketTimeout, int connectionTimeout, int maxConnTotal, int maxConnPerRoute, String userAgent) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 		SSLContextBuilder contextBuilder = SSLContexts.custom();
 		contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
 			@Override
@@ -91,7 +91,17 @@ public class MultipleProxyHttpClientFactory {
 				.build();
 
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-		return HttpClients.custom().setConnectionManager(cm);
+		
+		RequestConfig config = RequestConfig.custom()
+			    .setSocketTimeout(socketTimeout)
+			    .setConnectTimeout(connectionTimeout)
+			    .build();
+		
+		return HttpClients.custom().setConnectionManager(cm)
+			.setMaxConnTotal(maxConnTotal)
+			.setMaxConnPerRoute(maxConnPerRoute)
+			.setUserAgent(userAgent)
+			.setDefaultRequestConfig(config);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -107,20 +117,20 @@ public class MultipleProxyHttpClientFactory {
 		String userAgent = (String) httpClientConfigs.get("user_agent");
 		ArrayList<ArrayList<Object>> proxyConfigs = (ArrayList<ArrayList<Object>>) httpClientConfigs.get("proxies");
 		
-		RequestConfig config = RequestConfig.custom()
-			    .setSocketTimeout(socketTimeout)
-			    .setConnectTimeout(connectionTimeout)
-			    .build();
-		
-		HttpClientBuilder baseBuilder = getBaseBuilder()
-			.setMaxConnTotal(maxConnTotal)
-			.setMaxConnPerRoute(maxConnPerRoute)
-			.setUserAgent(userAgent)
-			.setDefaultRequestConfig(config);
-			
 		delegates = new ArrayList<HttpClient>();
-		delegates.add(baseBuilder.build());
 		for (ArrayList<Object> proxyConfig : proxyConfigs) {
+			HttpClientBuilder baseBuilder = getBaseBuilder(
+					socketTimeout,
+					connectionTimeout,
+					maxConnTotal,
+					maxConnPerRoute,
+					userAgent
+			);
+			if (proxyConfig.size() < 2) {
+				delegates.add(baseBuilder.build());
+				continue;
+			}
+			
 			String address = (String) proxyConfig.get(0);
 			int port = ((Double)proxyConfig.get(1)).intValue();
 			HttpHost proxyHost = new HttpHost(address, port);

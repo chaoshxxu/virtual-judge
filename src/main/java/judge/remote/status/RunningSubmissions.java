@@ -15,10 +15,26 @@ public class RunningSubmissions {
 	 * submission.id -> submission
 	 */
 	private Map<Integer, Submission> records = new ConcurrentHashMap<Integer, Submission>();
+
+	/**
+	 * submission.id -> max(lastRemoveTime, lastAddTime) (in milliseconds)
+	 */
+	private Map<Integer, Long> lastActiveTimes = new ConcurrentHashMap<Integer, Long>();
 	
+	///////////////////////////////////////////////////////////////////////////////
 	
 	public boolean contains(int submissionId) {
 		return records.containsKey(submissionId);
+	}
+	
+	/**
+	 * Time since last add or remove
+	 * @param submissionId
+	 * @return milliseconds
+	 */
+	public long getFreezeLength(int submissionId) {
+		Long last = lastActiveTimes.get(submissionId);
+		return last == null ? Long.MAX_VALUE : System.currentTimeMillis() - last;
 	}
 	
 	public Submission get(int submissionId) { 
@@ -26,10 +42,18 @@ public class RunningSubmissions {
 	}
 	
 	public Submission add(Submission submission) {
+		if (lastActiveTimes.size() > 5000) {
+			lastActiveTimes.clear();
+		}
+		lastActiveTimes.put(submission.getId(), System.currentTimeMillis());
 		return records.put(submission.getId(), submission);
 	}
 	
 	public Submission remove(int submissionId) {
+		if (lastActiveTimes.size() > 5000) {
+			lastActiveTimes.clear();
+		}
+		lastActiveTimes.put(submissionId, System.currentTimeMillis());
 		return records.remove(submissionId);
 	}
 	

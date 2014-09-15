@@ -6,8 +6,8 @@ import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
-import judge.remote.submitter.common.SubmissionInfo;
 import judge.remote.submitter.common.CanonicalSubmitter;
+import judge.remote.submitter.common.SubmissionInfo;
 import judge.tool.Tools;
 
 import org.apache.commons.lang3.StringUtils;

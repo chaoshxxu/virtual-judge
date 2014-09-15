@@ -45,6 +45,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -54,6 +56,7 @@ import com.opensymphony.xwork2.ActionContext;
  * @author Isun
  */
 public class ContestAction extends BaseAction {
+	private final static Logger log = LoggerFactory.getLogger(ContestAction.class);
 
 	private static final long serialVersionUID = -3594499743692326065L;
 	private List dataList, tList;
@@ -722,14 +725,6 @@ public class ContestAction extends BaseAction {
 			baseService.addOrModify(user);
 		}
 		submitManager.submitCode(submission);
-//		try {
-//			Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
-//			submitter.setSubmission(submission);
-//			submitter.start();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return ERROR;
-//		}
 		json = SUCCESS;
 		return SUCCESS;
 	}
@@ -811,6 +806,17 @@ public class ContestAction extends BaseAction {
 			o[13] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2; // 0-green 1-red 2-purple
 			
 			int submissionId = (Integer) o[0];
+			try {
+				if (!statusType.finalized && statusType != RemoteStatusType.SUBMIT_FAILED_TEMP) {
+					if (runningSubmissions.getFreezeLength(submissionId) > 300000L) {
+						submission = (Submission) baseService.query(Submission.class, submissionId);
+						judgeService.rejudge(submission, false);
+					}
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+
 			o[14] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking
 		}
 

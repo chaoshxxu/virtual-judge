@@ -32,7 +32,7 @@ public class UVALiveLoginer extends RetentiveLoginer {
 		if (html.contains("mod_login_logoutform")) {
 			return;
 		}
-
+		
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		String reg = "<input type=\"hidden\" name=\"([\\s\\S]*?)\" value=\"([\\s\\S]*?)\" />";
 		Matcher matcher = Pattern.compile(reg).matcher(html);

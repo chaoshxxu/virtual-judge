@@ -31,7 +31,6 @@ import judge.remote.status.RunningSubmissions;
 import judge.remote.submitter.common.SubmitCodeManager;
 import judge.tool.ApplicationContainer;
 import judge.tool.OnlineTool;
-import judge.tool.SpringBean;
 import judge.tool.Tools;
 
 import org.hibernate.Session;
@@ -187,17 +186,9 @@ public class JudgeService {
 			baseService.addOrModify(submission);
 			submitManager.submitCode(submission);
 		} else {
-			SpringBean.getBean(QueryStatusManager.class).createQuery(submission);
+			queryStatusManager.createQuery(submission);
 		}
 		
-
-//		try {
-//			Submitter submitter = BaseAction.submitterMap.get(submission.getOriginOJ()).getClass().newInstance();
-//			submitter.setSubmission(submission);
-//			submitter.start();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	/**

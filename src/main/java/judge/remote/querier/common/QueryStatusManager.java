@@ -1,5 +1,7 @@
 package judge.remote.querier.common;
 
+import java.util.Date;
+
 import judge.bean.Submission;
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
@@ -105,7 +107,7 @@ public class QueryStatusManager {
 					submission.setFailCase(remoteStatus.failCase);
 					submission.setQueryCount(submission.getQueryCount() + 1);
 					if (!StringUtils.equals(originalRawStatus, remoteStatus.rawStatus)) {
-						submission.setStatusUpdateTime(remoteStatus.queryTime);
+						submission.setStatusUpdateTime(new Date());
 					}
 					log.info(String.format("Query(%d): %s", submission.getQueryCount(), runningSubmissions.getLogKey(submission)));
 

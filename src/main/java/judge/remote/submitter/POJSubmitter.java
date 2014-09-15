@@ -8,8 +8,8 @@ import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
 import judge.remote.RemoteOj;
 import judge.remote.account.RemoteAccount;
-import judge.remote.submitter.common.SubmissionInfo;
 import judge.remote.submitter.common.CanonicalSubmitter;
+import judge.remote.submitter.common.SubmissionInfo;
 
 import org.apache.http.HttpEntity;
 import org.springframework.stereotype.Component;

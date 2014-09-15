@@ -30,6 +30,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -41,6 +43,7 @@ import com.opensymphony.xwork2.ActionContext;
  */
 @SuppressWarnings("unchecked")
 public class ProblemAction extends BaseAction{
+	private final static Logger log = LoggerFactory.getLogger(ProblemAction.class);
 
 	private static final long serialVersionUID = 5557740709776919006L;
 	private int id;	//problemId
@@ -305,10 +308,6 @@ public class ProblemAction extends BaseAction{
 		
 		submitManager.submitCode(submission);
 
-//		Submitter submitter = submitterMap.get(problem.getOriginOJ()).getClass().newInstance();
-//		submitter.setSubmission(submission);
-//		submitter.start();
-
 		return SUCCESS;
 	}
 
@@ -418,6 +417,17 @@ public class ProblemAction extends BaseAction{
 			o[15] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2; // 0-green 1-red 2-purple
 			
 			int submissionId = (Integer) o[0];
+			try {
+				if (!statusType.finalized && statusType != RemoteStatusType.SUBMIT_FAILED_TEMP) {
+					if (runningSubmissions.getFreezeLength(submissionId) > 300000L) {
+						submission = (Submission) baseService.query(Submission.class, submissionId);
+						judgeService.rejudge(submission, false);
+					}
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+			
 			o[16] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking
 		}
 
