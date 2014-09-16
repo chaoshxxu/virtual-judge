@@ -778,19 +778,27 @@ public class ContestAction extends BaseAction {
 		if (res == 1){
 			hql.append(" and s.statusCanonical = 'AC' ");
 		} else if (res == 2) {
-			hql.append(" and s.statusCanonical = 'WA' ");
-		} else if (res == 3) {
-			hql.append(" and s.statusCanonical = 'TLE' ");
-		} else if (res == 4) {
-			hql.append(" and s.statusCanonical = 'RE' ");
-		} else if (res == 5) {
 			hql.append(" and s.statusCanonical = 'PE' ");
+		} else if (res == 3) {
+			hql.append(" and s.statusCanonical = 'WA' ");
+		} else if (res == 4) {
+			hql.append(" and s.statusCanonical = 'TLE' ");
+		} else if (res == 5) {
+			hql.append(" and s.statusCanonical = 'MLE' ");
 		} else if (res == 6) {
-			hql.append(" and s.statusCanonical = 'CE' ");
+			hql.append(" and s.statusCanonical = 'OLE' ");
 		} else if (res == 7) {
-			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMIT_FAILED_TEMP', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
+			hql.append(" and s.statusCanonical = 'RE' ");
+		} else if (res == 8) {
+			hql.append(" and s.statusCanonical = 'CE' ");
+		} else if (res == 9) {
+			hql.append(" and s.statusCanonical = 'FAILED_OTHER' ");
+		} else if (res == 10) {
+			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
+		} else if (res == 11) {
+			hql.append(" and s.statusCanonical in ('SUBMIT_FAILED_TEMP', 'SUBMIT_FAILED_PERM') ");
 		}
-
+		
 		hql.append(" order by s.id desc ");
 
 		dataTablesPage.setITotalDisplayRecords(9999999L);
