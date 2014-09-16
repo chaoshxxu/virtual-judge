@@ -18,15 +18,15 @@
 				Currently, this system supports the following online judges:<br />
 			</p>
 			<p id="ojs" style="line-height:30px;">
-				<a href="http://acm.pku.edu.cn/JudgeOnline/" target="_blank">POJ</a>&nbsp;&nbsp;&nbsp;
+				<a href="http://poj.org/" target="_blank">POJ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://acm.zju.edu.cn/onlinejudge/" target="_blank">ZOJ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://livearchive.onlinejudge.org/index.php" target="_blank">UVALive</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://acm.sgu.ru/" target="_blank">SGU</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://acm.timus.ru/" target="_blank">URAL</a>&nbsp;&nbsp;&nbsp;
-				<a href="http://acm.hust.edu.cn/thx/" target="_blank">HUST</a>&nbsp;&nbsp;&nbsp;
-				<a href="http://www.spoj.pl" target="_blank">SPOJ</a>&nbsp;&nbsp;&nbsp;
+				<a href="http://acm.hust.edu.cn/" target="_blank">HUST</a>&nbsp;&nbsp;&nbsp;
+				<a href="http://www.spoj.com/" target="_blank">SPOJ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://acm.hdu.edu.cn" target="_blank">HDU</a>&nbsp;&nbsp;&nbsp;
-				<a href="http://www.lydsy.com:808/JudgeOnline/" target="_blank">HYSBZ</a>&nbsp;&nbsp;&nbsp;
+				<a href="http://www.lydsy.com/JudgeOnline/" target="_blank">HYSBZ</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://uva.onlinejudge.org/" target="_blank">UVA</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://codeforces.com/" target="_blank">CodeForces</a>&nbsp;&nbsp;&nbsp;
 				<a href="http://www.z-trening.com/" target="_blank">Z-Trening</a>&nbsp;&nbsp;&nbsp;
@@ -41,7 +41,7 @@
 			<br />
 			<b>What's new:</b>
 			<ul>
-				<li>2014-07-30 : You can use <a href="http://i.vjudge.net/toIndex.action" target="_blank">http://i.vjudge.net</a> as an alternative.</li>
+				<li>2014-09-17 : You can use either <a href="http://vjudge.net" target="_blank">vjudge.net</a> or <a href="http://acm.hust.edu.cn/vjudge" target="_blank">acm.hust.edu.cn/vjudge</a> depending on your network.</li>
 				<li>2010-10-07 : Refer to <a href="https://code.google.com/p/virtual-judge/source/list">this page</a> for recent change of Virtual Judge.</li>
 			</ul>
 		</div>
