@@ -405,9 +405,9 @@ public class ProblemAction extends BaseAction{
 		} else if (res == 9) {
 			hql.append(" and s.statusCanonical = 'FAILED_OTHER' ");
 		} else if (res == 10) {
-			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
-		} else if (res == 11) {
 			hql.append(" and s.statusCanonical in ('SUBMIT_FAILED_TEMP', 'SUBMIT_FAILED_PERM') ");
+		} else if (res == 11) {
+			hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
 		}
 
 		hql.append(" order by s.id desc ");
