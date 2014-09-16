@@ -56,9 +56,6 @@ public class SubstringNormalizer implements RemoteStatusNormalizer {
 
 	@Override
 	public RemoteStatusType getStatusType(String rawStatus) {
-		if (StringUtils.isBlank(rawStatus)) {
-			return RemoteStatusType.JUDGING;
-		}
 		for (Entry<String, RemoteStatusType> entry : statusTypeMap.entrySet()) {
 			String subStr = entry.getKey();
 			if (StringUtils.containsIgnoreCase(rawStatus, subStr)) {

@@ -18,6 +18,7 @@ var statusTimeoutInstance = {};	//status fetch
 var oFH;
 var exportRankHtml;
 var timeoutHandle;
+var lastClickTime;
 
 $(function(){
 	
@@ -80,6 +81,8 @@ $(function(){
 
 	tabs = $("#contest_tabs").tabs({
 		select: function(event, ui) {
+			lastClickTime = new Date().valueOf();
+			
 			if (location.hash.indexOf(ui.tab.rel) != 0) {
 				if (ui.tab.rel == "#problem") {
 					location.hash = oldProblemHash;
@@ -300,10 +303,20 @@ $(function(){
 	});
 	
 	$("div.standing_time, div.solve").live("click", function(){
-		var _cid = $(this).parent().attr("cid");
+		var $this = $(this);
+		if (
+				!$this.hasClass("red") &&
+				!$this.hasClass("green") &&
+				!$this.hasClass("solvedfirst") &&
+				!$this.hasClass("penalty_td") &&
+				!$this.hasClass("solve")) {
+			return;
+		}
+		var $parent = $this.parent();
+		var _cid = $parent.attr("cid");
 		if (_cid == cid) {
-			var pid = parseInt($(this).attr("pid"));
-			var username = $(this).parent().attr("u");
+			var pid = parseInt($this.attr("pid"));
+			var username = $parent.attr("u");
 			location.hash = "#status/" + username + "/" + String.fromCharCode(65 + pid) + "/0";
 		}
 	});
@@ -624,7 +637,23 @@ function updateRankInfo() {
 	if (selectedTime < 0) {
 		return;
 	}
-	if (Math.abs(selectedTime - lastRankUpdateTime) < 10000) {
+	
+	var now = new Date().valueOf();
+	var updateInterval = 
+		now - lastClickTime > 300000 ? 99999999 :
+		hash && hash[0] == "#rank" ? 10000 : 60000;
+
+	var rankUpdateCountDown = 
+		Math.round(
+			(lastRankUpdateTime - ti[1] + startTime + updateInterval - now) / 1000
+		);
+	var newRankTitle = "Rank";
+	if (rankUpdateCountDown > 0) {
+		newRankTitle += " (" + rankUpdateCountDown + ")";
+	}
+	$("div#contest_tabs > ul:first > li:eq(3) > a").text(newRankTitle);
+		
+	if (selectedTime - lastRankUpdateTime < updateInterval) {
 		return;
 	}
 	

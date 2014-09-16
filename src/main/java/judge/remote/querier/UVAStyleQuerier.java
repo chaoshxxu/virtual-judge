@@ -14,6 +14,7 @@ import judge.remote.status.SubstringNormalizer;
 import judge.remote.submitter.common.SubmissionInfo;
 import judge.tool.Tools;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
@@ -49,6 +50,9 @@ public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
 		
 		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
 		status.rawStatus = matcher.group(1).replaceAll("<.*?>", "").trim();
+		if (StringUtils.isBlank(status.rawStatus)) {
+			status.rawStatus = "Processing";
+		}
 		
 		status.statusType = statusNormalizer.getStatusType(status.rawStatus);
 		if (status.statusType == RemoteStatusType.AC) {
@@ -63,6 +67,6 @@ public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
 	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
 			"Sent to judge", RemoteStatusType.QUEUEING, //
 			"Received", RemoteStatusType.QUEUEING, //
-			"Submission error", RemoteStatusType.JUDGING
+			"Submission error", RemoteStatusType.SUBMIT_FAILED_TEMP
 	);
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 import judge.bean.Submission;
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
+import judge.remote.status.RemoteStatusType;
 import judge.remote.status.RemoteStatusUpdateEvent;
 import judge.remote.status.RunningSubmissions;
 import judge.remote.status.SubmissionRemoteStatus;
@@ -98,6 +99,12 @@ public class QueryStatusManager {
 				}
 
 				private void _handle(SubmissionRemoteStatus remoteStatus) {
+					if (remoteStatus.statusType == RemoteStatusType.SUBMIT_FAILED_TEMP) {
+						submission.reset();
+						stopQuery(submission);
+						return;
+					}
+
 					String originalRawStatus = submission.getStatus();
 					submission.setStatusCanonical(remoteStatus.statusType.name());
 					submission.setStatus(StringUtils.capitalize(remoteStatus.rawStatus));
@@ -110,7 +117,7 @@ public class QueryStatusManager {
 						submission.setStatusUpdateTime(new Date());
 					}
 					log.info(String.format("Query(%d): %s", submission.getQueryCount(), runningSubmissions.getLogKey(submission)));
-
+					
 					if ( //
 							remoteStatus.statusType.finalized || //
 							submission.getStatusUpdateTime() != null && //

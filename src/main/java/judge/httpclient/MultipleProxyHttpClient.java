@@ -1,6 +1,9 @@
 package judge.httpclient;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.http.HttpHost;
@@ -36,23 +39,41 @@ public class MultipleProxyHttpClient implements HttpClient {
 	 */
 	@Override
 	public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context) {
-		int idx = 0;
-		for (int i = 1; i < delegates.size(); i++) {
-			if (lastCostTime[i] < lastCostTime[idx]) {
-				idx = i;
+		List<Integer> indices = new ArrayList<Integer>();
+		for (int i = 0; i < delegates.size(); i++) {
+			indices.add(i);
+		}
+		Collections.sort(indices, new Comparator<Integer>() {
+			@Override
+			public int compare(Integer a, Integer b) {
+				return (int) (lastCostTime[a] - lastCostTime[b]);
+			}
+		});
+		Exception finalException = null;
+		for (int i : indices) {
+			HttpClient client = delegates.get(i);
+			try {
+				long beginTime = System.currentTimeMillis();
+				T result = client.execute(target, request, responseHandler, context);
+				lastCostTime[i] = System.currentTimeMillis() - beginTime;
+				
+//				for (int j = 0; j < delegates.size(); j++) {
+//					if (j == i) {
+//						System.out.print("(" + lastCostTime[j] + ") ");
+//					} else {
+//						System.out.print(lastCostTime[j] + " ");
+//					}
+//				}
+//				System.out.println();
+				
+				return result;
+			} catch (Exception e) {
+				lastCostTime[i] = Math.max(lastCostTime[i] + 1, 60000);
+				finalException = e;
 			}
 		}
-		
-		try {
-			long begin = System.currentTimeMillis();
-			T result = delegates.get(idx).execute(target, request, responseHandler, context);
-			lastCostTime[idx] = System.currentTimeMillis() - begin;
-			return result;
-		} catch (Throwable t) {
-			log.error("Client " + idx + " of " + identifier + " failed.");
-			lastCostTime[idx] = 60000L;
-			throw new RuntimeException(t);
-		}
+		log.error("All clients of " + identifier + " failed.");
+		throw new RuntimeException(finalException);
 	}
 
 	@Override
