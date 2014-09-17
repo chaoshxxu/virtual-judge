@@ -653,7 +653,7 @@ function updateRankInfo() {
 	}
 	$("div#contest_tabs > ul:first > li:eq(3) > a").text(newRankTitle);
 		
-	if (selectedTime - lastRankUpdateTime < updateInterval) {
+	if (selectedTime > lastRankUpdateTime && selectedTime - lastRankUpdateTime < updateInterval) {
 		return;
 	}
 	
