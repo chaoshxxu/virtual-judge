@@ -3,10 +3,13 @@ package judge.tool;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -105,5 +108,22 @@ public class FileTool {
 		} finally {
 			writer.close();
 		}
+	}
+
+	public static void writeFile(File file, String content, String charset) throws IOException {
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		
+//		log.info("Write file: " + file.getAbsolutePath());
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset));
+			out.write(content);
+		} finally {
+			out.flush();
+			out.close();
+		}
+		
 	}
 }

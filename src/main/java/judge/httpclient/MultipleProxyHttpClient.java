@@ -52,8 +52,8 @@ public class MultipleProxyHttpClient implements HttpClient {
 		Exception finalException = null;
 		for (int i : indices) {
 			HttpClient client = delegates.get(i);
+			long beginTime = System.currentTimeMillis();
 			try {
-				long beginTime = System.currentTimeMillis();
 				T result = client.execute(target, request, responseHandler, context);
 				lastCostTime[i] = System.currentTimeMillis() - beginTime;
 				
@@ -69,6 +69,7 @@ public class MultipleProxyHttpClient implements HttpClient {
 				return result;
 			} catch (Exception e) {
 				lastCostTime[i] = Math.max(lastCostTime[i] + 1, 60000);
+				lastCostTime[i] = Math.max(lastCostTime[i], System.currentTimeMillis() - beginTime);
 				finalException = e;
 			}
 		}

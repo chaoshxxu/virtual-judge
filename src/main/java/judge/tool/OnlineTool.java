@@ -15,4 +15,5 @@ public class OnlineTool {
 	public static boolean isLoggedIn() {
 		return getCurrentUser() != null;
 	}
+	
 }

@@ -1,5 +1,7 @@
 package judge.tool;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,14 +169,10 @@ public class Customize {
 		}
 		baseService.addOrModify(cList);
 	}
-
+	
 	static public void xx(){
 		//Do nothing
 	}
 
-
-	public void setBaseService(IBaseService baseService) {
-		Customize.baseService = baseService;
-	}
 
 }

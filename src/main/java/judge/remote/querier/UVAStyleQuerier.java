@@ -67,6 +67,6 @@ public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
 	private static RemoteStatusNormalizer statusNormalizer = new SubstringNormalizer( //
 			"Sent to judge", RemoteStatusType.QUEUEING, //
 			"Received", RemoteStatusType.QUEUEING, //
-			"Submission error", RemoteStatusType.SUBMIT_FAILED_TEMP
+			"Submission error", RemoteStatusType.FAILED_OTHER
 	);
 }

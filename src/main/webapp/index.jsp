@@ -40,12 +40,17 @@
 			</p>
 			<br />
 			<b>What's new:</b>
-			<ul>
-				<li>2014-09-17 : You can use either <a href="http://vjudge.net" target="_blank">vjudge.net</a> or <a href="http://acm.hust.edu.cn/vjudge" target="_blank">acm.hust.edu.cn/vjudge</a> depending on your network.</li>
-				<li>2010-10-07 : Refer to <a href="https://code.google.com/p/virtual-judge/source/list">this page</a> for recent change of Virtual Judge.</li>
+			<ul style="line-height:20px;">
+				<li style="color:red;">
+				    2014-09-20  Currently Virtual Judge has two access address:<br />
+	                <ul>
+                        <li><a href="http://acm.hust.edu.cn/vjudge" target="_blank">http://acm.hust.edu.cn/vjudge</a> : Since it was redirected to <a href="http://vjudge.net" target="_blank">vjudge.net</a> permanently incorrectly, you need clear your browser cache to use it. Recommended for Chinese visitors. </li>
+                        <li><a href="http://vjudge.net" target="_blank">http://vjudge.net</a> : Reverse proxy hosted oversea. Recommended for visitors who can't use the above entrance.</li>
+                    </ul>
+				</li>
+				<li>2010-10-07  Refer to <a href="https://code.google.com/p/virtual-judge/source/list">this page</a> for recent change of Virtual Judge.</li>
 			</ul>
 		</div>
-		
 		<s:include value="/bottom.jsp" />
 	</body>
 </html>
