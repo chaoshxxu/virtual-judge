@@ -38,18 +38,18 @@
             <column name="C_SUP" precision="10" scale="0"/>
         </property>
 
-		<set name="submissions" lazy="true" inverse="true">
-			<key>
-				<column name="C_USER_ID" />
-			</key>
-			<one-to-many class="judge.bean.Submission" />
-		</set>
-		<set name="contests" lazy="true" inverse="true">
-			<key>
-				<column name="C_MANAGER_ID" />
-			</key>
-			<one-to-many class="judge.bean.Contest" />
-		</set>
+        <set name="submissions" lazy="true" inverse="true">
+            <key>
+                <column name="C_USER_ID" />
+            </key>
+            <one-to-many class="judge.bean.Submission" />
+        </set>
+        <set name="contests" lazy="true" inverse="true">
+            <key>
+                <column name="C_MANAGER_ID" />
+            </key>
+            <one-to-many class="judge.bean.Contest" />
+        </set>
 
 
     </class>

@@ -15,22 +15,22 @@ import judge.tool.Handler;
  */
 public abstract class SyncQuerier implements Querier {
 
-	@Autowired
-	protected DedicatedHttpClientFactory dedicatedHttpClientFactory;
+    @Autowired
+    protected DedicatedHttpClientFactory dedicatedHttpClientFactory;
 
-	@Override
-	public void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
-		SubmissionRemoteStatus status = null;
-		try {
-			status = query(info);
-		} catch (Throwable t) {
-			handler.onError(t);
-			return;
-		}
-		handler.handle(status);
-	}
-	
+    @Override
+    public void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
+        SubmissionRemoteStatus status = null;
+        try {
+            status = query(info);
+        } catch (Throwable t) {
+            handler.onError(t);
+            return;
+        }
+        handler.handle(status);
+    }
+    
 
-	abstract protected SubmissionRemoteStatus query(SubmissionInfo info) throws Exception;
+    abstract protected SubmissionRemoteStatus query(SubmissionInfo info) throws Exception;
 
 }

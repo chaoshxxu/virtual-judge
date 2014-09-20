@@ -11,22 +11,22 @@ import judge.tool.Handler;
  * @author Isun
  */
 public abstract class SyncCrawler implements Crawler {
-	
-	@Autowired
-	protected DedicatedHttpClientFactory dedicatedHttpClientFactory;
+    
+    @Autowired
+    protected DedicatedHttpClientFactory dedicatedHttpClientFactory;
 
-	@Override
-	public void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception {
-		RawProblemInfo info = null;
-		try {
-			info = crawl(problemId);
-		} catch (Throwable t) {
-			handler.onError(t);
-			return;
-		}
-		handler.handle(info);
-	}
+    @Override
+    public void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception {
+        RawProblemInfo info = null;
+        try {
+            info = crawl(problemId);
+        } catch (Throwable t) {
+            handler.onError(t);
+            return;
+        }
+        handler.handle(info);
+    }
 
-	abstract protected RawProblemInfo crawl(String problemId) throws Exception;
+    abstract protected RawProblemInfo crawl(String problemId) throws Exception;
 
 }

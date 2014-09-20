@@ -14,6 +14,6 @@ import judge.tool.Handler;
  */
 public interface Querier extends RemoteOjAware {
 
-	void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler);
-	
+    void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler);
+    
 }

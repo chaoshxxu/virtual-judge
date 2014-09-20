@@ -18,22 +18,22 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 public class RemoteAccountTaskExecutorFactory {
-	private final static Logger log = LoggerFactory.getLogger(RemoteAccountTaskExecutorFactory.class);
+    private final static Logger log = LoggerFactory.getLogger(RemoteAccountTaskExecutorFactory.class);
 
-	public File jsonConfig;
-	
-	public RemoteAccountTaskExecutorFactory(String jsonConfigPath) {
-		this.jsonConfig = new File(jsonConfigPath);
-	}
+    public File jsonConfig;
+    
+    public RemoteAccountTaskExecutorFactory(String jsonConfigPath) {
+        this.jsonConfig = new File(jsonConfigPath);
+    }
 
-	public RemoteAccountTaskExecutor create() throws JsonSyntaxException, JsonIOException, FileNotFoundException {
-		Type type = new TypeToken<HashMap<RemoteOj, RemoteAccountOJConfig>>(){}.getType();
-		HashMap<RemoteOj, RemoteAccountOJConfig> map = new Gson().fromJson(new FileReader(jsonConfig), type);
-		if (map.containsKey(null)) {
-			log.error("Remote OJ account config contains unknown OJ name");
-			System.exit(-1);
-		}
-		return new RemoteAccountTaskExecutor(map);
-	}
+    public RemoteAccountTaskExecutor create() throws JsonSyntaxException, JsonIOException, FileNotFoundException {
+        Type type = new TypeToken<HashMap<RemoteOj, RemoteAccountOJConfig>>(){}.getType();
+        HashMap<RemoteOj, RemoteAccountOJConfig> map = new Gson().fromJson(new FileReader(jsonConfig), type);
+        if (map.containsKey(null)) {
+            log.error("Remote OJ account config contains unknown OJ name");
+            System.exit(-1);
+        }
+        return new RemoteAccountTaskExecutor(map);
+    }
 
 }

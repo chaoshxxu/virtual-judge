@@ -18,32 +18,32 @@ import org.springframework.stereotype.Component;
 @Component
 public class HDUQuerier extends SyncQuerier {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.HDU;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.HDU;
+    }
 
-	@Override
-	protected SubmissionRemoteStatus query(SubmissionInfo info) {
-		DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
-		
-		String html = client.get("/status.php?first=" + info.remoteRunId).getBody();
-		Pattern pattern = Pattern.compile(">" + info.remoteRunId + "</td><td>[\\s\\S]*?</td><td>([\\s\\S]*?)</td><td>[\\s\\S]*?</td><td>(\\d*?)MS</td><td>(\\d*?)K</td>");
-		Matcher matcher = pattern.matcher(html);
-		Validate.isTrue(matcher.find());
-		
-		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
-		status.rawStatus = matcher.group(1).replaceAll("<[\\s\\S]*?>", "").trim();
-		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
-		
-		if (status.statusType == RemoteStatusType.AC) {
-			status.executionTime = Integer.parseInt(matcher.group(2));
-			status.executionMemory = Integer.parseInt(matcher.group(3));
-		} else if (status.statusType == RemoteStatusType.CE) {
-			html = client.get("/viewerror.php?rid=" + info.remoteRunId).getBody();
-			status.compilationErrorInfo = Tools.regFind(html, "(<pre>[\\s\\S]*?</pre>)");
-		}
-		return status;
-	}
+    @Override
+    protected SubmissionRemoteStatus query(SubmissionInfo info) {
+        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
+        
+        String html = client.get("/status.php?first=" + info.remoteRunId).getBody();
+        Pattern pattern = Pattern.compile(">" + info.remoteRunId + "</td><td>[\\s\\S]*?</td><td>([\\s\\S]*?)</td><td>[\\s\\S]*?</td><td>(\\d*?)MS</td><td>(\\d*?)K</td>");
+        Matcher matcher = pattern.matcher(html);
+        Validate.isTrue(matcher.find());
+        
+        SubmissionRemoteStatus status = new SubmissionRemoteStatus();
+        status.rawStatus = matcher.group(1).replaceAll("<[\\s\\S]*?>", "").trim();
+        status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
+        
+        if (status.statusType == RemoteStatusType.AC) {
+            status.executionTime = Integer.parseInt(matcher.group(2));
+            status.executionMemory = Integer.parseInt(matcher.group(3));
+        } else if (status.statusType == RemoteStatusType.CE) {
+            html = client.get("/viewerror.php?rid=" + info.remoteRunId).getBody();
+            status.compilationErrorInfo = Tools.regFind(html, "(<pre>[\\s\\S]*?</pre>)");
+        }
+        return status;
+    }
 
 }

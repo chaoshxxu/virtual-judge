@@ -23,43 +23,43 @@ import org.springframework.stereotype.Component;
 @Component
 public class UVALoginer extends RetentiveLoginer {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.UVA;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.UVA;
+    }
 
-	@Override
-	protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
-		String html = client.get("/index.php").getBody();
-		if (html.contains("mod_login_logoutform")) {
-			return;
-		}
+    @Override
+    protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
+        String html = client.get("/index.php").getBody();
+        if (html.contains("mod_login_logoutform")) {
+            return;
+        }
 
-		// Shit on you Joomla!
-		client.getContext().setAttribute(HttpClientContext.COOKIE_STORE, new BasicCookieStore());
-		html = client.get("/index.php").getBody();
+        // Shit on you Joomla!
+        client.getContext().setAttribute(HttpClientContext.COOKIE_STORE, new BasicCookieStore());
+        html = client.get("/index.php").getBody();
 
-		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		String reg = "<input type=\"hidden\" name=\"([\\s\\S]*?)\" value=\"([\\s\\S]*?)\" />";
-		Matcher matcher = Pattern.compile(reg).matcher(html);
-		int number = 0;
-		while (matcher.find()) {
-			String name = matcher.group(1);
-			String value = matcher.group(2);
-			if (number > 0 && number < 9) {
-				nvps.add(new BasicNameValuePair(name, value));
-			}
-			++number;
-		}
-		nvps.add(new BasicNameValuePair("remember", "yes"));
-		nvps.add(new BasicNameValuePair("username", account.getAccountId()));
-		nvps.add(new BasicNameValuePair("passwd", account.getPassword()));
-		HttpEntity entity = new UrlEncodedFormEntity(nvps, Consts.UTF_8);
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        String reg = "<input type=\"hidden\" name=\"([\\s\\S]*?)\" value=\"([\\s\\S]*?)\" />";
+        Matcher matcher = Pattern.compile(reg).matcher(html);
+        int number = 0;
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            String value = matcher.group(2);
+            if (number > 0 && number < 9) {
+                nvps.add(new BasicNameValuePair(name, value));
+            }
+            ++number;
+        }
+        nvps.add(new BasicNameValuePair("remember", "yes"));
+        nvps.add(new BasicNameValuePair("username", account.getAccountId()));
+        nvps.add(new BasicNameValuePair("passwd", account.getPassword()));
+        HttpEntity entity = new UrlEncodedFormEntity(nvps, Consts.UTF_8);
 
-		client.post( //
-				"/index.php?option=com_comprofiler&task=login", //
-				entity, //
-				HttpStatusValidator.SC_MOVED_PERMANENTLY);
-	}
+        client.post( //
+                "/index.php?option=com_comprofiler&task=login", //
+                entity, //
+                HttpStatusValidator.SC_MOVED_PERMANENTLY);
+    }
 
 }

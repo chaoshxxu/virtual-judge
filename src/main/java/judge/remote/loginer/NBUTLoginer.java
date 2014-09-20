@@ -14,25 +14,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class NBUTLoginer extends RetentiveLoginer {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.NBUT;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.NBUT;
+    }
 
-	@Override
-	protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
-		if (client.get("/").getBody().contains("title=\"登出\"")) {
-			return;
-		}
+    @Override
+    protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
+        if (client.get("/").getBody().contains("title=\"登出\"")) {
+            return;
+        }
 
-		String html = client.get("/User/login.xhtml?url=%2F").getBody();
-		String ojVerify = Tools.regFind(html, "name=\"__OJVERIFY__\" value=\"(\\w+)\"");
-		
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"__OJVERIFY__", ojVerify, //
-				"password", account.getPassword(), //
-				"username", account.getAccountId());
-		client.post("/User/chklogin.xhtml", entity, new HttpBodyValidator("1"));
-	}
+        String html = client.get("/User/login.xhtml?url=%2F").getBody();
+        String ojVerify = Tools.regFind(html, "name=\"__OJVERIFY__\" value=\"(\\w+)\"");
+        
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "__OJVERIFY__", ojVerify, //
+                "password", account.getPassword(), //
+                "username", account.getAccountId());
+        client.post("/User/chklogin.xhtml", entity, new HttpBodyValidator("1"));
+    }
 
 }

@@ -17,36 +17,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class ZOJSubmitter extends CanonicalSubmitter {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.ZOJ;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.ZOJ;
+    }
 
-	@Override
-	protected boolean needLogin() {
-		return true;
-	}
+    @Override
+    protected boolean needLogin() {
+        return true;
+    }
 
-	@Override
-	protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
-		String html = client.get(
-				"/onlinejudge/showRuns.do?contestId=1&problemCode=" + info.remoteProblemId + "&handle=" + info.remoteAccountId)
-				.getBody();
-		Matcher matcher = Pattern.compile("<td class=\"runId\">(\\d+)</td>").matcher(html);
-		return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
-	}
+    @Override
+    protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
+        String html = client.get(
+                "/onlinejudge/showRuns.do?contestId=1&problemCode=" + info.remoteProblemId + "&handle=" + info.remoteAccountId)
+                .getBody();
+        Matcher matcher = Pattern.compile("<td class=\"runId\">(\\d+)</td>").matcher(html);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+    }
 
-	@Override
-	protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
-		String html = client.get("/onlinejudge/showProblem.do?problemCode=" + info.remoteProblemId).getBody();
-		String realProblemId = Tools.regFind(html, "problemId=([\\s\\S]*?)\"><font");
+    @Override
+    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+        String html = client.get("/onlinejudge/showProblem.do?problemCode=" + info.remoteProblemId).getBody();
+        String realProblemId = Tools.regFind(html, "problemId=([\\s\\S]*?)\"><font");
 
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"languageId", info.remotelanguage, //
-				"problemId", realProblemId, //
-				"source", info.sourceCode);
-		client.post("/onlinejudge/submit.do", entity);
-		return null;
-	}
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "languageId", info.remotelanguage, //
+                "problemId", realProblemId, //
+                "source", info.sourceCode);
+        client.post("/onlinejudge/submit.do", entity);
+        return null;
+    }
 
 }

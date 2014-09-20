@@ -7,9 +7,9 @@ import judge.remote.RemoteOj;
 @Component
 public class UVALiveQuerier extends UVAStyleQuerier {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.UVALive;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.UVALive;
+    }
 
 }

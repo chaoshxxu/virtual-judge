@@ -16,41 +16,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class SPOJSubmitter extends CanonicalSubmitter {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.SPOJ;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.SPOJ;
+    }
 
-	@Override
-	protected boolean needLogin() {
-		return true;
-	}
+    @Override
+    protected boolean needLogin() {
+        return true;
+    }
 
-	@Override
-	protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
-		return submitted ? Integer.parseInt(info.remoteRunId) : -1;
-	}
+    @Override
+    protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
+        return submitted ? Integer.parseInt(info.remoteRunId) : -1;
+    }
 
-	@Override
-	protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
-		HttpEntity entity = SimpleNameValueEntityFactory.create(
-			"lang", info.remotelanguage, //
-			"problemcode", info.remoteProblemId, //
-			"file", info.sourceCode, //
-			getCharset() //
-		);
-		String html = client.post("/submit/complete/", entity).getBody();
-		
-		if (html.contains("submit in this language for this problem")) {
-			return "Language Error";
-		}
-		if (html.contains("solution is too long")) {
-			return "Code Length Exceeded";
-		}
-		
-		info.remoteRunId = Tools.regFind(html, "name=\"newSubmissionId\" value=\"(\\d+)\"");
-		Validate.isTrue(!StringUtils.isBlank(info.remoteRunId));
-		return null;
-	}
+    @Override
+    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+        HttpEntity entity = SimpleNameValueEntityFactory.create(
+            "lang", info.remotelanguage, //
+            "problemcode", info.remoteProblemId, //
+            "file", info.sourceCode, //
+            getCharset() //
+        );
+        String html = client.post("/submit/complete/", entity).getBody();
+        
+        if (html.contains("submit in this language for this problem")) {
+            return "Language Error";
+        }
+        if (html.contains("solution is too long")) {
+            return "Code Length Exceeded";
+        }
+        
+        info.remoteRunId = Tools.regFind(html, "name=\"newSubmissionId\" value=\"(\\d+)\"");
+        Validate.isTrue(!StringUtils.isBlank(info.remoteRunId));
+        return null;
+    }
 
 }

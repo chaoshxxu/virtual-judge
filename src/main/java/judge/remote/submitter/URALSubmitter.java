@@ -17,35 +17,35 @@ import org.springframework.stereotype.Component;
 @Component
 public class URALSubmitter extends CanonicalSubmitter {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.URAL;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.URAL;
+    }
 
-	@Override
-	protected boolean needLogin() {
-		return false;
-	}
+    @Override
+    protected boolean needLogin() {
+        return false;
+    }
 
-	@Override
-	protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
-		String html = client.get("/status.aspx?space=1&num=" + info.remoteProblemId + "&author=" + info.remoteAccountId.replaceAll("\\D", "")).getBody();
-		Matcher matcher = Pattern.compile("getsubmit\\.aspx/(\\d+)").matcher(html);
-		return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
-	}
+    @Override
+    protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
+        String html = client.get("/status.aspx?space=1&num=" + info.remoteProblemId + "&author=" + info.remoteAccountId.replaceAll("\\D", "")).getBody();
+        Matcher matcher = Pattern.compile("getsubmit\\.aspx/(\\d+)").matcher(html);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+    }
 
-	@Override
-	protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"Action", "submit", //
-				"Language", info.remotelanguage, //
-				"ProblemNum", info.remoteProblemId, //
-				"Source", info.sourceCode, //
-				"JudgeID", remoteAccount.getAccountId(), //
-				"SpaceID", "1" //
-		);
-		client.post("/submit.aspx", entity, HttpStatusValidator.SC_MOVED_TEMPORARILY);
-		return null;
-	}
+    @Override
+    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "Action", "submit", //
+                "Language", info.remotelanguage, //
+                "ProblemNum", info.remoteProblemId, //
+                "Source", info.sourceCode, //
+                "JudgeID", remoteAccount.getAccountId(), //
+                "SpaceID", "1" //
+        );
+        client.post("/submit.aspx", entity, HttpStatusValidator.SC_MOVED_TEMPORARILY);
+        return null;
+    }
 
 }

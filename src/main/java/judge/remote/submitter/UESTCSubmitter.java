@@ -26,63 +26,63 @@ import org.springframework.stereotype.Component;
 @Component
 public class UESTCSubmitter extends CanonicalSubmitter {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.UESTC;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.UESTC;
+    }
 
-	@Override
-	protected boolean needLogin() {
-		return true;
-	}
+    @Override
+    protected boolean needLogin() {
+        return true;
+    }
 
-	@Override
-	protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) throws UnsupportedEncodingException, JSONException {
-		Map<String, Object> payload = new HashMap<String, Object>();
-		payload.put("contestId", -1);
-		payload.put("currentPage", 1);
-		payload.put("orderAsc", "false");
-		payload.put("orderFields", "statusId");
-		payload.put("problemId", info.remoteProblemId);
-		payload.put("result", 0);
-		payload.put("userName", info.remoteAccountId);
-		
-		HttpPost post = new HttpPost("/status/search");
-		post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
-		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-		
-		return client.execute(post, new SimpleHttpResponseMapper<Integer>() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public Integer map(SimpleHttpResponse response) throws JSONException {
-				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
-				Map<String, Object> latest = ((List<Map<String, Object>>)json.get("list")).get(0);
-				return ((Long) latest.get("statusId")).intValue();
-			}
-		});
-	}
+    @Override
+    protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) throws UnsupportedEncodingException, JSONException {
+        Map<String, Object> payload = new HashMap<String, Object>();
+        payload.put("contestId", -1);
+        payload.put("currentPage", 1);
+        payload.put("orderAsc", "false");
+        payload.put("orderFields", "statusId");
+        payload.put("problemId", info.remoteProblemId);
+        payload.put("result", 0);
+        payload.put("userName", info.remoteAccountId);
+        
+        HttpPost post = new HttpPost("/status/search");
+        post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
+        post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        
+        return client.execute(post, new SimpleHttpResponseMapper<Integer>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Integer map(SimpleHttpResponse response) throws JSONException {
+                Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
+                Map<String, Object> latest = ((List<Map<String, Object>>)json.get("list")).get(0);
+                return ((Long) latest.get("statusId")).intValue();
+            }
+        });
+    }
 
-	@Override
-	protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws UnsupportedCharsetException, JSONException {
-		Map<String, Object> payload = new HashMap<String, Object>();
-		payload.put("codeContent", info.sourceCode);
-		payload.put("contestId", null);
-		payload.put("languageId", info.remotelanguage);
-		payload.put("problemId", info.remoteProblemId);
-		
-		HttpPost post = new HttpPost("/status/submit");
-		post.setEntity(new StringEntity(JSONUtil.serialize(payload), "UTF-8"));
-		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");  		
+    @Override
+    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws UnsupportedCharsetException, JSONException {
+        Map<String, Object> payload = new HashMap<String, Object>();
+        payload.put("codeContent", info.sourceCode);
+        payload.put("contestId", null);
+        payload.put("languageId", info.remotelanguage);
+        payload.put("problemId", info.remoteProblemId);
+        
+        HttpPost post = new HttpPost("/status/submit");
+        post.setEntity(new StringEntity(JSONUtil.serialize(payload), "UTF-8"));
+        post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");          
 
-		client.execute(post, new SimpleHttpResponseValidator() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void validate(SimpleHttpResponse response) throws JSONException {
-				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
-				Validate.isTrue(json.get("result").equals("success"));		
-			}
-		});
-		return null;
-	}
+        client.execute(post, new SimpleHttpResponseValidator() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public void validate(SimpleHttpResponse response) throws JSONException {
+                Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
+                Validate.isTrue(json.get("result").equals("success"));        
+            }
+        });
+        return null;
+    }
 
 }

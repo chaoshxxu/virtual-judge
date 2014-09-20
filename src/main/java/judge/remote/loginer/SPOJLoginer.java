@@ -13,24 +13,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class SPOJLoginer extends RetentiveLoginer {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.SPOJ;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.SPOJ;
+    }
 
-	@Override
-	protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
-		if (client.get("/").getBody().contains("<a href=\"/logout\">")) {
-			return;
-		}
+    @Override
+    protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
+        if (client.get("/").getBody().contains("<a href=\"/logout\">")) {
+            return;
+        }
 
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"login_user", account.getAccountId(), //
-				"password", account.getPassword(), //
-				"autologin", "1", //
-				"submit", "Log In", //
-				"ISO-8859-1");
-		client.post("/logout", entity, HttpStatusValidator.SC_OK);
-	}
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "login_user", account.getAccountId(), //
+                "password", account.getPassword(), //
+                "autologin", "1", //
+                "submit", "Log In", //
+                "ISO-8859-1");
+        client.post("/logout", entity, HttpStatusValidator.SC_OK);
+    }
 
 }

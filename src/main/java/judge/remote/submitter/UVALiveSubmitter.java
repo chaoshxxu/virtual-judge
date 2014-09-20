@@ -18,40 +18,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class UVALiveSubmitter extends CanonicalSubmitter {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.UVALive;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.UVALive;
+    }
 
-	@Override
-	protected boolean needLogin() {
-		return true;
-	}
+    @Override
+    protected boolean needLogin() {
+        return true;
+    }
 
-	@Override
-	protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
-		return submitted ? Integer.parseInt(info.remoteRunId) : -1;
-	}
+    @Override
+    protected Integer getMaxRunId(SubmissionInfo info, DedicatedHttpClient client, boolean submitted) {
+        return submitted ? Integer.parseInt(info.remoteRunId) : -1;
+    }
 
-	@Override
-	protected String submitCode(final SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"problemid", "", //
-				"category", "", //
-				"localid", info.remoteProblemId, //
-				"language", info.remotelanguage, //
-				"code", info.sourceCode, //
-				"codeupl", "");
+    @Override
+    protected String submitCode(final SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "problemid", "", //
+                "category", "", //
+                "localid", info.remoteProblemId, //
+                "language", info.remotelanguage, //
+                "code", info.sourceCode, //
+                "codeupl", "");
 
-		SimpleHttpResponse response = client.post(
-				"/index.php?option=com_onlinejudge&Itemid=25&page=save_submission",
-				entity,
-				HttpStatusValidator.SC_MOVED_PERMANENTLY);
+        SimpleHttpResponse response = client.post(
+                "/index.php?option=com_onlinejudge&Itemid=25&page=save_submission",
+                entity,
+                HttpStatusValidator.SC_MOVED_PERMANENTLY);
 
-		String headerLocation = response.getRawResponse().getFirstHeader("Location").getValue();
-		info.remoteRunId = Tools.regFind(headerLocation, "with\\+ID\\+(\\d+)");
-		Validate.isTrue(!StringUtils.isBlank(info.remoteRunId));
-		return null;
-	}
+        String headerLocation = response.getRawResponse().getFirstHeader("Location").getValue();
+        info.remoteRunId = Tools.regFind(headerLocation, "with\\+ID\\+(\\d+)");
+        Validate.isTrue(!StringUtils.isBlank(info.remoteRunId));
+        return null;
+    }
 
 }

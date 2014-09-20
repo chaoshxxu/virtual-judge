@@ -1,7 +1,7 @@
 package judge.remote.status;
 
 public interface RemoteStatusNormalizer {
-	
-	RemoteStatusType getStatusType(String rawStatus);
+    
+    RemoteStatusType getStatusType(String rawStatus);
 
 }

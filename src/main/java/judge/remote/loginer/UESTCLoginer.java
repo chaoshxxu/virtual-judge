@@ -24,40 +24,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class UESTCLoginer extends RetentiveLoginer {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.UESTC;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.UESTC;
+    }
 
-	@Override
-	protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) throws ClientProtocolException, IOException, JSONException {
-		if (isLoggedIn(client)) {
-			return;
-		}
+    @Override
+    protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) throws ClientProtocolException, IOException, JSONException {
+        if (isLoggedIn(client)) {
+            return;
+        }
 
-		Map<String, Object> payload = new HashMap<String, Object>();
-		payload.put("password", account.getPassword());
-		payload.put("userName", account.getAccountId());
+        Map<String, Object> payload = new HashMap<String, Object>();
+        payload.put("password", account.getPassword());
+        payload.put("userName", account.getAccountId());
 
-		HttpPost post = new HttpPost("/user/login");
-		post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
-		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");  		
+        HttpPost post = new HttpPost("/user/login");
+        post.setEntity(new StringEntity(JSONUtil.serialize(payload)));
+        post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");          
 
-		client.execute(post, HttpStatusValidator.SC_OK, new SimpleHttpResponseValidator() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void validate(SimpleHttpResponse response) throws JSONException {
-				Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
-				Validate.isTrue(json.get("result").equals("success"));
-			}
-		});
-	}
-	
-	@SuppressWarnings("unchecked")
-	private boolean isLoggedIn(DedicatedHttpClient client) throws ClientProtocolException, IOException, JSONException {
-		String jsonString = client.get("/data").getBody();
-		Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(jsonString);
-		return json.containsKey("currentUser");
-	}
+        client.execute(post, HttpStatusValidator.SC_OK, new SimpleHttpResponseValidator() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public void validate(SimpleHttpResponse response) throws JSONException {
+                Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
+                Validate.isTrue(json.get("result").equals("success"));
+            }
+        });
+    }
+    
+    @SuppressWarnings("unchecked")
+    private boolean isLoggedIn(DedicatedHttpClient client) throws ClientProtocolException, IOException, JSONException {
+        String jsonString = client.get("/data").getBody();
+        Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(jsonString);
+        return json.containsKey("currentUser");
+    }
 
 }

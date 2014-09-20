@@ -9,13 +9,13 @@ import judge.tool.Handler;
  *
  */
 public interface Crawler extends RemoteOjAware {
-	
-	/**
-	 * 
-	 * @param problemId 
-	 * @param handler
-	 * @throws Exception
-	 */
-	void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception;
+    
+    /**
+     * 
+     * @param problemId 
+     * @param handler
+     * @throws Exception
+     */
+    void crawl(String problemId, Handler<RawProblemInfo> handler) throws Exception;
 
 }

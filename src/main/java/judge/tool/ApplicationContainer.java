@@ -4,6 +4,6 @@ import javax.servlet.ServletContext;
 
 public class ApplicationContainer {
 
-	public static ServletContext serveletContext;
+    public static ServletContext serveletContext;
 
 }

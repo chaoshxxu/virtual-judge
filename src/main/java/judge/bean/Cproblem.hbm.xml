@@ -11,22 +11,22 @@
             <generator class="native" />
         </id>
 
-		<property name="num" type="java.lang.String">
-		    <column name="C_NUM" />
-		</property>
-		<property name="title" type="java.lang.String">
-		    <column name="C_TITLE" />
-		</property>
+        <property name="num" type="java.lang.String">
+            <column name="C_NUM" />
+        </property>
+        <property name="title" type="java.lang.String">
+            <column name="C_TITLE" />
+        </property>
 
-		<many-to-one name="problem" class="judge.bean.Problem" fetch="select">
-			<column name="C_PROBLEM_ID" />
-		</many-to-one>
-		<many-to-one name="contest" class="judge.bean.Contest" fetch="select">
-			<column name="C_CONTEST_ID" />
-		</many-to-one>
-		<many-to-one name="description" class="judge.bean.Description" fetch="select">
-			<column name="C_DESCRIPTION_ID" />
-		</many-to-one>
+        <many-to-one name="problem" class="judge.bean.Problem" fetch="select">
+            <column name="C_PROBLEM_ID" />
+        </many-to-one>
+        <many-to-one name="contest" class="judge.bean.Contest" fetch="select">
+            <column name="C_CONTEST_ID" />
+        </many-to-one>
+        <many-to-one name="description" class="judge.bean.Description" fetch="select">
+            <column name="C_DESCRIPTION_ID" />
+        </many-to-one>
 
     </class>
 </hibernate-mapping>

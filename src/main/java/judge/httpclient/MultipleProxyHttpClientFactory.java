@@ -47,120 +47,120 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
 public class MultipleProxyHttpClientFactory {
-//	private final static Logger log = LoggerFactory.getLogger(MultipleProxyHttpClientFactory.class);
-	
-	private List<HttpClient> delegates;
-	private Map<String, MultipleProxyHttpClient> instances = new HashMap<String, MultipleProxyHttpClient>();
-	private File jsonConfig;
-	
-	public MultipleProxyHttpClientFactory(String jsonConfigPath) {
-		this.jsonConfig = new File(jsonConfigPath);
-	}
+//    private final static Logger log = LoggerFactory.getLogger(MultipleProxyHttpClientFactory.class);
+    
+    private List<HttpClient> delegates;
+    private Map<String, MultipleProxyHttpClient> instances = new HashMap<String, MultipleProxyHttpClient>();
+    private File jsonConfig;
+    
+    public MultipleProxyHttpClientFactory(String jsonConfigPath) {
+        this.jsonConfig = new File(jsonConfigPath);
+    }
 
-	private HttpClientBuilder getBaseBuilder(int socketTimeout, int connectionTimeout, int maxConnTotal, int maxConnPerRoute, String userAgent) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-		SSLContextBuilder contextBuilder = SSLContexts.custom();
-		contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
-			@Override
-			public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-				return true;
-			}
-		});
-		SSLContext sslContext = contextBuilder.build();
-		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, new X509HostnameVerifier() {
-			@Override
-			public void verify(String host, SSLSocket ssl) throws IOException {
-			}
+    private HttpClientBuilder getBaseBuilder(int socketTimeout, int connectionTimeout, int maxConnTotal, int maxConnPerRoute, String userAgent) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        SSLContextBuilder contextBuilder = SSLContexts.custom();
+        contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+            @Override
+            public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                return true;
+            }
+        });
+        SSLContext sslContext = contextBuilder.build();
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, new X509HostnameVerifier() {
+            @Override
+            public void verify(String host, SSLSocket ssl) throws IOException {
+            }
 
-			@Override
-			public void verify(String host, X509Certificate cert) throws SSLException {
-			}
+            @Override
+            public void verify(String host, X509Certificate cert) throws SSLException {
+            }
 
-			@Override
-			public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
-			}
+            @Override
+            public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
+            }
 
-			@Override
-			public boolean verify(String s, SSLSession sslSession) {
-				return true;
-			}
-		});
+            @Override
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        });
 
-		Registry<ConnectionSocketFactory> socketFactoryRegistry = 
-				RegistryBuilder.<ConnectionSocketFactory> create()
-				.register("https", sslsf)
-				.register("http", PlainConnectionSocketFactory.getSocketFactory())
-				.build();
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = 
+                RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("https", sslsf)
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .build();
 
-		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-		
-		RequestConfig config = RequestConfig.custom()
-			    .setSocketTimeout(socketTimeout)
-			    .setConnectTimeout(connectionTimeout)
-			    .build();
-		
-		return HttpClients.custom().setConnectionManager(cm)
-			.setMaxConnTotal(maxConnTotal)
-			.setMaxConnPerRoute(maxConnPerRoute)
-			.setUserAgent(userAgent)
-			.setDefaultRequestConfig(config)
-			.setRetryHandler(new DefaultHttpRequestRetryHandler());
-	}
-	
-	@SuppressWarnings("unchecked")
-	@PostConstruct
-	public void init() throws JsonIOException, JsonSyntaxException, FileNotFoundException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-		Map<String, Object> proto = new HashMap<String, Object>();
-		Map<String, Object> httpClientConfigs = new Gson().fromJson(new FileReader(jsonConfig), proto.getClass());
-		
-		int socketTimeout = ((Double)httpClientConfigs.get("socket_timeout")).intValue();
-		int connectionTimeout = ((Double)httpClientConfigs.get("connection_timeout")).intValue();
-		int maxConnTotal = ((Double)httpClientConfigs.get("max_conn_total")).intValue();
-		int maxConnPerRoute = ((Double)httpClientConfigs.get("max_conn_per_route")).intValue();
-		String userAgent = (String) httpClientConfigs.get("user_agent");
-		ArrayList<ArrayList<Object>> proxyConfigs = (ArrayList<ArrayList<Object>>) httpClientConfigs.get("proxies");
-		
-		delegates = new ArrayList<HttpClient>();
-		for (ArrayList<Object> proxyConfig : proxyConfigs) {
-			HttpClientBuilder baseBuilder = getBaseBuilder(
-					socketTimeout,
-					connectionTimeout,
-					maxConnTotal,
-					maxConnPerRoute,
-					userAgent
-			);
-			if (proxyConfig.size() < 2) {
-				delegates.add(baseBuilder.build());
-				continue;
-			}
-			
-			String address = (String) proxyConfig.get(0);
-			int port = ((Double)proxyConfig.get(1)).intValue();
-			HttpHost proxyHost = new HttpHost(address, port);
-			
-			if (proxyConfig.size() >= 4) {
-				String username = (String) proxyConfig.get(2);
-				String password = (String) proxyConfig.get(3);
-				CredentialsProvider credsProvider = new BasicCredentialsProvider();
-				credsProvider.setCredentials(
-						new AuthScope(address, port),
-						new UsernamePasswordCredentials(username, password));
-				baseBuilder.setDefaultCredentialsProvider(credsProvider);
-			}
-			
-	        CloseableHttpClient httpclient = baseBuilder.setProxy(proxyHost).build();
-	        delegates.add(httpclient);
-		}
-	}
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        
+        RequestConfig config = RequestConfig.custom()
+                .setSocketTimeout(socketTimeout)
+                .setConnectTimeout(connectionTimeout)
+                .build();
+        
+        return HttpClients.custom().setConnectionManager(cm)
+            .setMaxConnTotal(maxConnTotal)
+            .setMaxConnPerRoute(maxConnPerRoute)
+            .setUserAgent(userAgent)
+            .setDefaultRequestConfig(config)
+            .setRetryHandler(new DefaultHttpRequestRetryHandler());
+    }
+    
+    @SuppressWarnings("unchecked")
+    @PostConstruct
+    public void init() throws JsonIOException, JsonSyntaxException, FileNotFoundException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+        Map<String, Object> proto = new HashMap<String, Object>();
+        Map<String, Object> httpClientConfigs = new Gson().fromJson(new FileReader(jsonConfig), proto.getClass());
+        
+        int socketTimeout = ((Double)httpClientConfigs.get("socket_timeout")).intValue();
+        int connectionTimeout = ((Double)httpClientConfigs.get("connection_timeout")).intValue();
+        int maxConnTotal = ((Double)httpClientConfigs.get("max_conn_total")).intValue();
+        int maxConnPerRoute = ((Double)httpClientConfigs.get("max_conn_per_route")).intValue();
+        String userAgent = (String) httpClientConfigs.get("user_agent");
+        ArrayList<ArrayList<Object>> proxyConfigs = (ArrayList<ArrayList<Object>>) httpClientConfigs.get("proxies");
+        
+        delegates = new ArrayList<HttpClient>();
+        for (ArrayList<Object> proxyConfig : proxyConfigs) {
+            HttpClientBuilder baseBuilder = getBaseBuilder(
+                    socketTimeout,
+                    connectionTimeout,
+                    maxConnTotal,
+                    maxConnPerRoute,
+                    userAgent
+            );
+            if (proxyConfig.size() < 2) {
+                delegates.add(baseBuilder.build());
+                continue;
+            }
+            
+            String address = (String) proxyConfig.get(0);
+            int port = ((Double)proxyConfig.get(1)).intValue();
+            HttpHost proxyHost = new HttpHost(address, port);
+            
+            if (proxyConfig.size() >= 4) {
+                String username = (String) proxyConfig.get(2);
+                String password = (String) proxyConfig.get(3);
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(
+                        new AuthScope(address, port),
+                        new UsernamePasswordCredentials(username, password));
+                baseBuilder.setDefaultCredentialsProvider(credsProvider);
+            }
+            
+            CloseableHttpClient httpclient = baseBuilder.setProxy(proxyHost).build();
+            delegates.add(httpclient);
+        }
+    }
 
-	public MultipleProxyHttpClient getInstance(String identifier) {
-		if (!instances.containsKey(identifier)) {
-			synchronized (instances) {
-				if (!instances.containsKey(identifier)) {
-					instances.put(identifier, new MultipleProxyHttpClient(identifier, delegates));
-				}
-			}
-		}
-		return instances.get(identifier);
-	}
+    public MultipleProxyHttpClient getInstance(String identifier) {
+        if (!instances.containsKey(identifier)) {
+            synchronized (instances) {
+                if (!instances.containsKey(identifier)) {
+                    instances.put(identifier, new MultipleProxyHttpClient(identifier, delegates));
+                }
+            }
+        }
+        return instances.get(identifier);
+    }
 
 }

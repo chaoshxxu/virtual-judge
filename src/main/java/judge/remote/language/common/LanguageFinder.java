@@ -13,26 +13,26 @@ import judge.tool.Handler;
  */
 public interface LanguageFinder extends RemoteOjAware {
 
-	/**
-	 * Different languages for different problems
-	 * 
-	 * @return
-	 */
-	boolean isDiverse();
+    /**
+     * Different languages for different problems
+     * 
+     * @return
+     */
+    boolean isDiverse();
 
-	/**
-	 * {submitted value} -> {displayed value}
-	 * May be called dynamically to update.
-	 * 
-	 * @param remoteProblemId
-	 * @return
-	 */
-	void getLanguages(String remoteProblemId, Handler<LinkedHashMap<String, String>> handler);
+    /**
+     * {submitted value} -> {displayed value}
+     * May be called dynamically to update.
+     * 
+     * @param remoteProblemId
+     * @return
+     */
+    void getLanguages(String remoteProblemId, Handler<LinkedHashMap<String, String>> handler);
 
-	/**
-	 * Should return immediately.
-	 * @return
-	 */
-	LinkedHashMap<String, String> getDefaultLanguages();
+    /**
+     * Should return immediately.
+     * @return
+     */
+    LinkedHashMap<String, String> getDefaultLanguages();
 
 }

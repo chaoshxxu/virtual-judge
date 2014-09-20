@@ -10,6 +10,6 @@ import judge.remote.account.RemoteAccount;
  */
 public interface Loginer extends RemoteOjAware {
 
-	void login(RemoteAccount account) throws Exception;
+    void login(RemoteAccount account) throws Exception;
 
 }

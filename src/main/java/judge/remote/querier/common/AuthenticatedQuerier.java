@@ -21,51 +21,51 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AuthenticatedQuerier implements Querier {
 
-	@Autowired
-	private DedicatedHttpClientFactory dedicatedHttpClientFactory;
+    @Autowired
+    private DedicatedHttpClientFactory dedicatedHttpClientFactory;
 
-	@Override
-	public void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
-		new QueryTask(info, handler).submit();
-	}
-	
-	class QueryTask extends RemoteAccountTask<SubmissionRemoteStatus> {
-		SubmissionInfo info;
-		
-		public QueryTask(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
-			super(
-					ExecutorTaskType.QUERY_SUBMISSION_STATUS, 
-					getOj(), 
-					info.remoteAccountId, 
-					null, 
-					handler);
-			this.info = info;
-		}
+    @Override
+    public void query(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
+        new QueryTask(info, handler).submit();
+    }
+    
+    class QueryTask extends RemoteAccountTask<SubmissionRemoteStatus> {
+        SubmissionInfo info;
+        
+        public QueryTask(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
+            super(
+                    ExecutorTaskType.QUERY_SUBMISSION_STATUS, 
+                    getOj(), 
+                    info.remoteAccountId, 
+                    null, 
+                    handler);
+            this.info = info;
+        }
 
-		@Override
-		protected SubmissionRemoteStatus call(RemoteAccount remoteAccount) throws Exception {
-			LoginersHolder.getLoginer(getOj()).login(remoteAccount);
-			DedicatedHttpClient client = dedicatedHttpClientFactory.build(getHost(), remoteAccount.getContext(), getCharset());
-			return query(info, remoteAccount, client);
-		}
-	}
-	
-	protected abstract SubmissionRemoteStatus query(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws Exception;
-	
-	/**
-	 * Can be overridden
-	 * @return
-	 */
-	protected HttpHost getHost() {
-		return getOj().mainHost;
-	}
+        @Override
+        protected SubmissionRemoteStatus call(RemoteAccount remoteAccount) throws Exception {
+            LoginersHolder.getLoginer(getOj()).login(remoteAccount);
+            DedicatedHttpClient client = dedicatedHttpClientFactory.build(getHost(), remoteAccount.getContext(), getCharset());
+            return query(info, remoteAccount, client);
+        }
+    }
+    
+    protected abstract SubmissionRemoteStatus query(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws Exception;
+    
+    /**
+     * Can be overridden
+     * @return
+     */
+    protected HttpHost getHost() {
+        return getOj().mainHost;
+    }
 
-	/**
-	 * Can be overridden
-	 * @return
-	 */
-	protected String getCharset() {
-		return getOj().defaultChaset;
-	}
+    /**
+     * Can be overridden
+     * @return
+     */
+    protected String getCharset() {
+        return getOj().defaultChaset;
+    }
 
 }

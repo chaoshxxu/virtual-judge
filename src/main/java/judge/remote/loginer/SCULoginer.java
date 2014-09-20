@@ -13,23 +13,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class SCULoginer extends RetentiveLoginer {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.SCU;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.SCU;
+    }
 
-	@Override
-	protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
-		if (client.get("/soj/index.action").getBody().contains("href=\"logout.action\"")) {
-			return;
-		}
+    @Override
+    protected void loginEnforce(RemoteAccount account, DedicatedHttpClient client) {
+        if (client.get("/soj/index.action").getBody().contains("href=\"logout.action\"")) {
+            return;
+        }
 
-		HttpEntity entity = SimpleNameValueEntityFactory.create( //
-				"back", "2", //
-				"id", account.getAccountId(), //
-				"password", account.getPassword(), //
-				"submit", "login");
-		client.post("/soj/login.action", entity, new HttpBodyValidator("window.history.go(-"));
-	}
+        HttpEntity entity = SimpleNameValueEntityFactory.create( //
+                "back", "2", //
+                "id", account.getAccountId(), //
+                "password", account.getPassword(), //
+                "submit", "login");
+        client.post("/soj/login.action", entity, new HttpBodyValidator("window.history.go(-"));
+    }
 
 }

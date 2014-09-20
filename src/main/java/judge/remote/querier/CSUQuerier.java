@@ -19,30 +19,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class CSUQuerier extends AuthenticatedQuerier {
 
-	@Override
-	public RemoteOj getOj() {
-		return RemoteOj.CSU;
-	}
+    @Override
+    public RemoteOj getOj() {
+        return RemoteOj.CSU;
+    }
 
-	@Override
-	protected SubmissionRemoteStatus query(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
-		String html = client.get("/OnlineJudge/status.php?&top=" + info.remoteRunId).getBody();
-		Pattern pattern = Pattern.compile("<td>\\s*" + info.remoteRunId + "</td><td>.+?<td>.+?<td>(.+?)<td>(.+?)<td>(.+?)<td>");
-		Matcher matcher = pattern.matcher(html);
-		Validate.isTrue(matcher.find());
-		
-		SubmissionRemoteStatus status = new SubmissionRemoteStatus();
-		status.rawStatus = matcher.group(1).replaceAll("<.*?>", "").trim();
-		status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
-		if (status.statusType == RemoteStatusType.AC) {
-			status.executionMemory = Integer.parseInt(matcher.group(2).replaceAll("\\D", ""));
-			status.executionTime = Integer.parseInt(matcher.group(3).replaceAll("\\D", ""));
-		} else if (status.statusType == RemoteStatusType.CE) {
-			html = client.get("/OnlineJudge/ceinfo.php?sid=" + info.remoteRunId).getBody();
-			status.compilationErrorInfo = Tools.regFind(html, "(<pre[\\s\\S]*?</pre>)");
-		}
-		
-		return status;
-	}
+    @Override
+    protected SubmissionRemoteStatus query(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+        String html = client.get("/OnlineJudge/status.php?&top=" + info.remoteRunId).getBody();
+        Pattern pattern = Pattern.compile("<td>\\s*" + info.remoteRunId + "</td><td>.+?<td>.+?<td>(.+?)<td>(.+?)<td>(.+?)<td>");
+        Matcher matcher = pattern.matcher(html);
+        Validate.isTrue(matcher.find());
+        
+        SubmissionRemoteStatus status = new SubmissionRemoteStatus();
+        status.rawStatus = matcher.group(1).replaceAll("<.*?>", "").trim();
+        status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
+        if (status.statusType == RemoteStatusType.AC) {
+            status.executionMemory = Integer.parseInt(matcher.group(2).replaceAll("\\D", ""));
+            status.executionTime = Integer.parseInt(matcher.group(3).replaceAll("\\D", ""));
+        } else if (status.statusType == RemoteStatusType.CE) {
+            html = client.get("/OnlineJudge/ceinfo.php?sid=" + info.remoteRunId).getBody();
+            status.compilationErrorInfo = Tools.regFind(html, "(<pre[\\s\\S]*?</pre>)");
+        }
+        
+        return status;
+    }
 
 }
