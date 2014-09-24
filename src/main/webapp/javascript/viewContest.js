@@ -643,7 +643,7 @@ function updateRankInfo() {
 		now - lastClickTime > 300000 ? 99999999 :
 		hash && hash[0] == "#rank" ? 10000 : 60000;
 
-	var rankUpdateCountDown = 
+	var rankUpdateCountDown = ti[1] >= ti[0] ? 0 :
 		Math.round(
 			(lastRankUpdateTime - ti[1] + startTime + updateInterval - now) / 1000
 		);
@@ -1090,9 +1090,11 @@ function resetTimeSlider () {
 			window.location.reload();
 		}
 		updateRankInfo();
-	}
+	};
 	temp();
-	sliderUpdater = setInterval(temp, 1000);
+	if (ti[1] < ti[0]) {
+		sliderUpdater = setInterval(temp, 1000);
+	}
 };
 
 function isScrolledIntoView(elem) {
