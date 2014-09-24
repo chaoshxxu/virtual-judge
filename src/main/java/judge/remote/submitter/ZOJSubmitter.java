@@ -37,7 +37,7 @@ public class ZOJSubmitter extends CanonicalSubmitter {
     }
 
     @Override
-    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
+    protected String submitCode(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) throws InterruptedException {
         String html = client.get("/onlinejudge/showProblem.do?problemCode=" + info.remoteProblemId).getBody();
         String realProblemId = Tools.regFind(html, "problemId=([\\s\\S]*?)\"><font");
 
@@ -46,6 +46,7 @@ public class ZOJSubmitter extends CanonicalSubmitter {
                 "problemId", realProblemId, //
                 "source", info.sourceCode);
         client.post("/onlinejudge/submit.do", entity);
+        Thread.sleep(2000);
         return null;
     }
 

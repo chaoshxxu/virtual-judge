@@ -3,8 +3,6 @@ package judge.tool;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import judge.executor.TaskExecutor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,6 @@ public class StartUpListener implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent event) {
         log.info("System shutdown");
-        SpringBean.getBean(TaskExecutor.class).shutdown();
     }
 
 }

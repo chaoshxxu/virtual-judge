@@ -37,7 +37,6 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -102,8 +101,7 @@ public class MultipleProxyHttpClientFactory {
             .setMaxConnTotal(maxConnTotal)
             .setMaxConnPerRoute(maxConnPerRoute)
             .setUserAgent(userAgent)
-            .setDefaultRequestConfig(config)
-            .setRetryHandler(new DefaultHttpRequestRetryHandler());
+            .setDefaultRequestConfig(config);
     }
     
     @SuppressWarnings("unchecked")

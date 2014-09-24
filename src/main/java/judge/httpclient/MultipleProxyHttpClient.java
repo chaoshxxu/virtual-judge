@@ -1,9 +1,6 @@
 package judge.httpclient;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.http.HttpHost;
@@ -34,47 +31,45 @@ public class MultipleProxyHttpClient implements HttpClient {
         this.lastCostTime = new long[delegates.size()];
     }
     
+//    private void showDelegatesStatus() {
+//        for (int j = 0; j < delegates.size(); j++) {
+//            System.out.print(lastCostTime[j] + " ");
+//        }
+//        System.out.println();   
+//    }
+
     /**
      * Use the client that has the shortest lastCostTime
      */
     @Override
     public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context) {
-        List<Integer> indices = new ArrayList<Integer>();
-        for (int i = 0; i < delegates.size(); i++) {
-            indices.add(i);
-        }
-        Collections.sort(indices, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer a, Integer b) {
-                return (int) (lastCostTime[a] - lastCostTime[b]);
+        boolean[] usedDelegate = new boolean[delegates.size()];
+        int tryCount = 0;
+        
+        while (true) {
+            int chosenIndex = -1;
+            for (int i = 0; i < delegates.size(); i++) {
+                if (!usedDelegate[i] && (chosenIndex < 0 || lastCostTime[i] < lastCostTime[chosenIndex])) {
+                    chosenIndex = i;
+                }
             }
-        });
-        Exception finalException = null;
-        for (int i : indices) {
-            HttpClient client = delegates.get(i);
+            usedDelegate[chosenIndex] = true;
+            
+            HttpClient client = delegates.get(chosenIndex);
             long beginTime = System.currentTimeMillis();
             try {
                 T result = client.execute(target, request, responseHandler, context);
-                lastCostTime[i] = System.currentTimeMillis() - beginTime;
-                
-//                for (int j = 0; j < delegates.size(); j++) {
-//                    if (j == i) {
-//                        System.out.print("(" + lastCostTime[j] + ") ");
-//                    } else {
-//                        System.out.print(lastCostTime[j] + " ");
-//                    }
-//                }
-//                System.out.println();
-                
+                lastCostTime[chosenIndex] = System.currentTimeMillis() - beginTime;
                 return result;
-            } catch (Exception e) {
-                lastCostTime[i] = Math.max(lastCostTime[i] + 1, 60000);
-                lastCostTime[i] = Math.max(lastCostTime[i], System.currentTimeMillis() - beginTime);
-                finalException = e;
+            } catch (Throwable t) {
+                lastCostTime[chosenIndex] = Math.max(lastCostTime[chosenIndex] + 1, 60000);
+                lastCostTime[chosenIndex] = Math.max(lastCostTime[chosenIndex], System.currentTimeMillis() - beginTime);
+                if (++tryCount >= delegates.size()) {
+                    log.error("All clients of " + identifier + " failed.");
+                    throw new RuntimeException(t);
+                }
             }
         }
-        log.error("All clients of " + identifier + " failed.");
-        throw new RuntimeException(finalException);
     }
 
     @Override

@@ -56,8 +56,13 @@ public class UESTCSubmitter extends CanonicalSubmitter {
             @Override
             public Integer map(SimpleHttpResponse response) throws JSONException {
                 Map<String, Object> json = (Map<String, Object>) JSONUtil.deserialize(response.getBody());
-                Map<String, Object> latest = ((List<Map<String, Object>>)json.get("list")).get(0);
-                return ((Long) latest.get("statusId")).intValue();
+                List<Map<String, Object>> list = (List<Map<String, Object>>) json.get("list");
+                if (list.isEmpty()) {
+                    return -1;
+                } else {
+                    Map<String, Object> latest = list.get(0);
+                    return ((Long) latest.get("statusId")).intValue();
+                }
             }
         });
     }

@@ -48,7 +48,7 @@
                         <li><a href="http://vjudge.net" target="_blank">http://vjudge.net</a> : Reverse proxy hosted oversea. Recommended for visitors who can't use the above entrance.</li>
                     </ul>
 				</li>
-				<li>2010-10-07  Refer to <a href="https://code.google.com/p/virtual-judge/source/list">this page</a> for recent change of Virtual Judge.</li>
+				<li>2010-10-07  Refer to <a href="https://github.com/trcnkq/virtual-judge/commits/master">this page</a> for recent change of Virtual Judge.</li>
 			</ul>
 		</div>
 		<s:include value="/bottom.jsp" />

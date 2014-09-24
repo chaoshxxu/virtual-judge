@@ -11,6 +11,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PreDestroy;
+
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +55,7 @@ public class TaskExecutor {
         return executors.get(taskType);
     }
     
+    @PreDestroy
     public void shutdown() {
         delayedTaskDispatcher.shutdownNow();
         for (ThreadPoolExecutor executor : executors.values()) {
