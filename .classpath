@@ -6,6 +6,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="src/remote-provider/java"/>
 	<classpathentry kind="src" output="target/classes" path="src/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
@@ -17,8 +18,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="struts/" kind="src" path="src/main/config"/>
-	<classpathentry kind="src" path="src/main/config/struts"/>
+	<classpathentry kind="src" path="src/remote/java"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import judge.bean.Contest;
 import judge.bean.Submission;
-import judge.remote.status.RemoteStatusUpdateEvent;
+import judge.remote.RemoteStatusUpdateEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

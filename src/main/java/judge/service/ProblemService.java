@@ -3,7 +3,7 @@ package judge.service;
 import java.util.Date;
 
 import judge.bean.Problem;
-import judge.remote.crawler.common.ProblemInfoUpdateTask;
+import judge.remote.crawler.ProblemInfoUpdateTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
