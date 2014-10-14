@@ -1,0 +1,263 @@
+#viewContest_wrapper div.fg-toolbar {
+	display: none;
+}
+
+#viewContest tr.odd {
+    background-color: #E2E4FF;
+}
+
+#viewContest tr.even {
+    background-color: white;
+}
+
+#viewContest td {
+	padding: 3px;
+}
+
+/****************************Status******************************/
+table#table_status {
+    table-layout: fixed;
+}
+
+#table_status_wrapper {
+	margin-top: 20px;
+}
+
+#table_status_wrapper .dataTables_paginate {
+    float: left;
+    text-align: center;
+}
+
+#table_status_wrapper .dataTables_paginate span>a:last-child {
+    display: none;
+}
+
+#table_status_wrapper #buttonContainer {
+    float: left;
+    padding-left: 40px;
+}
+
+#table_status_wrapper div.ui-corner-bl {
+    display: none;
+}
+
+#table_status_wrapper .ui-selectmenu-button span.ui-selectmenu-text {
+    overflow: visible;
+}
+
+table#table_status tr.working td.time {
+    padding-right: 0;
+    background: url("../images/loader.gif") no-repeat 90% 50%;
+}
+
+table#table_status th.run_id {
+    width: 80px;
+    cursor: pointer;
+}
+
+table#table_status th.username {
+}
+
+table#table_status th.oj {
+    width: 100px;
+}
+
+table#table_status th.prob_num {
+    width: 110px;
+}
+
+table#table_status th.result {
+    width: 160px;
+}
+
+table#table_status th.memory {
+    width: 70px;
+}
+
+table#table_status th.time {
+    width: 60px;
+}
+
+table#table_status th.date {
+    width: 110px;
+}
+
+table#table_status th.language {
+    width: 120px;
+}
+
+table#table_status th.length {
+    width: 60px;
+    cursor: pointer;
+}
+
+table#table_status td.prob_num {
+    text-align: center;
+}
+
+
+/********************Rank*********************/
+
+#rank_header>div,#rank_header_1>div,div.disp>div,#rank_foot_1>div {
+    float: left;
+    height: 42px;
+    font-size: 12px;
+    text-align: center;
+    margin: 0 1px 1px 0;
+    padding: 8px 0 0 0;
+}
+
+#rank_header>div,#rank_header_1>div {
+    height: 34px;
+    line-height: 34px;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 0;
+    border-bottom: 1px solid black
+}
+
+#rank_foot_1>div,#rank_foot>div {
+    height: 60px;
+}
+
+div.disp {
+    clear: both;
+}
+
+#rank div.rank {
+    width: 40px;
+}
+
+#rank div.id {
+    width: 180px;
+}
+
+#rank div.solve {
+    width: 60px;
+    cursor: pointer;
+    cursor: hand;
+}
+
+#rank div.standing_time {
+    width: 80px;
+    cursor: pointer;
+    cursor: hand;
+}
+
+table#time_machine tr.my_tr {
+    font-weight: bold;
+}
+
+div.green span,div.red span {
+    color: gray;
+}
+
+div.disp a:link {
+    color: black;
+}
+
+div.disp a:visited {
+    color: black;
+}
+
+div.my_tr a:link {
+    color: white;
+}
+
+div.my_tr a:visited {
+    color: white;
+}
+
+div.replay {
+    color: gray;
+}
+
+div.meta_td {
+    line-height: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.cur_tr div.meta_td {
+    background-color: #CCDDFF;
+}
+
+div.my_tr div.meta_td {
+    background-color: #5C9CCC;
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+}
+
+div.same_td {
+    background-color: #FFFFBB;
+}
+
+div.solvedfirst {
+    background-color: #008800;
+    color: white;
+    font-weight: bold;
+}
+
+div.solvedfirst span {
+    color: #E3E3E3;
+}
+
+.black-font {
+    color: black;
+}
+
+.black-font a:visited {
+    color: black !important;
+}
+
+.black-font a:link {
+    color: black !important;
+}
+
+.white-font {
+    color: white;
+}
+
+.white-font a:visited {
+    color: white !important;
+}
+
+.white-font a:link {
+    color: white !important;
+}
+
+/****************************Rank Setting******************************/
+
+#same_contests_table_wrapper div.fg-toolbar {
+    display: none;
+}
+
+#same_contests_table tr.Ended.odd {
+    background-color: #DDFFDD !important;
+}
+
+#same_contests_table tr.Ended.even {
+    background-color: #EEFFEE !important;
+}
+
+#same_contests_table tr.Running.odd {
+    background-color: #FFDDDD !important;
+}
+
+#same_contests_table tr.Running.even {
+    background-color: #FFEEEE !important;
+}
+
+#same_contests_table tr.Scheduled.odd {
+    background-color: #E2E4FF !important;
+}
+
+#same_contests_table tr.Scheduled.even {
+    background-color: #EAEBFF !important;
+}
+
+#same_contests_table td {
+	padding: 3px;
+}

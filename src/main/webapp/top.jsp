@@ -1,5 +1,22 @@
+<%@ include file="/contextPath.jsp" %>
 <%@ taglib prefix="s" uri="/struts-tags"%>
-<table width="100%" border="0" class="banner" style="margin-bottom:30px;"><tr><td><a href="toIndex.action">Home</a></td><td><a href="problem/toListProblem.action">Problems</a></td><td><a href="problem/status.action">Status</a></td><td><a href="contest/toListContest.action">Contest</a></td><td><s:if test="#session.visitor != null">[<a id="my_account" uid="<s:property value='#session.visitor.id' />" href="user/toUpdate.action?uid=<s:property value="#session.visitor.id" />"><s:property value="#session.visitor.username" /></a>]</s:if><s:else><a class="register" href="javascript:void(0)">Register</a></s:else></td><td><s:if test="#session.visitor != null"><a id="logout" href="javascript:void(0)">Logout</a></s:if><s:else><a class="login" href="javascript:void(0)">Login</a></s:else></td></tr></table>
+
+<div id='cssmenu'>
+<ul>
+    <li id="nav_home"><a href="${contextPath}/toIndex.action">Home</a></li>
+    <li id="nav_problem"><a href="${contextPath}/problem/toListProblem.action">Problem</a></li>
+    <li id="nav_status"><a href="${contextPath}/problem/status.action">Status</a></li>
+    <li id="nav_contest" class='has-sub'><a href="${contextPath}/contest/toListContest.action">Contest</a>
+       <ul>
+          <li><a href='${contextPath}/contest/toAddContest.action' class="login">Add Contest</a></li>
+          <li><a href='${contextPath}/contest/statistic.action'>Statistic</a></li>
+       </ul>
+    </li>
+	<li style="float:right"><s:if test="#session.visitor != null"><a id="logout" href="javascript:void(0)">LOGOUT</a></s:if><s:else><a class="login" href="javascript:void(0)">LOGIN</a></s:else></li>
+	<li style="float:right"><s:if test="#session.visitor != null"><a id="my_account" uid="<s:property value='#session.visitor.id' />" href="${contextPath}/user/toUpdate.action?uid=<s:property value="#session.visitor.id" />"><s:property value="#session.visitor.username" /></a></s:if><s:else><a class="register" href="javascript:void(0)">REGISTER</a></s:else></li>
+</ul>
+</div>
+
 <s:if test="#session.visitor == null">
 	<div id="dialog-form-login" style="display: none" title="Login">
 		<p class="validateTips"></p><form id="login_form" action="javascript:void(0)"><fieldset><label for="username">Username *</label><input type="text" id="username" name="username" class="text ui-widget-content ui-corner-all" style="ime-mode:disabled" /><label for="password">Password *</label><input type="password" id="password" name="password" class="text ui-widget-content ui-corner-all" /></fieldset></form>

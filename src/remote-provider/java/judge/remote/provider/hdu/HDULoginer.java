@@ -3,7 +3,7 @@ package judge.remote.provider.hdu;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 public class HDULoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HDU;
+    public RemoteOjInfo getOjInfo() {
+        return HDUInfo.INFO;
     }
 
     @Override

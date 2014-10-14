@@ -19,7 +19,7 @@ public class LanguageFindersHolder {
                         List<Class<? extends LanguageFinder>> crawlerClasses = Tools.findSubClasses("judge", LanguageFinder.class);
                         for (Class<? extends LanguageFinder> crawlerClass : crawlerClasses) {
                             LanguageFinder crawler = SpringBean.getBean(crawlerClass);
-                            finders.put(crawler.getOj(), crawler);
+                            finders.put(crawler.getOjInfo().remoteOj, crawler);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();

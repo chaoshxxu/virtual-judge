@@ -143,9 +143,9 @@
             <version>4.4-alpha1</version>
         </dependency>
         <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpmime</artifactId>
-          <version>4.3.1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
@@ -197,19 +197,69 @@
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
         </dependency>
-		<dependency>
-		    <groupId>net.sf.ehcache</groupId>
-		    <artifactId>ehcache</artifactId>
-		    <version>2.8.3</version>
-		</dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>2.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.tomcat.maven</groupId>
+                    <artifactId>tomcat7-maven-plugin</artifactId>
+                    <version>2.2</version>
+                    <configuration>
+                        <!-- http port -->
+                        <port>8080</port>
+                        <!-- application path always starts with / -->
+                        <path>/vjudge</path>
+                        <!-- optional path to a context file -->
+                        <contextFile>${tomcatContextXml}</contextFile>
+                        <!-- optional system propoerties you want to add -->
+                        <systemProperties>
+                            <appserver.base>${project.build.directory}/appserver-base</appserver.base>
+                            <appserver.home>${project.build.directory}/appserver-home</appserver.home>
+                            <derby.system.home>${project.build.directory}/appserver-base/logs</derby.system.home>
+                            <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+                        </systemProperties>
+                        <!-- if you want to use test dependencies rather than only runtime -->
+                        <useTestClasspath>false</useTestClasspath>
+                        <!-- optional if you want to add some extra directories into the classloader -->
+                        <additionalClasspathDirs>
+                            <additionalClasspathDir></additionalClasspathDir>
+                        </additionalClasspathDirs>
+                    </configuration>
+                    <!-- For any extra dependencies needed when running embedded Tomcat (not WAR dependencies) add them below -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derby</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>javax.mail</groupId>
+                            <artifactId>mail</artifactId>
+                            <version>1.4</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
+                <version>3.1</version>
+                <configuration>
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <executable>${JAVA_HOME}/bin/javac</executable>
@@ -219,16 +269,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                    <configuration>
-                    <warName>vjudge</warName>
-                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -245,7 +288,66 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
+
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.6.2</version>
+                <executions>
+                    <execution>
+                        <id>default-minify</id>
+                        <!-- <phase>package</phase> -->
+                        <configuration>
+                            <cssSourceDir>/</cssSourceDir>
+                            <cssSourceFiles>
+                                <cssSourceFile>jquery-ui-1.11.1.custom/jquery-ui.css</cssSourceFile>
+                                <!-- <cssSourceFile>css/datatables.jqueryui.css</cssSourceFile> <cssSourceFile>css/datatables.customize.css</cssSourceFile> -->
+                            </cssSourceFiles>
+                            <cssSourceIncludes>
+                                <cssSourceInclude>css/**/*.css</cssSourceInclude>
+                            </cssSourceIncludes>
+                            <cssSourceExcludes>
+                                <cssSourceExclude>css/style.css</cssSourceExclude>
+                                <cssSourceExclude>css/style.min.css</cssSourceExclude>
+                                <cssSourceExclude>css/legacy/*</cssSourceExclude>
+                            </cssSourceExcludes>
+                            <cssTargetDir>css</cssTargetDir>
+
+                            <jsSourceDir>/</jsSourceDir>
+                            <jsSourceFiles>
+                                <jsSourceFile>javascript/shared/__jquery-2.1.1.min.js</jsSourceFile>
+                                <jsSourceFile>jquery-ui-1.11.1.custom/jquery-ui.min.js</jsSourceFile>
+                            </jsSourceFiles>
+                            <jsSourceIncludes>
+                                <jsSourceInclude>javascript/**/*.js</jsSourceInclude>
+                            </jsSourceIncludes>
+                            <jsSourceExcludes>
+                                <jsSourceExclude>javascript/min/*</jsSourceExclude>
+                                <jsSourceExclude>javascript/legacy/*</jsSourceExclude>
+                            </jsSourceExcludes>
+                            <jsTargetDir>javascript/min</jsTargetDir>
+                            <jsEngine>CLOSURE</jsEngine>
+
+                            <webappTargetDir>${basedir}/src/main/webapp</webappTargetDir>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <warSourceExcludes>**/file-1.css,...,**/file-n.css,**/file-1.js,...,**/file-n.js</warSourceExcludes>
+                    <warName>vjudge</warName>
+                    <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
+                </configuration>
+            </plugin>
         </plugins>
 
         <resources>
@@ -259,7 +361,7 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-        
+
         <finalName>virtual-judge</finalName>
     </build>
     <reporting>

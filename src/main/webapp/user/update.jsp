@@ -1,16 +1,16 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<s:include value="/header.jsp" />
+		<%@ include file="/header.jsp" %>
 	    <title>Update profile - Virtual Judge</title>
 	</head>
 
 	<body>
 		<s:include value="/top.jsp" />
-		<form action="user/update.action" method="post">
+		<form action="${contextPath}/user/update.action" method="post">
 			<table border="0" style="MARGIN-RIGHT:auto;MARGIN-LEFT: auto;">
 				<tr>
 					<td>Username:</td>

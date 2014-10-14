@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.querier.SyncQuerier;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
@@ -18,13 +18,13 @@ import org.springframework.stereotype.Component;
 public class FZUQuerier extends SyncQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.FZU;
+    public RemoteOjInfo getOjInfo() {
+        return FZUInfo.INFO;
     }
 
     @Override
     protected SubmissionRemoteStatus query(SubmissionInfo info) {
-        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
+        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOjInfo().mainHost, null, getOjInfo().defaultChaset);
 
         for (int page = 1; page <= 10; page++) {
             SubmissionRemoteStatus status = queryOnePage(page, info, client);
@@ -32,7 +32,7 @@ public class FZUQuerier extends SyncQuerier {
                 return status;
             }
         }
-        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOj(), info.remoteRunId));
+        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOjInfo(), info.remoteRunId));
     }
     
     private SubmissionRemoteStatus queryOnePage(int page, SubmissionInfo info, DedicatedHttpClient client) {

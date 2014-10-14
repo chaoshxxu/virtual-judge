@@ -1,15 +1,16 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<s:include value="/header.jsp" />
+		<%@ include file="/header.jsp" %>
 	    <title>Online Users - Virtual Judge</title>
-		<script type="text/javascript" src="javascript/listOL.js?<%=application.getAttribute("version")%>"></script>
+<%--  		<script type="text/javascript" src="${contextPath}/javascript/listOL.js?<%=application.getAttribute("version")%>"></script> --%>
     </head>
 
 	<body>
+        <s:hidden id="js_require_listOL" />
 		<s:include value="/top.jsp" />
 		
 		<div class="ptt">Online Users</div>
@@ -49,10 +50,10 @@
 			<s:iterator value="dataList" status="stat">
 			<tr>
 				<td>
-					<a href="stat/viewOL.action?id=<s:property value='dataList[#stat.index][0]' />">Detail</a>
+					<a href="${contextPath}/stat/viewOL.action?id=<s:property value='dataList[#stat.index][0]' />">Detail</a>
 				</td>
 				<td>
-					<a href="user/profile.action?uid=<s:property value='dataList[#stat.index][2]' />">
+					<a href="${contextPath}/user/profile.action?uid=<s:property value='dataList[#stat.index][2]' />">
 						<s:property value='dataList[#stat.index][1]' />
 					</a>
 				</td>

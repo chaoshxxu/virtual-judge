@@ -1,18 +1,28 @@
+/********************Global*********************/
+td .localizedTime {
+    height: 20px;
+    overflow: hidden;
+}
+
+td:hover .localizedTime {
+    height: 20px !important;
+}
+
 a:link {
 	COLOR: blue;
 	TEXT-TRANSFORM: none;
-	TEXT-DECORATION: none
+	TEXT-DECORATION: none;
 }
 
 a:visited {
 	COLOR: blue;
 	TEXT-TRANSFORM: none;
-	TEXT-DECORATION: none
+	TEXT-DECORATION: none;
 }
 
 a:hover {
 	COLOR: red;
-	TEXT-DECORATION: underline
+	TEXT-DECORATION: underline;
 }
 
 div.ptt {
@@ -55,8 +65,6 @@ pre.sio {
 	text-align: center;
 }
 
-
-
 .time {
 	text-align: center;
 	width: 155px;
@@ -91,8 +99,6 @@ pre.sio {
 	padding-left: 20px;
 }
 
-
-
 .blue {
 	color: blue;
 }
@@ -101,23 +107,16 @@ pre.sio {
 	color: red;
 }
 
-.banner{
-	background-color:#D3D6FF;
-	font-weight: bold;
-}
-
 .id {
 	text-align: center;
 	width: 50px;
 }
 
-.status{
+.status {
 	width: 80px;
 }
 
-
-
-.select{
+.select {
 	width: 180px;
 }
 
@@ -128,7 +127,7 @@ pre.sio {
 .form_title {
 	padding: 5px 5px;
 	vertical-align: top;
-	text-align:right;
+	text-align: right;
 	font-weight: bold;
 }
 
@@ -136,7 +135,7 @@ pre.sio {
 	padding: 5px;
 }
 
-.description{
+.description {
 	text-align: center;
 	background-color: #F8F8F8;
 	MARGIN-RIGHT: auto;
@@ -166,9 +165,21 @@ pre.sio {
 	color: black;
 }
 
-input.text { margin-bottom:12px; width:95%; padding: .4em; }
-fieldset { padding:0; border:0;}
-.validateTips { border: 1px solid transparent; padding: 0.3em; }
+input.text {
+	margin-bottom: 12px;
+	width: 95%;
+	padding: .4em;
+}
+
+fieldset {
+	padding: 0;
+	border: 0;
+}
+
+.validateTips {
+	border: 1px solid transparent;
+	padding: 0.3em;
+}
 
 /***************table font ******************/
 table.display {
@@ -176,7 +187,6 @@ table.display {
 	line-height: 20px;
 	font-family: Verdana;
 }
-
 
 /***************struts2 error ******************/
 .errorMessage {
@@ -192,6 +202,18 @@ div#title {
 	font-weight: bold;
 }
 
+#ojs span {
+    width: 150px;
+    display: block;
+    float: left;
+    line-height: 40px;
+}
+
+#ojs img {
+    height: 25px;
+    margin-right: 5px;
+}
+
 #ojs a:link {
 	font-size: 16px;
 	font-family: Verdana;
@@ -204,381 +226,54 @@ div#title {
 	color: green;
 }
 
-/********************listProblem*********************/
-#listProblem td.oj {
+#contest_menu {
 	width: 100px;
 }
 
-#listProblem td.prob_num {
-	width: 120px;
+
+/********************listOL*********************/
+#listOL table {
+	table-layout: fixed;
 }
 
-#listProblem td.title {
+#listOL td {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	padding: 3px 10px;
 }
 
-#listProblem td.source {
+#listOL td.ip {
 	white-space: normal;
 	word-break: break-all;
 	word-wrap: break-word;
-	width: 500px;
+	width: 150px;
 }
 
-
-
-/********************listContest*********************/
-tr.Ended.odd {
-	background-color:#DDFFDD;
-}
-
-tr.Ended.even {
-	background-color:#EEFFEE;
-}
-
-tr.Running.odd {
-	background-color:#FFDDDD;
-}
-
-tr.Running.even {
-	background-color:#FFEEEE;
-}
-
-tr.Scheduled.odd {
-	background-color:#E2E4FF;
-}
-
-tr.Scheduled.even {
-	background-color:#EAEBFF;
-}
-
-td.Public {
-	color: blue;
-}
-
-td.Private {
-	color: red;
-}
-
-span.Ended {
-	color: green;
-}
-
-span.Running {
-	color: red;
-}
-
-span.Scheduled {
-	color: blue;
-}
-
-#listContest td.title {
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-#listContest div.title {
+#listOL td.address {
 	white-space: normal;
 	word-break: break-all;
 	word-wrap: break-word;
 	width: 400px;
 }
 
-#listContest td.type{
-	width: 80px;
-}
-
-#listContest td.manager {
+#listOL th.ip {
 	width: 150px;
 }
 
-/********************standing*********************/
-
-#rank_header > div, #rank_header_1 > div, div.disp > div, #rank_foot_1 > div {
-	float: left;
-	height: 42px;
-	font-size: 12px;
-	text-align: center;
-	margin: 0 1px 1px 0;
-	padding: 8px 0 0 0;
-}
-
-#rank_header > div, #rank_header_1 > div {
-	height: 34px;
-	line-height: 34px;
-	font-weight: bold;
-	font-size: 14px;
-	padding: 0;
-	border-bottom: 1px solid black
-}
-
-#rank_foot_1 > div, #rank_foot > div {
-	height: 60px;
-}
-
-div.disp {
-	clear: both;
-}
-
-#rank div.rank {
-	width: 40px;
-}
-
-#rank div.id {
-	width: 180px;
-}
-
-#rank div.solve {
-	width: 60px;
-    cursor: pointer;
-    cursor: hand;
-}
-
-#rank div.standing_time {
-	width: 80px;
-    cursor: pointer;
-    cursor: hand;
-}
-
-table#time_machine tr.my_tr {
-	font-weight: bold;
-}
-
-div.green span, div.red span {
-	color: gray;
-}
-
-div.disp a:link {
-	color: black;
-}
-
-div.disp a:visited {
-	color: black;
-}
-
-div.my_tr a:link {
-	color: white;
-}
-
-div.my_tr a:visited {
-	color: white;
-}
-
-div.replay {
-	color:gray;
-}
-
-div.meta_td {
-	line-height: 32px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-div.cur_tr div.meta_td {
-	background-color: #CCDDFF;
-}
-
-div.my_tr div.meta_td {
-	background-color: #5C9CCC;
-	font-size: 12px;
-	color: white;
-	font-weight: bold;
-}
-
-div.same_td {
-	background-color: #FFFFBB;
-}
-
-div.solvedfirst {
-	background-color: #008800;
-	color: white;
-	font-weight: bold;
-}
-
-div.solvedfirst span {
-	color: #E3E3E3;
-}
-
-.black-font {
-    color: black;
-}
-
-.black-font a:visited {
-    color: black !important;
-}
-
-.black-font a:link {
-    color: black !important;
-}
-
-.white-font {
-    color: white;
-}
-
-.white-font a:visited {
-    color: white !important;
-}
-
-.white-font a:link {
-    color: white !important;
-}
-
-/********************Status*********************/
-a.shared {
-	font-family: Arial, Helvetica, sans-serif;
-	color: #00AA00;
-	font-weight: bold;
-}
-
-.result {
-	font-family: Arial,Helvetica,sans-serif;
-	font-weight: bold;
-	width: 280px;
-}
-
-.prob_num {
-	width: 130px;
-}
-
-.memory {
-	width: 90px;
-	text-align: right;
-}
-
-.time {
-	width: 100px;
-	text-align: right;
-}
-
-.language {
-	font-size: 12px;
-	width: 200px;
-}
-
-.length {
-	width: 65px;
-	text-align: right;
-}
-
-.date {
-	width: 180px;
-	text-align: center;
-}
-
-tr.rejudge:hover {
-	cursor: pointer;
-	cursor: hand;
-}
-
-/********************ViewProblem*********************/
-
-.hiddable {
-	font-family: times new roman;
-}
-
-.desc_info {
-	background-color:#DDFFDD;
-	margin: 3px;
-	padding: 5px;
-	-moz-border-radius: 8px;
-	-webkit-border-radius: 8px;
-}
-
-.selected {
-	border:3px solid #A6C9E2;
-}
-
-#left_view {
-}
-
-td#mid_view {
-	vertical-align: top;
-	width: 15px;
-}
-
-.mid_hover{
-	background-color:#CCDDFF;
-}
-
-#right_view {
-	vertical-align: top;
-	width: 320px;
-}
-
-.remark {
-	font-family:Courier;
-	font-size:17px;
-}
-
-.over {
-	background-color:#EEEEEE;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-}
-
-p.pst span {
-	color: black;
-	font-family: Courier;
-	font-size: 17px;
-	float: right;
-}
-
-pre {
-	white-space: pre-wrap;       /* CSS-3 */
-	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-	white-space: -pre-wrap;      /* Opera 4-6 */
-	white-space: -o-pre-wrap;    /* Opera 7 */
-	word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
-
-.tex-span {
-	font-size: 125%;
-}
-
-/********************listOL*********************/
-
-#listOL table {
-    table-layout: fixed;
-}
-#listOL td {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    padding: 3px 10px; 
-}
-#listOL td.ip {
-    white-space: normal;
-    word-break: break-all;
-    word-wrap: break-word;
-    width: 150px;
-}
-#listOL td.address {
-    white-space: normal;
-    word-break: break-all;
-    word-wrap: break-word;
-    width: 400px;
-}
-#listOL th.ip {
-    width: 150px;
-}
 #listOL th.browser {
-    width: 70px;
+	width: 70px;
 }
+
 #listOL th.os {
-    width: 70px;
+	width: 70px;
 }
 
 /********************Background*********************/
-
 body {
-	background-image: -webkit-gradient(
-		linear,
-		left bottom,
-		left top,
-		color-stop(0.1, rgb(203,250,225)),
-		color-stop(0.95, rgb(255,255,255))
-	);
-	background-image: -moz-linear-gradient(
-		center bottom,
-		rgb(203,250,225) 10%,
-		rgb(255,255,255) 95%
-	);
+	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.1, rgb(203,
+		250, 225)), color-stop(0.95, rgb(255, 255, 255)));
+	background-image: -moz-linear-gradient(center bottom, rgb(203, 250, 225)
+		10%, rgb(255, 255, 255) 95%);
 	background-attachment: fixed;
 }

@@ -1,4 +1,8 @@
-$(document).ready(function() {
+$(function() {
+	if ($("#js_require_editDescription").length == 0) {
+		return;
+	}
+
 	var form = document.getElementById("editorsForm");
 	$("#remarks").focus();
 

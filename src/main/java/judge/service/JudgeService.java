@@ -25,6 +25,7 @@ import judge.bean.Problem;
 import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
+import judge.remote.ProblemInfoUpdateManager;
 import judge.remote.QueryStatusManager;
 import judge.remote.RunningSubmissions;
 import judge.remote.SubmitCodeManager;
@@ -55,9 +56,12 @@ public class JudgeService {
 
     @Autowired
     private BaseService baseService;
-    
+
     @Autowired
     private ContestSubmissionMonitor contestSubmissionMonitor;
+
+    @Autowired
+    private ProblemInfoUpdateManager problemInfoUpdateManager;
 
 
     private static final String cellOptions []= {
@@ -106,7 +110,7 @@ public class JudgeService {
         "Not solved, with [2] wrong submissions, the last one at [0] minute [1] second"    //3        34
 
     };
-    
+
     public void init() {
 //        initJudge();
         initProblemSpiding();
@@ -122,7 +126,7 @@ public class JudgeService {
         for (int runId : ids) {
             Object[] ret = new Object[7];
             result.add(ret);
-            
+
             Submission s = null;
             if (runningSubmissions.contains(runId)) {
                 s = runningSubmissions.get(runId);
@@ -132,7 +136,7 @@ public class JudgeService {
                 ret[6] = 0;
             }
             RemoteStatusType statusType = RemoteStatusType.valueOf(s.getStatusCanonical());
-            
+
             ret[0] = runId;
             ret[1] = s.getStatus();
             ret[2] = s.getMemory();
@@ -156,22 +160,21 @@ public class JudgeService {
         return list.isEmpty() ? null : (Problem)list.get(0);
     }
 
-    public List findProblemSimple(String OJ, String problemId){
+    public Object[] findProblemSimple(String OJ, String problemId){
+        problemInfoUpdateManager.updateProblem(OJ, problemId, false);
+
         Map paraMap = new HashMap<String, String>();
         paraMap.put("OJ", OJ.trim());
         paraMap.put("pid", problemId.trim());
         List<Object[]> list = baseService.query("select p.id, p.title, p.timeLimit from Problem p where p.originOJ = :OJ and p.originProb = :pid", paraMap);
-        if (list.isEmpty() || (Integer)list.get(0)[2] == 1 || (Integer)list.get(0)[2] == 2){
-            return null;
+        if (!list.isEmpty()) {
+            return list.get(0);
         }
-        List res = new ArrayList();
-        res.add(list.get(0)[0]);
-        res.add(list.get(0)[1]);
-        return res;
+        return null;
     }
 
     /**
-     * 
+     *
      * @param submission
      * @param enforce
      *             if true, it will try resubmit to original OJ;
@@ -188,7 +191,7 @@ public class JudgeService {
         } else {
             queryStatusManager.createQuery(submission);
         }
-        
+
     }
 
     /**
@@ -209,7 +212,7 @@ public class JudgeService {
      * 更新比赛排行数据
      * @param cid 比赛id
      * @return 0:比赛id        1:数据文件url        2:还有多少ms比赛结束        3:开始时间        4:比赛长度        5:是否replay        6:比赛标题
-     * @throws IOException 
+     * @throws IOException
      * @throws Exception
      */
     public File updateRankData(Contest contest) throws IOException {
@@ -256,7 +259,7 @@ public class JudgeService {
                 if (!statusType.finalized) {
                     continue;
                 }
-                
+
                 submissionData.append(",[").append(info[0]).append(",").append(((String)info[1]).charAt(0) - 'A').append(",").append(statusType == RemoteStatusType.AC ? 1 : 0).append(",").append((((Date)info[3]).getTime() - beginTime) / 1000L).append("]");
                 userMap.put(info[0], new Object[]{info[4], info[5]});
             }
@@ -440,14 +443,14 @@ public class JudgeService {
         }
 
         Map<String, Map<Integer, String> > ans = new TreeMap<String, Map<Integer,String>>();
-        for (Iterator iterator = temp.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+        for (Object element : temp.entrySet()) {
+            Map.Entry entry = (Map.Entry) element;
             String symbolized = (String) entry.getKey();
             Integer[] numberSegments = getNumberSegments(formatExample.get(symbolized));
             Set<Integer> validOptionNumbers = (Set<Integer>) entry.getValue();
             Map<Integer, String> map = new TreeMap<Integer, String>();
-            for (Iterator it = validOptionNumbers.iterator(); it.hasNext();) {
-                Integer integer = (Integer) it.next();
+            for (Object element2 : validOptionNumbers) {
+                Integer integer = (Integer) element2;
                 String template = cellOptions[integer];
                 for (int i = 0; i < numberSegments.length; i++) {
                     template = template.replaceAll("\\[" + i + "\\]", numberSegments[i].toString());
@@ -548,6 +551,7 @@ public class JudgeService {
             }
         }
         Collections.sort(submissions, new Comparator() {
+            @Override
             public int compare(Object o1, Object o2) {
                 Submission s1 = (Submission) o1;
                 Submission s2 = (Submission) o2;
@@ -709,6 +713,26 @@ public class JudgeService {
         } else if (encryptedPassword == null || httpSession.containsKey("P" + cid)) {
             httpSession.put("C" + cid, 1);
             return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     *
+     * @param problemId
+     * @return 0-OK 1-Crawling 2-Failed 3-NotExist
+     */
+    public int getProblemStatus(int problemId) {
+        Map<String, Object> paraMap = new HashMap<String, Object>();
+        paraMap.put("problemId", problemId);
+        List<Integer> list = baseService.query("select p.timeLimit from Problem p where p.id = :problemId", paraMap);
+        if (list.isEmpty()) {
+            return 3;
+        }
+        int timeLimit = list.get(0);
+        if (timeLimit == 1 || timeLimit == 2) {
+            return timeLimit;
         } else {
             return 0;
         }

@@ -1,4 +1,7 @@
-$(document).ready(function() {
+$(function() {
+	if ($("#js_require_viewSource").length == 0) {
+		return;
+	}
 	
 	var showInfo = function() {
 		if ($("input[name=open]:checked").val() == 1){
@@ -9,9 +12,9 @@ $(document).ready(function() {
 	};
 	showInfo();
 	$("input[name=open]").change(function(){
-		$.post("problem/toggleOpen.action?id=" + $("[name=sid]").val(), showInfo);
+		$.post(basePath + "/problem/toggleOpen.action?id=" + $("[name=sid]").val(), showInfo);
 	});
 	
-	sh_highlightDocument('shjsx/', '.min.js');
+	sh_highlightDocument(basePath + '/shjsx/', '.min.js');
 	_showDiscuss();
 });

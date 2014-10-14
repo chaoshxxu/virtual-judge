@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
 public class SCUSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SCU;
+    public RemoteOjInfo getOjInfo() {
+        return SCUInfo.INFO;
     }
 
     @Override

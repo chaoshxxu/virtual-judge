@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.querier.SyncQuerier;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
@@ -19,13 +19,13 @@ import org.springframework.stereotype.Component;
 public class AizuQuerier extends SyncQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.Aizu;
+    public RemoteOjInfo getOjInfo() {
+        return AizuInfo.INFO;
     }
 
     @Override
     protected SubmissionRemoteStatus query(SubmissionInfo info) {
-        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
+        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOjInfo().mainHost, null, getOjInfo().defaultChaset);
         
         String html = client.get("/onlinejudge/status.jsp").getBody();
         String regex =
@@ -61,7 +61,7 @@ public class AizuQuerier extends SyncQuerier {
     }
     
     private int calcTime(String str) {
-        Matcher matcher = Pattern.compile("(\\d+):(\\d+)").matcher(str);
+        Matcher matcher = Pattern.compile("(\\d+)\\.(\\d+)").matcher(str);
         if (matcher.find()) {
             Integer a = Integer.parseInt(matcher.group(1), 10);
             Integer b = Integer.parseInt(matcher.group(2), 10);

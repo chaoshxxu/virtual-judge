@@ -1,6 +1,6 @@
 package judge.remote.provider.uva;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.shared.UVAStyleQuerier;
 
 import org.springframework.stereotype.Component;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 public class UVAQuerier extends UVAStyleQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UVA;
+    public RemoteOjInfo getOjInfo() {
+        return UVAInfo.INFO;
     }
 
 }

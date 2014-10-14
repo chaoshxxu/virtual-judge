@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.querier.SyncQuerier;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
@@ -21,13 +21,13 @@ import org.springframework.stereotype.Component;
 public class URALQuerier extends SyncQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.URAL;
+    public RemoteOjInfo getOjInfo() {
+        return URALInfo.INFO;
     }
 
     @Override
     protected SubmissionRemoteStatus query(SubmissionInfo info) {
-        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
+        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOjInfo().mainHost, null, getOjInfo().defaultChaset);
         String html = client.get("/status.aspx?space=1&from=" + info.remoteRunId).getBody();
 
         String regex = 

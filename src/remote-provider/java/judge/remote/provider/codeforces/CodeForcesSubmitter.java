@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.provider.codeforces.CodeForcesTokenUtil.CodeForcesToken;
 import judge.remote.submitter.CanonicalSubmitter;
@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 public class CodeForcesSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.CodeForces;
+    public RemoteOjInfo getOjInfo() {
+        return CodeForcesInfo.INFO;
     }
 
     @Override
@@ -69,7 +69,6 @@ public class CodeForcesSubmitter extends CanonicalSubmitter {
             }
             throw new RuntimeException();
         }
-        Thread.sleep(3000);
         return null;
     }
     
@@ -81,6 +80,11 @@ public class CodeForcesSubmitter extends CanonicalSubmitter {
             random /= 2;
         }
         return string;
+    }
+    
+    @Override
+    protected long getSubmitReceiptDelay() {
+        return 30000;
     }
 
 }

@@ -1,6 +1,6 @@
 package judge.remote.provider.ural;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.Tools;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class URALCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.URAL;
+    public RemoteOjInfo getOjInfo() {
+        return URALInfo.INFO;
     }
 
     @Override

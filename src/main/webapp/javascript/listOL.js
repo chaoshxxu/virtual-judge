@@ -1,5 +1,8 @@
-$(document).ready(function() {
-	
+$(function() {
+	if ($("#js_require_listOL").length == 0) {
+		return;
+	}
+
 	jQuery.fn.dataTableExt.oSort['custom-time-asc']  = function(x,y) {
 		var a = x.split(/\D+/), b = y.split(/\D+/), v1, v2;
 		if (a.length != b.length) return a.length < b.length ? -1 : 1;

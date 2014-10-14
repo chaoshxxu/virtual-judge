@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 public class URALSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.URAL;
+    public RemoteOjInfo getOjInfo() {
+        return URALInfo.INFO;
     }
 
     @Override

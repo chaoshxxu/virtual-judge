@@ -1,6 +1,6 @@
 package judge.remote.provider.fzu;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.HtmlHandleUtil;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class FZUCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.FZU;
+    public RemoteOjInfo getOjInfo() {
+        return FZUInfo.INFO;
     }
 
     @Override

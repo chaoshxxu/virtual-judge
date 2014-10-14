@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.provider.codeforces.CodeForcesTokenUtil.CodeForcesToken;
 import judge.remote.querier.AuthenticatedQuerier;
@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 public class CodeForcesQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.CodeForces;
+    public RemoteOjInfo getOjInfo() {
+        return CodeForcesInfo.INFO;
     }
 
     @Override

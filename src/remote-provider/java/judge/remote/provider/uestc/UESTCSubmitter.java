@@ -10,7 +10,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleHttpResponseMapper;
 import judge.httpclient.SimpleHttpResponseValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -27,8 +27,8 @@ import org.springframework.stereotype.Component;
 public class UESTCSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UESTC;
+    public RemoteOjInfo getOjInfo() {
+        return UESTCInfo.INFO;
     }
 
     @Override

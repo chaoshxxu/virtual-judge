@@ -1,7 +1,6 @@
 package judge.remote;
 
 import judge.bean.Submission;
-import judge.remote.RemoteOj;
 import judge.remote.submitter.SubmissionInfo;
 
 public class SubmissionConverter {

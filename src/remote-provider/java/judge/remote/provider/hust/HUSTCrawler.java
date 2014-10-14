@@ -1,6 +1,6 @@
 package judge.remote.provider.hust;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.Tools;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class HUSTCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HUST;
+    public RemoteOjInfo getOjInfo() {
+        return HUSTInfo.INFO;
     }
 
     @Override

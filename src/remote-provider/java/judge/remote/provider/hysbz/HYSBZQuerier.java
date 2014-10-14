@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class HYSBZQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HYSBZ;
+    public RemoteOjInfo getOjInfo() {
+        return HYSBZInfo.INFO;
     }
 
     @Override

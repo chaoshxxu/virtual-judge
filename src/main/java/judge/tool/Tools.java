@@ -67,13 +67,13 @@ public class Tools {
         return str.replaceAll("&#38;", "&").replaceAll("&#34;", "\"").replaceAll("&#39;", "'").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
     }
 
-    /**
-     * 去掉html中的js部分
-     * @return
-     */
-    public static String dropScript(String html) {
-        return html == null ? null : html.replaceAll("(?i)(?<=(\\b|java))script\\b", "ｓcript");
-    }
+//    /**
+//     * 去掉html中的js部分
+//     * @return
+//     */
+//    public static String dropScript(String html) {
+//        return html == null ? null : html.replaceAll("(?i)(?<=(\\b|java))script\\b", "ｓcript");
+//    }
 
     /**
      * 获取Excel中第一个sheet内容
@@ -143,22 +143,22 @@ public class Tools {
         return regFindCaseSensitive(text, reg, 1);
     }
 
-    /**
-     * 全角转半角
-     * @param input 全角字符串.
-     * @return 半角字符串
-     */
-    public static String toDBC(String input) {
-        char c[] = input.toCharArray();
-        for (int i = 0; i < c.length; i++) {
-            if (c[i] == '\u3000') {
-                c[i] = ' ';
-            } else if (c[i] > '\uFF00' && c[i] < '\uFF5F') {
-                c[i] = (char) (c[i] - 65248);
-            }
-        }
-        return new String(c);
-    }
+//    /**
+//     * 全角转半角
+//     * @param input 全角字符串.
+//     * @return 半角字符串
+//     */
+//    public static String toDBC(String input) {
+//        char c[] = input.toCharArray();
+//        for (int i = 0; i < c.length; i++) {
+//            if (c[i] == '\u3000') {
+//                c[i] = ' ';
+//            } else if (c[i] > '\uFF00' && c[i] < '\uFF5F') {
+//                c[i] = (char) (c[i] - 65248);
+//            }
+//        }
+//        return new String(c);
+//    }
 
     /**
      * 将一段时间从毫秒数转换为通用的表示方式

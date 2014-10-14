@@ -4,7 +4,7 @@ import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
@@ -19,14 +19,14 @@ import org.springframework.stereotype.Component;
 public class SCUCrawler extends SyncCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SCU;
+    public RemoteOjInfo getOjInfo() {
+        return SCUInfo.INFO;
     }
     
     public RawProblemInfo crawl(final String problemId) throws Exception {
         Validate.isTrue(problemId.matches("[1-9]\\d*"));
-        final HttpHost host = getOj().mainHost;
-        final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, getOj().defaultChaset);
+        final HttpHost host = getOjInfo().mainHost;
+        final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, getOjInfo().defaultChaset);
 
         final String outerUrl = host.toURI() + "/soj/problem.action?id=" + problemId;
         Task<String> taskOuter = new Task<String>(ExecutorTaskType.GENERAL) {

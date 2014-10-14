@@ -1,8 +1,8 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ include file="/contextPath.jsp" %>
 
 <div id="overview">
-	
 	<table style="margin:auto" class="plm">
 		<tr>
 			<td class="alignRight"><b>Current Time: </b></td>
@@ -24,21 +24,20 @@
 			<td class="alignRight"><b>End Time: </b></td>
 			<td class="alignLeft"><span class="plainDate">${endTime}</span></td>
 			<td class="alignRight"><b>Manager: </b></td>
-			<td class="alignLeft"><a href="user/profile.action?uid=<s:property value='contest.manager.id' />" ><s:property value="contest.manager.username" /></a></td>
+			<td class="alignLeft"><a href="${contextPath}/user/profile.action?uid=<s:property value='contest.manager.id' />" ><s:property value="contest.manager.username" /></a></td>
 		</tr>
 	</table>
-
-
+	
 	<s:if test="dataList != null">
 	<div id="contest_opt" style="text-align:center;margin-top:10px">
 		<s:if test="curDate.compareTo(contest.endTime) > 0 || #session.visitor.sup == 1 || #session.visitor.id == contest.manager.id">
-			<a id="clone_contest" href="contest/toAddContest.action?cid=${cid}" title="Create a contest using the same problems, in which you can see the original score board.">Clone this contest</a>
+			<a id="clone_contest" class="login" href="${contextPath}/contest/toAddContest.action?cid=${cid}" title="Create a contest using the same problems, in which you can see the original score board.">Clone this contest</a>
 		</s:if>
 		<s:if test="#session.visitor.sup == 1 || #session.visitor.id == contest.manager.id">
-			<a href="contest/toEditContest.action?cid=${cid}">Edit</a>
+			<a href="${contextPath}/contest/toEditContest.action?cid=${cid}">Edit</a>
 			<a href='javascript:void(0)' onclick='comfirmDeleteContest(${cid})'>Delete</a>
 			<s:if test="contestOver == 1">
-				<a href="contest/exportSource.action?cid=${cid}">Export source code</a>
+				<a href="${contextPath}/contest/exportSource.action?cid=${cid}">Export source code</a>
 			</s:if>
 		</s:if>
 	</div>
@@ -66,20 +65,24 @@
 					</td>
 				</s:if>
 				<td style="padding-left:50px;">
-					<a href="contest/view.action?cid=${cid}#problem/<s:property value='dataList[#stat.index][0]' />">
+					<a href="${contextPath}/contest/view.action?cid=${cid}#problem/<s:property value='dataList[#stat.index][0]' />">
 						<s:property value="dataList[#stat.index][4]" escape="false" />
 					</a>
 				</td>
 			</tr>
 		</s:iterator>
 	</table>
-	</s:if>
-	
 	<div class="description">
 		${contest.description}
 	</div>
+	</s:if>
+	<s:elseif test="contestAuthorizeStatus == 0">
+    <div id="dialog-form-contest-login" style="display:none" title="Login contest">
+        <p class="validateTips"></p>
+        <fieldset>
+            <label for="contest_password">Password *</label>
+            <input type="password" id="contest_password" class="text ui-widget-content ui-corner-all" />
+        </fieldset>
+    </div>
+	</s:elseif>
 </div>
-
-
-
-	

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -25,8 +25,8 @@ import org.springframework.stereotype.Component;
 public class UESTCQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UESTC;
+    public RemoteOjInfo getOjInfo() {
+        return UESTCInfo.INFO;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class UESTCQuerier extends AuthenticatedQuerier {
                 return status;
             }
         }
-        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOj(), info.remoteRunId));
+        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOjInfo(), info.remoteRunId));
     }
     
     @SuppressWarnings("unchecked")

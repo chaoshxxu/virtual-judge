@@ -3,7 +3,7 @@ package judge.remote.provider.codeforces;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 import judge.remote.provider.codeforces.CodeForcesTokenUtil.CodeForcesToken;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class CodeForcesLoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.CodeForces;
+    public RemoteOjInfo getOjInfo() {
+        return CodeForcesInfo.INFO;
     }
 
     @Override

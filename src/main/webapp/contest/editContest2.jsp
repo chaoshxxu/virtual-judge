@@ -1,17 +1,17 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<s:include value="/header.jsp" />
+		<%@ include file="/header.jsp" %>
 		<title><s:property value="contest.title" escape="false" /> - Virtual Judge</title>
 	</head>
 
 	<body>
 		<s:include value="/top.jsp" />
 		<div class="ptt">Modify Contest</div>
-		<form action="contest/editContest.action" method="post">
+		<form action="${contextPath}/contest/editContest.action" method="post">
 			<table>
 				<tr>
 					<td>Title:</td>

@@ -19,7 +19,7 @@ public class LoginersHolder {
                         List<Class<? extends Loginer>> loginerClasses = Tools.findSubClasses("judge", Loginer.class);
                         for (Class<? extends Loginer> loginerClass : loginerClasses) {
                             Loginer loginer = SpringBean.getBean(loginerClass);
-                            loginers.put(loginer.getOj(), loginer);
+                            loginers.put(loginer.getOjInfo().remoteOj, loginer);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();

@@ -29,7 +29,7 @@ public abstract class UVAStyleQuerier extends AuthenticatedQuerier {
             }
             itemsLimit *= 2;
         }
-        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOj(), info.remoteRunId));
+        throw new RuntimeException(String.format("Can't find %s submission(%s)", getOjInfo(), info.remoteRunId));
     }
     
     private SubmissionRemoteStatus queryOnce(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client, int itemsLimit) {

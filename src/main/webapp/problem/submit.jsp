@@ -1,24 +1,23 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<s:include value="/header.jsp" />
+		<%@ include file="/header.jsp" %>
 	    <title>Submit - Virtual Judge</title>
-		<script type="text/javascript" src="javascript/jquery.cookie.js"></script>
-		<script type="text/javascript" src="javascript/base64.js?<%=application.getAttribute("version")%>"></script>
-		<script type="text/javascript" src="javascript/submit.js?<%=application.getAttribute("version")%>"></script>
+<%-- 		<script type="text/javascript" src="${contextPath}/javascript/submit.js?<%=application.getAttribute("version")%>"></script> --%>
 	</head>
 
 	<body>
+        <s:hidden id="js_require_submit" />
 		<s:include value="/top.jsp" />
 		<div style="width:800px;MARGIN-RIGHT:auto;MARGIN-LEFT:auto;">
-			<form id="form" action="problem/submit.action" method="post">
+			<form id="form" action="${contextPath}/problem/submit.action" method="post">
 				<table>
 					<tr>
 						<td>Problem:</td>
-						<td><b>${problem.originOJ} ${problem.originProb}</b> - <a href="problem/viewProblem.action?id=${problem.id}">${problem.title}</a></td>
+						<td><b>${problem.originOJ} ${problem.originProb}</b> - <a href="${contextPath}/problem/viewProblem.action?id=${problem.id}">${problem.title}</a></td>
 					</tr>
 					<tr>
 						<td>Language:</td>

@@ -26,13 +26,13 @@ public abstract class RetentiveLoginer implements Loginer {
         int contextHashCode = account.getContext().hashCode();
         Long lastLoginTime = lastLoginTimeMap.get(contextHashCode);
 
-        if (lastLoginTime == null || now() - lastLoginTime > getOj().maxInactiveInterval) {
+        if (lastLoginTime == null || now() - lastLoginTime > getOjInfo().maxInactiveInterval) {
             log.info(String.format(
                     "Login: %s | %s | %s",
                     account.getRemoteOj(),
                     account.getAccountId(),
                     account.getExclusiveCode()));
-            DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, account.getContext(), getOj().defaultChaset);
+            DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOjInfo().mainHost, account.getContext(), getOjInfo().defaultChaset);
             loginEnforce(account, client);
         }
         lastLoginTimeMap.put(contextHashCode, now());

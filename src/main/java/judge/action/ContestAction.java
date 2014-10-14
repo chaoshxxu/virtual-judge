@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,12 +27,12 @@ import judge.bean.Problem;
 import judge.bean.ReplayStatus;
 import judge.bean.Submission;
 import judge.bean.User;
+import judge.remote.ProblemInfoUpdateManager;
 import judge.remote.RunningSubmissions;
 import judge.remote.SubmitCodeManager;
 import judge.remote.language.LanguageManager;
 import judge.remote.status.RemoteStatusType;
 import judge.service.IBaseService;
-import judge.service.ProblemService;
 import judge.tool.ApplicationContainer;
 import judge.tool.MD5;
 import judge.tool.OnlineTool;
@@ -42,9 +41,12 @@ import judge.tool.ZipUtil;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +84,7 @@ public class ContestAction extends BaseAction {
     private long beginTime;
     private long endTime;
     private Integer isSup;
+    private Integer contestAuthorizeStatus;
 
     private List pids;
     private List OJs;
@@ -110,7 +113,7 @@ public class ContestAction extends BaseAction {
     private File sourceFile;
 
     @Autowired
-    private ProblemService problemService;
+    private ProblemInfoUpdateManager problemInfoUpdateManager;
 
     @Autowired
     private SubmitCodeManager submitManager;
@@ -122,7 +125,7 @@ public class ContestAction extends BaseAction {
     private RunningSubmissions runningSubmissions;
 
     public InputStream getSourceInputStream() throws FileNotFoundException {
-         return new FileInputStream(sourceFile);
+        return new FileInputStream(sourceFile);
     }
 
     public String toListContest(){
@@ -136,7 +139,19 @@ public class ContestAction extends BaseAction {
     }
 
     public String listContest() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String sortDir = getParameter("order[0][dir]");
+        String sortCol = getParameter("order[0][column]");
+        String start = getParameter("start");
+        String length = getParameter("length");
+        String draw = getParameter("draw");
+
+        String contestType = getParameter("contestType"); // 0-contest 1-replay
+        String contestRunningStatus = getParameter("contestRunningStatus"); // 0-all 1-scheduled 2-running 3-ended
+        String contestOpenness = getParameter("contestOpenness"); // 0-all 1-public 2-private
+        String title = getParameter("title");
+        String manager = getParameter("manager");
+
+
         Map session = ActionContext.getContext().getSession();
         User user = (User) session.get("visitor");
         int userId = user != null ? user.getId() : -1;
@@ -145,72 +160,73 @@ public class ContestAction extends BaseAction {
         StringBuffer hql = new StringBuffer("select contest, user from Contest contest, User user where contest.manager.id = user.id ");
         long cnt = baseService.count(hql.toString());
         dataTablesPage = new DataTablesPage();
-        dataTablesPage.setITotalRecords(cnt);
-        Map paraMap = new HashMap();
-        if (sSearch != null && !sSearch.trim().isEmpty()){
-            sSearch = sSearch.toLowerCase().trim();
-            paraMap.put("keyword", "%" + sSearch + "%");
-            hql.append(" and (contest.title like :keyword or user.username like :keyword) ");
+        dataTablesPage.setRecordsTotal(cnt);
+        Map<String, Object> paraMap = new HashMap<String, Object>();
+
+        if (!StringUtils.isBlank(title)) {
+            paraMap.put("title", "%" + title + "%");
+            hql.append(" and contest.title like :title ");
         }
-
-        curDate = new Date();
-        String curDateString = "'" + sdf.format(curDate) + "'";
-        if (s && !r && !e){
-            hql.append(" and contest.beginTime > " + curDateString);
-        } else if (!s && r && !e) {
-            hql.append(" and contest.beginTime < " + curDateString + " and  contest.endTime > " + curDateString);
-        } else if (!s && !r && e) {
-            hql.append(" and contest.endTime < " + curDateString);
-        } else if (s && r && !e) {
-            hql.append(" and contest.endTime > " + curDateString);
-        } else if (!s && r && e) {
-            hql.append(" and contest.beginTime < " + curDateString);
-        } else if (s && !r && e) {
-            hql.append(" and (contest.beginTime > " + curDateString + " or contest.endTime < " + curDateString + ") ");
-        } else if (!s && !r && !e) {
-            hql.append(" and 1 = 0 ");
+        if (!StringUtils.isBlank(manager)) {
+            paraMap.put("manager", "%" + manager + "%");
+            hql.append(" and user.username like :manager ");
         }
+        if (!"0".equals(contestRunningStatus)) {
+            paraMap.put("now", new Date());
 
-        if (contestType == 0) {
-            hql.append(" and contest.replayStatus is null");
-        } else {
-            hql.append(" and contest.replayStatus is not null");
-        }
-
-        dataTablesPage.setITotalDisplayRecords(baseService.count(hql.toString(), paraMap));
-
-//        log.info("iSortCol_0 = " + iSortCol_0);
-        if (iSortCol_0 != null){
-            if (iSortCol_0 == 0){            //按id
-                hql.append(" order by contest.id " + sSortDir_0);
-            } else if (iSortCol_0 == 1){    //按标题
-                hql.append(" order by contest.title " + sSortDir_0);
-            } else if (iSortCol_0 == 2){    //按开始时间
-                hql.append(" order by contest.beginTime " + sSortDir_0 + ", contest.id " + sSortDir_0);
-            } else if (iSortCol_0 == 6){    //按管理员用户名
-                hql.append(" order by user.username " + sSortDir_0);
+            if ("1".equals(contestRunningStatus)) {
+                hql.append(" and contest.beginTime > :now ");
+            } else if ("2".equals(contestRunningStatus)) {
+                hql.append(" and contest.beginTime < :now and contest.endTime > :now ");
+            } else {
+                hql.append(" and contest.endTime < :now ");
             }
         }
 
-        List<Object[]> tmp = baseService.list(hql.toString(), paraMap, iDisplayStart, iDisplayLength);
-        List aaData =  new ArrayList();
+        if ("0".equals(contestType)) {
+            hql.append(" and contest.replayStatus is null ");
+        } else {
+            hql.append(" and contest.replayStatus is not null ");
+        }
+
+        if ("1".equals(contestOpenness)) {
+            hql.append(" and contest.password is null ");
+        } else if ("2".equals(contestOpenness)) {
+            hql.append(" and contest.password is not null ");
+        }
+
+        dataTablesPage.setRecordsFiltered(baseService.count(hql.toString(), paraMap));
+
+        if (sortCol != null){
+            if ("0".equals(sortCol)){            //按id
+                hql.append(" order by contest.id " + sortDir);
+            } else if ("1".equals(sortCol)){    //按标题
+                hql.append(" order by contest.title " + sortDir);
+            } else if ("2".equals(sortCol)){    //按开始时间
+                hql.append(" order by contest.beginTime " + sortDir + ", contest.id " + sortDir);
+            } else if ("5".equals(sortCol)){    //按管理员用户名
+                hql.append(" order by user.username " + sortDir);
+            }
+        }
+
+        List<Object[]> tmp = baseService.list(hql.toString(), paraMap, Integer.parseInt(start), Integer.parseInt(length));
+        List<Object[]> data =  new ArrayList<Object[]>();
         for (Object[] o : tmp) {
             contest = (Contest) o[0];
             user = (User) o[1];
-            Object[] res = {
-                    contest.getId(),
-                    contest.getTitle(),
-                    contest.getBeginTime().getTime(),
-                    Tools.transPeriod(contest.getEndTime().getTime() - contest.getBeginTime().getTime(), true),
-                    contest.getPassword() == null ? "Public" : "Private",
-                    user.getUsername(),
-                    user.getId(),
-                    sup > 0 || user.getId() == userId ? 1 : 0,
-                    curDate.compareTo(contest.getBeginTime()) < 0 ? "Scheduled" : curDate.compareTo(contest.getEndTime()) < 0 ? "Running" : "Ended"
+            Object[] res = { //
+                    contest.getId(), //
+                    contest.getTitle(), //
+                    contest.getBeginTime().getTime(), //
+                    contest.getEndTime().getTime(), //
+                    (contest.getPassword() == null), // is public
+                    user.getUsername(), // manager username
+                    user.getId(), // manager user id
             };
-            aaData.add(res);
+            data.add(res);
         }
-        dataTablesPage.setAaData(aaData);
+        dataTablesPage.setData(data);
+        dataTablesPage.setDraw(Integer.parseInt(draw));
         this.addActionError((String) session.get("error"));
         session.remove("error");
 
@@ -278,7 +294,7 @@ public class ContestAction extends BaseAction {
         /**
          * 比赛描述不得多于65000字符
          */
-        contest.setDescription(Tools.dropScript(contest.getDescription()));
+        contest.setDescription(Jsoup.clean(contest.getDescription(), Whitelist.relaxed()));
         if (contest.getDescription() != null && contest.getDescription().length() > 65000) {
             this.addActionError("Contest description should be shorter than 65000 characters!");
             return;
@@ -287,7 +303,7 @@ public class ContestAction extends BaseAction {
         /**
          * 比赛公告不得多于65000字符
          */
-        contest.setAnnouncement(Tools.dropScript(contest.getAnnouncement()));
+        contest.setAnnouncement(Jsoup.clean(contest.getAnnouncement(), Whitelist.relaxed()));
         if (contest.getAnnouncement() != null && contest.getAnnouncement().length() > 65000) {
             this.addActionError("Contest announcement should be shorter than 65000 characters!");
             return;
@@ -507,9 +523,7 @@ public class ContestAction extends BaseAction {
     }
 
     public String view() {
-        if (judgeService.checkAuthorizeStatus(cid) == 0) {
-            return ERROR;
-        }
+        contestAuthorizeStatus = judgeService.checkAuthorizeStatus(cid);
 
         /////////////////////////// overview ///////////////////////////////
 
@@ -520,8 +534,7 @@ public class ContestAction extends BaseAction {
             contestOver = 1;
         }
 
-        User user = OnlineTool.getCurrentUser();
-        if (curDate.compareTo(contest.getBeginTime()) >= 0 || user != null && (user.getSup() == 1 || user.getId() == contest.getManager().getId())){
+        if (contestAuthorizeStatus > 0 && (curDate.getTime() >= contest.getBeginTime().getTime() || contestAuthorizeStatus == 2)){
             dataList = baseService.query("select cproblem.num, cproblem.problem.originOJ, cproblem.problem.originProb, cproblem.problem.url, cproblem.title from Cproblem cproblem where cproblem.contest.id = '" + cid + "' order by cproblem.num asc");
         }
         beginTime = contest.getBeginTime().getTime();
@@ -529,13 +542,15 @@ public class ContestAction extends BaseAction {
 
         /////////////////////////// problem ///////////////////////////////
 
-        numList = new TreeMap();
-        List<Object[]> tmpList = baseService.query("select cp.num, cp.title from Cproblem cp where cp.contest.id = " + cid + " order by cp.num asc");
-        for (Object[] o : tmpList) {
-            numList.put((String) o[0], o[0] + " - " + o[1]);
-        }
-
         /////////////////////////// status ///////////////////////////////
+
+        if (dataList != null) {
+            numList = new TreeMap<String, String>();
+            List<Object[]> tmpList = baseService.query("select cp.num, cp.title from Cproblem cp where cp.contest.id = " + cid + " order by cp.num asc");
+            for (Object[] o : tmpList) {
+                numList.put((String) o[0], o[0] + " - " + o[1]);
+            }
+        }
 
         /////////////////////////// rank ///////////////////////////////
 
@@ -555,14 +570,14 @@ public class ContestAction extends BaseAction {
             paraMap.put("num", num);
 
             String hql =
-                      "select cp "
-                    + "from    Cproblem cp "
-                    + "    left join fetch cp.problem p "
-                    + "    left join fetch p.descriptions "
-                    + "    left join fetch cp.description "
-                    + "    left join fetch cp.contest "
-                    + "where"
-                    + "    cp.contest.id = :cid and cp.num = :num";
+                    "select cp "
+                            + "from    Cproblem cp "
+                            + "    left join fetch cp.problem p "
+                            + "    left join fetch p.descriptions "
+                            + "    left join fetch cp.description "
+                            + "    left join fetch cp.contest "
+                            + "where"
+                            + "    cp.contest.id = :cid and cp.num = :num";
             try {
                 cproblem = (Cproblem) baseService.query(hql, paraMap).get(0);
             } catch (Exception e) {}
@@ -593,8 +608,8 @@ public class ContestAction extends BaseAction {
                 json.put("_64IOFormat", lf.get(problem.getOriginOJ()));
                 json.put("languageList", languageManager.getLanguages(problem.getOriginOJ()));
                 json.put("oj", problem.getOriginOJ());
-                
-                problemService.updateProblem(problem, false);
+
+                problemInfoUpdateManager.updateProblem(problem, false);
             }
         }
         this.json = json;
@@ -688,7 +703,7 @@ public class ContestAction extends BaseAction {
         }
 
         languageList = languageManager.getLanguages(problem.getOriginOJ());
-//        languageList = (Map<Object, String>) ApplicationContainer.serveletContext.getAttribute(problem.getOriginOJ());
+        //        languageList = (Map<Object, String>) ApplicationContainer.serveletContext.getAttribute(problem.getOriginOJ());
         if (!languageList.containsKey(language)){
             json = "No such language";
             return SUCCESS;
@@ -735,35 +750,38 @@ public class ContestAction extends BaseAction {
             return ERROR;
         }
 
+        String start = getParameter("start");
+        String length = getParameter("length");
+        String draw = getParameter("draw");
+
         Map session = ActionContext.getContext().getSession();
         User user = OnlineTool.getCurrentUser();
         int userId = user != null ? user.getId() : -1;
 
         StringBuffer hql = new StringBuffer(
                 "select "
-                + " s.id, "  // 0
-                + " s.username, "
-                + " cp.num, "
-                + " s.status, "
-                + " s.memory, "
-                + " s.time, " // 5
-                + " s.dispLanguage, "
-                + " length(s.source), "
-                + " s.subTime, "
-                + " s.user.id, "
-                + " s.isOpen, " // 10
-                + " cp.id, "
-                + " s.additionalInfo, "
-                + " s.statusCanonical, "
-                + " s.id "  // 14
-                + "from "
-                + "  Submission s, Cproblem cp "
-                + "where "
-                + " s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id ");
+                        + " s.id, "  // 0
+                        + " s.username, "
+                        + " cp.num, "
+                        + " s.status, "
+                        + " s.memory, "
+                        + " s.time, " // 5
+                        + " s.dispLanguage, "
+                        + " length(s.source), "
+                        + " s.subTime, "
+                        + " s.user.id, "
+                        + " s.isOpen, " // 10
+                        + " cp.id, "
+                        + " s.additionalInfo, "
+                        + " s.statusCanonical, "
+                        + " s.id "  // 14
+                        + "from "
+                        + "  Submission s, Cproblem cp "
+                        + "where "
+                        + " s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id ");
 
         dataTablesPage = new DataTablesPage();
-
-        dataTablesPage.setITotalRecords(9999999L);
+        dataTablesPage.setRecordsTotal(9999999L);
 
         if (un != null && !un.trim().isEmpty()){
             un = un.toLowerCase().trim();
@@ -792,27 +810,27 @@ public class ContestAction extends BaseAction {
         } else if (res == 8) {
             hql.append(" and s.statusCanonical = 'CE' ");
         } else if (res == 9) {
-            hql.append(" and s.statusCanonical = 'FAILED_OTHER' ");
+            hql.append(" and s.statusCanonical in ('FAILED_OTHER', 'SUBMIT_FAILED_PERM') ");
         } else if (res == 10) {
-            hql.append(" and s.statusCanonical in ('SUBMIT_FAILED_TEMP', 'SUBMIT_FAILED_PERM') ");
+            hql.append(" and s.statusCanonical = 'SUBMIT_FAILED_TEMP' ");
         } else if (res == 11) {
             hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
         }
-        
+
         hql.append(" order by s.id desc ");
 
-        dataTablesPage.setITotalDisplayRecords(9999999L);
+        dataTablesPage.setRecordsFiltered(9999999L);
 
-        List<Object[]> aaData = baseService.list(hql.toString(), iDisplayStart, iDisplayLength);
+        List<Object[]> data = baseService.list(hql.toString(), Integer.parseInt(start), Integer.parseInt(length));
 
-        for (Object[] o : aaData) {
+        for (Object[] o : data) {
             o[8] = ((Date)o[8]).getTime();
             o[10] = (Integer)o[10] > 0 ? 2 : o[9].equals(userId) || authorizeStatus == 2 ? 1 : 0;
             o[12] = o[12] == null ? 0 : 1;
 
             RemoteStatusType statusType = RemoteStatusType.valueOf((String)o[13]);
             o[13] = statusType == RemoteStatusType.AC ? 0 : statusType.finalized ? 1 : 2; // 0-green 1-red 2-purple
-            
+
             int submissionId = (Integer) o[0];
             try {
                 if (!statusType.finalized && statusType != RemoteStatusType.SUBMIT_FAILED_TEMP) {
@@ -828,7 +846,9 @@ public class ContestAction extends BaseAction {
             o[14] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking
         }
 
-        dataTablesPage.setAaData(aaData);
+        dataTablesPage.setData(data);
+        dataTablesPage.setDraw(Integer.parseInt(draw));
+
         this.addActionError((String) session.get("error"));
         session.remove("error");
 
@@ -852,7 +872,7 @@ public class ContestAction extends BaseAction {
             paraMap.put("curTime", new Date());
             sameContests = baseService.query("select c.id, c.replayStatus.id, c.title, c.beginTime, c.endTime, c.manager.username, c.manager.id, c.id from Contest c where c.id <> :cid and c.password is null and c.hashCode = :hashCode and (c.beginTime <= :beginTime or c.endTime <= :curTime) order by c.beginTime desc ", paraMap);
             for (int i = 0; i < sameContests.size(); i++){
-                sameContests.get(i)[7] = (curDate.compareTo((Date) sameContests.get(i)[3]) < 0 ? "Scheduled" : curDate.compareTo((Date) sameContests.get(i)[4]) > 0 ? "Ended" : "Running");
+                sameContests.get(i)[7] = curDate.compareTo((Date) sameContests.get(i)[3]) < 0 ? "Scheduled" : curDate.compareTo((Date) sameContests.get(i)[4]) > 0 ? "Ended" : "Running";
                 sameContests.get(i)[4] = Tools.transPeriod(((Date)sameContests.get(i)[4]).getTime() - ((Date)sameContests.get(i)[3]).getTime(), true);
             }
         } else {
@@ -962,7 +982,7 @@ public class ContestAction extends BaseAction {
             /**
              * 比赛描述不得多于65000字符
              */
-            contest.setDescription(Tools.dropScript(contest.getDescription()));
+            contest.setDescription(Jsoup.clean(contest.getDescription(), Whitelist.relaxed()));
             if (contest.getDescription() != null && contest.getDescription().length() > 65000) {
                 this.addActionError("Contest description should be shorter than 65000 characters!");
             }
@@ -970,7 +990,7 @@ public class ContestAction extends BaseAction {
             /**
              * 比赛公告不得多于65000字符
              */
-            contest.setAnnouncement(Tools.dropScript(contest.getAnnouncement()));
+            contest.setAnnouncement(Jsoup.clean(contest.getAnnouncement(), Whitelist.relaxed()));
             if (contest.getAnnouncement() != null && contest.getAnnouncement().length() > 65000) {
                 this.addActionError("Contest announcement should be shorter than 65000 characters!");
             }
@@ -1162,6 +1182,7 @@ public class ContestAction extends BaseAction {
         statisticRank = new ArrayList(rank.values());
 
         Collections.sort(statisticRank, new Comparator<Object[]>() {
+            @Override
             public int compare(Object[] o1, Object[] o2) {
                 Integer v1 = ((Set)o1[o1.length - 1]).size();
                 Integer v2 = ((Set)o2[o2.length - 1]).size();
@@ -1182,14 +1203,14 @@ public class ContestAction extends BaseAction {
         }
 
         String relativePath = (String) ApplicationContainer.serveletContext.getAttribute("ContestSourceCodeZipFilePath");
-        String basePath = ApplicationContainer.serveletContext.getRealPath(relativePath);
+        String realPath = ApplicationContainer.serveletContext.getRealPath(relativePath);
 
-        sourceFile = new File(basePath + "/" + cid + ".zip");
+        sourceFile = new File(realPath + "/" + cid + ".zip");
         if (sourceFile.exists()) {
             return SUCCESS;
         }
 
-        File dir = new File(basePath + "/" + cid);
+        File dir = new File(realPath + "/" + cid);
         FileUtils.deleteDirectory(dir);
         dir.mkdirs();
 
@@ -1198,7 +1219,7 @@ public class ContestAction extends BaseAction {
             Integer id = (Integer) submission[0];
             String username = (String) submission[1];
             String pnum = (String) submission[2];
-//            String status = (String) submission[3];
+            //            String status = (String) submission[3];
             String language = (String) submission[4];
             String source = (String) submission[5];
 
@@ -1220,7 +1241,7 @@ public class ContestAction extends BaseAction {
                 extensionName = ".rb";
             }
 
-            File problemDir = new File(basePath + "/" + cid + "/" + pnum);
+            File problemDir = new File(realPath + "/" + cid + "/" + pnum);
             if (!problemDir.exists()) {
                 problemDir.mkdirs();
             }
@@ -1235,7 +1256,7 @@ public class ContestAction extends BaseAction {
             }
         }
 
-        sourceFile = new File(basePath + "/" + cid + ".zip");
+        sourceFile = new File(realPath + "/" + cid + ".zip");
         ZipUtil.zip(sourceFile, dir);
         FileUtils.deleteDirectory(dir);
 
@@ -1417,9 +1438,11 @@ public class ContestAction extends BaseAction {
     public void setContest(Contest contest) {
         this.contest = contest;
     }
+    @Override
     public IBaseService getBaseService() {
         return baseService;
     }
+    @Override
     public void setBaseService(IBaseService baseService) {
         this.baseService = baseService;
     }
@@ -1554,6 +1577,12 @@ public class ContestAction extends BaseAction {
     }
     public void setSourceFile(File sourceFile) {
         this.sourceFile = sourceFile;
+    }
+    public Integer getContestAuthorizeStatus() {
+        return contestAuthorizeStatus;
+    }
+    public void setContestAuthorizeStatus(Integer contestAuthorizeStatus) {
+        this.contestAuthorizeStatus = contestAuthorizeStatus;
     }
 
 }

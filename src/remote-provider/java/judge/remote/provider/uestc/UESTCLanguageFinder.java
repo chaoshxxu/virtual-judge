@@ -1,8 +1,9 @@
 package judge.remote.provider.uestc;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
 
@@ -12,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class UESTCLanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UESTC;
+    public RemoteOjInfo getOjInfo() {
+        return UESTCInfo.INFO;
     }
 
     @Override
@@ -33,6 +34,12 @@ public class UESTCLanguageFinder implements LanguageFinder {
         languageList.put("2", "C++");
         languageList.put("3", "Java");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpBodyValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 public class FZUSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.FZU;
+    public RemoteOjInfo getOjInfo() {
+        return FZUInfo.INFO;
     }
 
     @Override
@@ -42,8 +42,12 @@ public class FZUSubmitter extends CanonicalSubmitter {
                 "code", info.sourceCode //
         );
         client.post("/submit.php?act=5", entity, new HttpBodyValidator("Your Program have been saved"));
-        Thread.sleep(2000);
         return null;
+    }
+    
+    @Override
+    protected long getSubmitReceiptDelay() {
+        return 30000;
     }
 
 }

@@ -19,7 +19,7 @@ public class SubmittersHolder {
                         List<Class<? extends Submitter>> submitterClasses = Tools.findSubClasses("judge", Submitter.class);
                         for (Class<? extends Submitter> submitterClass : submitterClasses) {
                             Submitter submitter = SpringBean.getBean(submitterClass);
-                            submitters.put(submitter.getOj(), submitter);
+                            submitters.put(submitter.getOjInfo().remoteOj, submitter);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();

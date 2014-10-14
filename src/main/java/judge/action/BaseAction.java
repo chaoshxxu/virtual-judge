@@ -1,13 +1,38 @@
 package judge.action;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
+import judge.remote.provider.aizu.AizuInfo;
+import judge.remote.provider.codeforces.CodeForcesInfo;
+import judge.remote.provider.csu.CSUInfo;
+import judge.remote.provider.fzu.FZUInfo;
+import judge.remote.provider.hdu.HDUInfo;
+import judge.remote.provider.hust.HUSTInfo;
+import judge.remote.provider.hysbz.HYSBZInfo;
+import judge.remote.provider.lightoj.LightOJInfo;
+import judge.remote.provider.nbut.NBUTInfo;
+import judge.remote.provider.poj.POJInfo;
+import judge.remote.provider.scu.SCUInfo;
+import judge.remote.provider.sgu.SGUInfo;
+import judge.remote.provider.spoj.SPOJInfo;
+import judge.remote.provider.uestc.UESTCInfo;
+import judge.remote.provider.uestc_old.UESTCOldInfo;
+import judge.remote.provider.ural.URALInfo;
+import judge.remote.provider.uva.UVAInfo;
+import judge.remote.provider.uvalive.UVALiveInfo;
+import judge.remote.provider.zoj.ZOJInfo;
+import judge.remote.provider.ztrening.ZTreningInfo;
 import judge.service.IBaseService;
 import judge.service.JudgeService;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.struts2.interceptor.ParameterAware;
 
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -16,54 +41,65 @@ import com.opensymphony.xwork2.ActionSupport;
  * @author Isun
  *
  */
-public class BaseAction extends ActionSupport{
+public class BaseAction extends ActionSupport implements ParameterAware {
 
     private static final long serialVersionUID = 1L;
+    
+    protected Map<String, String[]> paraMap;
 
-    protected Integer iDisplayStart = 0;
-    protected Integer iDisplayLength = 25;
-    protected Integer iColumns;
-    protected String sSearch;
-    protected Boolean bEscapeRegex;
-    protected Integer iSortingCols;
-    protected Integer iSortCol_0;
-    protected String sSortDir_0;
-    protected String sEcho;
+//    protected Integer start = 0;
+//    protected Integer length = 25;
+//    protected String sSearch;
+//    protected Integer iSortingCols;
+//    protected Integer iSortCol_0;
+//    protected String sSortDir_0;
+//    protected Integer draw;
 
     protected Object json;
 
     protected IBaseService baseService;
     protected JudgeService judgeService;
 
-    static public List<String> OJList = new ArrayList<String>();
+    static public List<RemoteOjInfo> OJList = new ArrayList<RemoteOjInfo>();
+    static public List<String> OJListLiteral = new ArrayList<String>();
     static {
-        OJList.add(RemoteOj.POJ.toString());
-        OJList.add(RemoteOj.ZOJ.toString());
-        OJList.add(RemoteOj.UVALive.toString());
-        OJList.add(RemoteOj.SGU.toString());
-        OJList.add(RemoteOj.URAL.toString());
-        OJList.add(RemoteOj.HUST.toString());
-        OJList.add(RemoteOj.SPOJ.toString());
-        OJList.add(RemoteOj.HDU.toString());
-        OJList.add(RemoteOj.HYSBZ.toString());
-        OJList.add(RemoteOj.UVA.toString());
-        OJList.add(RemoteOj.CodeForces.toString());
-        OJList.add(RemoteOj.ZTrening.toString());
-        OJList.add(RemoteOj.Aizu.toString());
-        OJList.add(RemoteOj.LightOJ.toString());
-        OJList.add(RemoteOj.UESTCOld.toString());
-        OJList.add(RemoteOj.UESTC.toString());
-        OJList.add(RemoteOj.NBUT.toString());
-        OJList.add(RemoteOj.FZU.toString());
-        OJList.add(RemoteOj.CSU.toString());
-        OJList.add(RemoteOj.SCU.toString());
+        OJList.add(POJInfo.INFO);
+        OJList.add(ZOJInfo.INFO);
+        OJList.add(UVALiveInfo.INFO);
+        OJList.add(SGUInfo.INFO);
+        OJList.add(URALInfo.INFO);
+        OJList.add(HUSTInfo.INFO);
+        OJList.add(SPOJInfo.INFO);
+        OJList.add(HDUInfo.INFO);
+        OJList.add(HYSBZInfo.INFO);
+        OJList.add(UVAInfo.INFO);
+        OJList.add(CodeForcesInfo.INFO);
+        OJList.add(ZTreningInfo.INFO);
+        OJList.add(AizuInfo.INFO);
+        OJList.add(LightOJInfo.INFO);
+        OJList.add(UESTCOldInfo.INFO);
+        OJList.add(UESTCInfo.INFO);
+        OJList.add(NBUTInfo.INFO);
+        OJList.add(FZUInfo.INFO);
+        OJList.add(CSUInfo.INFO);
+        OJList.add(SCUInfo.INFO);
+        Collections.sort(OJList, new Comparator<RemoteOjInfo>() {
+            @Override
+            public int compare(RemoteOjInfo oj1, RemoteOjInfo oj2) {
+                return oj1.literal.compareTo(oj2.literal);
+            }
+        });
+        
+        for (RemoteOjInfo oj : OJList) {
+            OJListLiteral.add(oj.toString());
+        }
     }
 
-    static private List<String> OJListAll = new ArrayList<String>();
-    static {
-        OJListAll.add("All");
-        OJListAll.addAll(OJList);
-    }
+//    static private List<String> OJListAll = new ArrayList<String>();
+//    static {
+//        OJListAll.add("All");
+//        OJListAll.addAll(OJList);
+//    }
 
     static public Map<String, String> lf = new HashMap<String, String>();
     static {
@@ -88,68 +124,65 @@ public class BaseAction extends ActionSupport{
         lf.put("CSU", "%lld & %llu");
         lf.put("SCU", "%lld & %llu");
     }
+    
+    @Override
+    public void setParameters(Map<String, String[]> parameters) {
+        this.paraMap= parameters;
+    }
+    
+    protected String getParameter(String name) {
+        String[] _value = paraMap.get(name);
+        return ArrayUtils.isEmpty(_value) ? null : _value[0];
+    }
 
-
-    public Integer getIDisplayStart() {
-        return iDisplayStart;
-    }
-    public void setIDisplayStart(Integer displayStart) {
-        iDisplayStart = displayStart;
-    }
-    public Integer getIDisplayLength() {
-        return iDisplayLength;
-    }
-    public void setIDisplayLength(Integer displayLength) {
-        iDisplayLength = displayLength;
-    }
-    public Integer getIColumns() {
-        return iColumns;
-    }
-    public void setIColumns(Integer columns) {
-        iColumns = columns;
-    }
-    public String getSSearch() {
-        return sSearch;
-    }
-    public void setSSearch(String search) {
-        sSearch = search;
-    }
-    public Boolean getBEscapeRegex() {
-        return bEscapeRegex;
-    }
-    public void setBEscapeRegex(Boolean escapeRegex) {
-        bEscapeRegex = escapeRegex;
-    }
-    public Integer getISortingCols() {
-        return iSortingCols;
-    }
-    public void setISortingCols(Integer sortingCols) {
-        iSortingCols = sortingCols;
-    }
-    public String getSEcho() {
-        return sEcho;
-    }
-    public void setSEcho(String echo) {
-        sEcho = echo;
-    }
-    public Integer getISortCol_0() {
-        return iSortCol_0;
-    }
-    public void setISortCol_0(Integer sortCol_0) {
-        iSortCol_0 = sortCol_0;
-    }
-    public String getSSortDir_0() {
-        return sSortDir_0;
-    }
-    public void setSSortDir_0(String sortDir_0) {
-        sSortDir_0 = sortDir_0;
-    }
+//    public Integer getStart() {
+//        return start;
+//    }
+//    public void setStart(Integer start) {
+//        this.start = start;
+//    }
+//    public Integer getLength() {
+//        return length;
+//    }
+//    public void setLength(Integer length) {
+//        this.length = length;
+//    }
+//    public Integer getDraw() {
+//        return draw;
+//    }
+//    public void setDraw(Integer draw) {
+//        this.draw = draw;
+//    }
+//    public String getSSearch() {
+//        return sSearch;
+//    }
+//    public void setSSearch(String search) {
+//        sSearch = search;
+//    }
+//    public Integer getISortingCols() {
+//        return iSortingCols;
+//    }
+//    public void setISortingCols(Integer sortingCols) {
+//        iSortingCols = sortingCols;
+//    }
+//    public Integer getISortCol_0() {
+//        return iSortCol_0;
+//    }
+//    public void setISortCol_0(Integer sortCol_0) {
+//        iSortCol_0 = sortCol_0;
+//    }
+//    public String getSSortDir_0() {
+//        return sSortDir_0;
+//    }
+//    public void setSSortDir_0(String sortDir_0) {
+//        sSortDir_0 = sortDir_0;
+//    }
     public List getOJList() {
         return OJList;
     }
-    public List getOJListAll() {
-        return OJListAll;
-    }
+//    public List getOJListAll() {
+//        return OJListAll;
+//    }
     public IBaseService getBaseService() {
         return baseService;
     }

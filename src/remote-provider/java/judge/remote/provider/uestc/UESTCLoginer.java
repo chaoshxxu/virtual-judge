@@ -8,7 +8,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleHttpResponseValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 
@@ -25,8 +25,8 @@ import org.springframework.stereotype.Component;
 public class UESTCLoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UESTC;
+    public RemoteOjInfo getOjInfo() {
+        return UESTCInfo.INFO;
     }
 
     @Override

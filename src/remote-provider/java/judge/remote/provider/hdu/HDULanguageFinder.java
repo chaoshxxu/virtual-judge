@@ -1,19 +1,20 @@
 package judge.remote.provider.hdu;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class HDULanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HDU;
+    public RemoteOjInfo getOjInfo() {
+        return HDUInfo.INFO;
     }
 
     @Override
@@ -36,6 +37,12 @@ public class HDULanguageFinder implements LanguageFinder {
         languageList.put("4", "Pascal");
         languageList.put("5", "Java");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

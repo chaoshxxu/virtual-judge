@@ -1,5 +1,6 @@
 package judge.remote.language;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import judge.remote.RemoteOjAware;
@@ -31,8 +32,14 @@ public interface LanguageFinder extends RemoteOjAware {
 
     /**
      * Should return immediately.
-     * @return
+     * @return {languageCode -> languageDescription}
      */
     LinkedHashMap<String, String> getDefaultLanguages();
+    
+    /**
+     * Some old language code are not supported now. Necessary to find replacement for them.
+     * @return {OldLanguageCode -> NewLanguageCode}
+     */
+    HashMap<String, String> getLanguagesAdapter();
 
 }

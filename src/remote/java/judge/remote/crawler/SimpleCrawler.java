@@ -36,7 +36,7 @@ public abstract class SimpleCrawler extends SyncCrawler {
      * @return
      */
     protected HttpHost getHost() {
-        return getOj().mainHost;
+        return getOjInfo().mainHost;
     }
     
     /**
@@ -44,7 +44,7 @@ public abstract class SimpleCrawler extends SyncCrawler {
      * @return
      */
     protected String getCharset() {
-        return getOj().defaultChaset;
+        return getOjInfo().defaultChaset;
     }
 
     protected abstract String getProblemUrl(String problemId);

@@ -20,17 +20,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubmitCodeManager {
     private final static Logger log = LoggerFactory.getLogger(SubmitCodeManager.class);
-    
+
     @Autowired
     private IBaseService baseService;
 
     @Autowired
     private QueryStatusManager queryStatusManager;
-    
+
     @Autowired
     private RunningSubmissions runningSubmissions;
 
-    
+
     public void submitCode(Submission submission) {
         if (submission.getId() == 0) {
             log.error(String.format("Please persist first: %s", runningSubmissions.getLogKey(submission)));
@@ -45,12 +45,12 @@ public class SubmitCodeManager {
 
     class SubmitCodeTask extends Task<Void>{
         private Submission submission;
-        
+
         public SubmitCodeTask(Submission submission) {
             super(ExecutorTaskType.SUBMIT_CODE);
             this.submission = submission;
         }
-        
+
         @Override
         public Void call() throws Exception {
             try {
@@ -61,7 +61,7 @@ public class SubmitCodeManager {
             }
             return null;
         }
-        
+
         private void submitCode() throws Exception {
             final SubmissionInfo info = SubmissionConverter.toInfo(submission);
             Submitter submitter = SubmittersHolder.getSubmitter(info.remoteOj);
@@ -71,17 +71,18 @@ public class SubmitCodeManager {
                     try {
                         _handle(receipt);
                     } catch (Throwable t) {
+                        t.printStackTrace();
                         log.error(t.getMessage(), t);
                         runningSubmissions.remove(submission.getId());
                     }
                 }
-                
+
                 @Override
                 public void onError(Throwable t) {
                     log.error(t.getMessage(), t);
                     onErrorNotSubmitted();
                 }
-                
+
                 private void _handle(SubmissionReceipt receipt) {
                     submission.setRealRunId(receipt.remoteRunId);
                     submission.setRemoteAccountId(receipt.remoteAccountId);
@@ -101,14 +102,14 @@ public class SubmitCodeManager {
                     }
                     baseService.addOrModify(submission);
                     runningSubmissions.remove(submission.getId());
-                    
+
                     if (receipt.remoteRunId != null) {
                         queryStatusManager.createQuery(submission);
                     }
                 }
-            });    
+            });
         }
-        
+
         private void onErrorNotSubmitted() {
             runningSubmissions.remove(submission.getId());
             submission.setStatus("Submit Failed");
@@ -116,5 +117,5 @@ public class SubmitCodeManager {
             baseService.addOrModify(submission);
         }
     }
-    
+
 }

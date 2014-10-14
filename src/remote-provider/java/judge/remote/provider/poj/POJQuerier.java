@@ -2,7 +2,7 @@ package judge.remote.provider.poj;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpBodyValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 public class POJQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.POJ;
+    public RemoteOjInfo getOjInfo() {
+        return POJInfo.INFO;
     }
 
     @Override

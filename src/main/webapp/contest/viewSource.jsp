@@ -4,21 +4,22 @@
 <%
 String langFile = "shjs/lang/" + request.getAttribute("language") + ".min.js";
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 	<head>
-		<s:include value="/header.jsp" />
+		<%@ include file="/header.jsp" %>
 		<title>Source Code - Virtual Judge</title>
-		<link rel="stylesheet" href="shjsx/shx_main.min.css" type="text/css" media="all"/>
+<!-- 		<link rel="stylesheet" href="shjsx/shx_main.min.css" type="text/css" media="all"/>
 		<link rel="stylesheet" href="shjsx/css/sh_typical.min.css" type="text/css" media="all"/>
-		<link rel="stylesheet" href="shjsx/css/sh_print.min.css" type="text/css" media="print" />
-		<script type="text/javascript" src="shjsx/sh_main.min.js"></script>
-		<script type="text/javascript" src="javascript/viewSource.js?<%=application.getAttribute("version")%>"></script>
+		<link rel="stylesheet" href="shjsx/css/sh_print.min.css" type="text/css" media="print" /> -->
+<%-- 		<script type="text/javascript" src="shjsx/sh_main.min.js"></script> --%>
+<%--  		<script type="text/javascript" src="${contextPath}/javascript/viewSource.js?<%=application.getAttribute("version")%>"></script> --%>
 	</head>
 
 	<body>
+        <s:hidden id="js_require_viewSource" />
 		<s:include value="/top.jsp" />
-		<div class="ptt" style="color:black;font-weight:normal;margin-bottom:12px"><a href="user/profile.action?uid=${submission.user.id}">${submission.username}</a> 's source code for <a href="contest/view.action?cid=${contest.id}#problem/${cproblem.num}">${cproblem.num}</a></div>
+		<div class="ptt" style="color:black;font-weight:normal;margin-bottom:12px"><a href="${contextPath}/user/profile.action?uid=${submission.user.id}">${submission.username}</a> 's source code for <a href="${contextPath}/contest/view.action?cid=${contest.id}#problem/${cproblem.num}">${cproblem.num}</a></div>
 		
 		<div class="plm" style="text-align:left">
 			<table align="center" style="font-size:10pt">

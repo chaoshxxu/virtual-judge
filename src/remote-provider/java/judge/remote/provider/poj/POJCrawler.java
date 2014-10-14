@@ -1,6 +1,6 @@
 package judge.remote.provider.poj;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.Tools;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class POJCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.POJ;
+    public RemoteOjInfo getOjInfo() {
+        return POJInfo.INFO;
     }
 
     @Override

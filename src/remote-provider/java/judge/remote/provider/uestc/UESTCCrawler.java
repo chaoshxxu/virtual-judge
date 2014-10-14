@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutionException;
 
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.HtmlHandleUtil;
@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class UESTCCrawler extends SimpleCrawler {
     
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UESTC;
+    public RemoteOjInfo getOjInfo() {
+        return UESTCInfo.INFO;
     }
 
     @Override

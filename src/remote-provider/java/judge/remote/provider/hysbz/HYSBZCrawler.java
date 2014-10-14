@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class HYSBZCrawler extends SyncCrawler {
     
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HYSBZ;
+    public RemoteOjInfo getOjInfo() {
+        return HYSBZInfo.INFO;
     }
 
     private static final HttpHost HOSTS[] = new HttpHost[] {

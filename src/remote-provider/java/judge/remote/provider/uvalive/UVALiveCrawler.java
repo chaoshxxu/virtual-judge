@@ -13,7 +13,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleHttpResponse;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
@@ -34,8 +34,8 @@ public class UVALiveCrawler extends SyncCrawler {
     private static UVALiveProblemIdMapHelper helper = new UVALiveProblemIdMapHelper();
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UVALive;
+    public RemoteOjInfo getOjInfo() {
+        return UVALiveInfo.INFO;
     }
 
     @Override

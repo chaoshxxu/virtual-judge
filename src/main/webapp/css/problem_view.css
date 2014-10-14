@@ -1,0 +1,69 @@
+/********************ViewProblem*********************/
+.hiddable {
+    font-family: times new roman;
+    font-size: 17px;
+}
+
+.desc_info {
+    background-color: #DDFFDD;
+    margin: 3px;
+    padding: 5px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+}
+
+.selected {
+    border: 3px solid #A6C9E2;
+}
+
+#left_view {
+    
+}
+
+td#mid_view {
+    vertical-align: top;
+    width: 15px;
+}
+
+.mid_hover {
+    background-color: #CCDDFF;
+}
+
+#right_view {
+    vertical-align: top;
+    width: 320px;
+}
+
+.remark {
+    font-family: Courier;
+    font-size: 17px;
+}
+
+.over {
+    background-color: #EEEEEE;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+
+p.pst span {
+    color: black;
+    font-family: Courier;
+    font-size: 17px;
+    float: right;
+}
+
+pre {
+    white-space: pre-wrap; /* CSS-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+.tex-span {
+    font-size: 125%;
+}
+
+.opt_btn span {
+    COLOR: black;
+}

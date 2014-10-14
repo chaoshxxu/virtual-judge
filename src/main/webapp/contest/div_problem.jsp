@@ -1,5 +1,6 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ include file="/contextPath.jsp" %>
 
 <div id="problem" style="font-size:14px">
 	<div id="problem_number_container" style="margin:auto;text-align:center;display:none">

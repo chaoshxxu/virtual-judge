@@ -1,6 +1,6 @@
 package judge.remote.provider.hdu;
 
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.Tools;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class HDUCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HDU;
+    public RemoteOjInfo getOjInfo() {
+        return HDUInfo.INFO;
     }
 
     @Override

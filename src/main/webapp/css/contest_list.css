@@ -1,0 +1,134 @@
+/********************listContest*********************/
+#listContest_wrapper .dataTables_paginate {
+    float: left;
+    text-align: center;
+}
+
+#listContest_wrapper .dataTables_length {
+    float: right;
+}
+
+#listContest_wrapper #buttonContainer_l {
+    float: left;
+    padding-left: 40px;
+}
+
+#listContest_wrapper #buttonContainer_r {
+    float: right;
+}
+
+#contestType {
+    display: inline;
+    float: right;
+    margin-right: 40px;
+}
+
+#contestType span {
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+#contestRunningStatus {
+    display: inline;
+    float: right;
+}
+
+
+
+/***********************************************/
+
+#listContest tr.Ended.odd {
+	background-color: #DDFFDD !important;
+}
+
+#listContest tr.Ended.even {
+	background-color: #EEFFEE !important;
+}
+
+#listContest tr.Running.odd {
+	background-color: #FFDDDD !important;
+}
+
+#listContest tr.Running.even {
+	background-color: #FFEEEE !important;
+}
+
+#listContest tr.Scheduled.odd {
+	background-color: #E2E4FF !important;
+}
+
+#listContest tr.Scheduled.even {
+	background-color: #EAEBFF !important;
+}
+
+/*********************************************************/
+
+#listContest {
+    table-layout: fixed;
+}
+
+#listContest td {
+    padding: 3px 6px;
+}
+
+#listContest th.contest_id {
+    width: 60px;
+}
+
+#listContest th.title {
+}
+
+#listContest th.date {
+    width: 110px;
+}
+
+#listContest th.length {
+    width: 100px;
+}
+
+#listContest th.openness {
+    width: 110px;
+}
+
+#listContest th.openness .ui-selectmenu-button span.ui-selectmenu-text {
+    padding-right: 0;
+}
+
+#listContest th.manager {
+    width: 150px;
+}
+
+
+
+
+#listContest td.title div {
+    height: 20px;
+    overflow: hidden;
+}
+
+#listContest td.title:hover div {
+	height: auto;
+}
+
+#listContest td.date {
+    text-align: center;
+}
+
+#listContest td.length {
+    text-align: center;
+}
+
+#listContest td.openness {
+    text-align: center;
+}
+
+#listContest td.openness.Public {
+    color: blue;
+}
+
+#listContest td.openness.Private {
+    color: red;
+}
+
+#listContest td.manager {
+}

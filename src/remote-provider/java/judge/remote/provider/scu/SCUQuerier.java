@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class SCUQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SCU;
+    public RemoteOjInfo getOjInfo() {
+        return SCUInfo.INFO;
     }
 
     @Override

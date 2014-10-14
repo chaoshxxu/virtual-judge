@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dwr PUBLIC "-//GetAhead Limited//DTD Direct Web Remoting 2.0//EN" "http://www.getahead.ltd.uk/dwr/dwr20.dtd">
+<dwr>
+	<allow>
+		<create javascript="judgeService" creator="spring">
+			<param name="beanName" value="judgeService" />
+			<include method="getResult"/>
+			<include method="fetchDescriptions"/>
+			<include method="findProblemSimple"/>
+			<include method="getRankInfo"/>
+            <include method="getContestTimeInfo"/>
+            <include method="getProblemStatus"/>
+		</create>
+		<convert match="judge.bean.Description" converter="bean" >
+			<param name="include" value="description,input,output,sampleInput,sampleOutput,hint"></param>
+		</convert>
+	</allow>
+</dwr>

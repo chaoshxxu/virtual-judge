@@ -6,7 +6,7 @@
 
 		<!-- 罗列题目 -->
 		<action name="toListProblem" class="problemAction" method="toListProblem">
-			<result name="success">/problem/listProblem.jsp</result>
+			<result name="success">/problem/list.jsp</result>
 		</action>
 
 		<action name="listProblem" class="problemAction" method="listProblem">
@@ -19,27 +19,18 @@
 		</action>
 
 		<!-- 添加题目 -->
-		<action name="addProblem" class="problemAction" method="addProblem">
+		<action name="recrawlProblem" class="problemAction" method="recrawlProblem">
 			<result name="success" type="redirectAction">
-				<param name="actionName">toListProblem</param>
-				<param name="namespace">/problem</param>
-				<param name="OJId">${OJId}</param>
-			</result>
-			<result name="recrawl" type="redirectAction">
 				<param name="actionName">viewProblem</param>
 				<param name="namespace">/problem</param>
-				<param name="id">${id}</param>
-			</result>
-			<result name="error" type="redirectAction">
-				<param name="actionName">toListProblem</param>
-				<param name="namespace">/problem</param>
-				<param name="OJId">${OJId}</param>
+                <param name="OJId">${OJId}</param>
+                <param name="probNum">${probNum}</param>
 			</result>
 		</action>
 
 		<!-- 显示题目 -->
 		<action name="viewProblem" class="problemAction" method="viewProblem">
-			<result name="success">/problem/viewProblem.jsp</result>
+			<result name="success">/problem/view.jsp</result>
 			<result name="error" type="redirect">toListProblem.action</result>
 		</action>
 
@@ -70,14 +61,14 @@
 
 		<!-- 非比赛中的提交 -->
 		<action name="submit" class="problemAction" method="submit">
-			<result name="success" type="redirect">status.action?reset=1</result>
+			<result name="success" type="redirect">status.action</result>
 			<result name="error" type="redirect">/toIndex.action</result>
 			<result name="input">/problem/submit.jsp</result>
 		</action>
 
 		<!-- 进入修改题面页面 -->
 		<action name="toEditDescription" class="problemAction" method="toEditDescription">
-			<result name="success">/problem/editDescription.jsp</result>
+			<result name="success">/problem/edit_description.jsp</result>
 			<result name="login" type="redirect">/toIndex.action</result>
 		</action>
 
@@ -92,7 +83,7 @@
 
 		<!-- 查看代码 -->
 		<action name="viewSource" class="problemAction" method="viewSource">
-			<result name="success">/problem/viewSource.jsp</result>
+			<result name="success">/problem/source.jsp</result>
 			<result name="error" type="redirect">status.action</result>
 		</action>
 

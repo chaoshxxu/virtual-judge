@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 public class ZOJSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.ZOJ;
+    public RemoteOjInfo getOjInfo() {
+        return ZOJInfo.INFO;
     }
 
     @Override
@@ -46,8 +46,12 @@ public class ZOJSubmitter extends CanonicalSubmitter {
                 "problemId", realProblemId, //
                 "source", info.sourceCode);
         client.post("/onlinejudge/submit.do", entity);
-        Thread.sleep(2000);
         return null;
+    }
+    
+    @Override
+    protected long getSubmitReceiptDelay() {
+        return 30000;
     }
 
 }

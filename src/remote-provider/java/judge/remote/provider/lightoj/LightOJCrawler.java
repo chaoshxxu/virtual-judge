@@ -6,7 +6,7 @@ import judge.executor.ExecutorTaskType;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.account.RemoteAccountTask;
 import judge.remote.crawler.Crawler;
@@ -29,8 +29,8 @@ public class LightOJCrawler implements Crawler {
     private DedicatedHttpClientFactory dedicatedHttpClientFactory;
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.LightOJ;
+    public RemoteOjInfo getOjInfo() {
+        return LightOJInfo.INFO;
     }
 
     @Override
@@ -49,16 +49,16 @@ public class LightOJCrawler implements Crawler {
         private String problemId;
 
         public CrawlTask(String problemId, Handler<RawProblemInfo> handler) {
-            super(ExecutorTaskType.UPDATE_PROBLEM_INFO, getOj(), null, null, handler);
+            super(ExecutorTaskType.UPDATE_PROBLEM_INFO, getOjInfo().remoteOj, null, null, handler);
             this.problemId = problemId;
         }
 
         @Override
         protected RawProblemInfo call(RemoteAccount remoteAccount) throws Exception {
-            LoginersHolder.getLoginer(getOj()).login(remoteAccount);
+            LoginersHolder.getLoginer(getOjInfo().remoteOj).login(remoteAccount);
             
-            HttpHost host = getOj().mainHost;
-            DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, remoteAccount.getContext(), getOj().defaultChaset);
+            HttpHost host = getOjInfo().mainHost;
+            DedicatedHttpClient client = dedicatedHttpClientFactory.build(host, remoteAccount.getContext(), getOjInfo().defaultChaset);
             
             String problemUrl = host.toURI() + "/volume_showproblem.php?problem=" + problemId;
             String pageContent = client.get(problemUrl, HttpStatusValidator.SC_OK).getBody();

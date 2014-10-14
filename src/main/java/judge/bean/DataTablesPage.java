@@ -5,50 +5,48 @@ import java.util.List;
 
 import org.apache.struts2.json.annotations.JSON;
 
-@SuppressWarnings("unchecked")
 public class DataTablesPage {
 
-    private List aaData;
-    private Long iTotalRecords;
-    private Long iTotalDisplayRecords;
-    private String sColumns;
+    private List data;
+    private Long recordsTotal;
+    private Long recordsFiltered;
+    private Integer draw;
 
-    @JSON(name = "iTotalRecords")
-    public Long getITotalRecords() {
-        return iTotalRecords;
+    
+    @JSON(name = "recordsTotal")
+    public Long getRecordsTotal() {
+        return recordsTotal;
     }
 
-    public void setITotalRecords(Long totalRecords) {
-        iTotalRecords = totalRecords;
+    public void setRecordsTotal(Long recordsTotal) {
+        this.recordsTotal = recordsTotal;
     }
 
-    @JSON(name = "iTotalDisplayRecords")
-    public Long getITotalDisplayRecords() {
-        return iTotalDisplayRecords;
+    @JSON(name = "recordsFiltered")
+    public Long getRecordsFiltered() {
+        return recordsFiltered;
     }
 
-    public void setITotalDisplayRecords(Long totalDisplayRecords) {
-        iTotalDisplayRecords = totalDisplayRecords;
+    public void setRecordsFiltered(Long recordsFiltered) {
+        this.recordsFiltered = recordsFiltered;
     }
 
-    @JSON(name = "sColumns")
-    public String getSColumns() {
-        return sColumns;
+    @JSON(name = "data")
+    public List getData() {
+        return data;
     }
 
-    public void setSColumns(String columns) {
-        sColumns = columns;
+    public void setData(List data) {
+        this.data = data;
     }
 
-    @JSON(name = "aaData")
-    public List getAaData() {
-        return aaData;
+    public Integer getDraw() {
+        return draw;
     }
 
-    public void setAaData(List aaData) {
-        this.aaData = aaData;
+    public void setDraw(Integer draw) {
+        this.draw = draw;
     }
-
-
+    
 
 }

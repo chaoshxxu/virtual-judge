@@ -1,20 +1,22 @@
 package judge.remote.provider.aizu;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class AizuLanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.Aizu;
+    public RemoteOjInfo getOjInfo() {
+        return AizuInfo.INFO;
     }
+
 
     @Override
     public boolean isDiverse() {
@@ -33,6 +35,11 @@ public class AizuLanguageFinder implements LanguageFinder {
         languageList.put("C", "C");
         languageList.put("JAVA", "JAVA");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        return null;
     }
 
 }

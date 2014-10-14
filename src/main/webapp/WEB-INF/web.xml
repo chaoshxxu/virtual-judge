@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     version="2.5">
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -15,6 +14,14 @@
         <filter-class>judge.tool.JspForbidden</filter-class>
     </filter>
     <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>judge.tool.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter>
         <filter-name>myFilter</filter-name>
         <filter-class>judge.tool.MyFilter</filter-class>
     </filter>
@@ -22,7 +29,7 @@
         <filter-name>struts2</filter-name>
         <filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
     </filter>
-    
+
     <listener>
         <listener-class>judge.tool.StartUpListener</listener-class>
     </listener>
@@ -32,14 +39,18 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
-    
-    <filter-mapping>
-        <filter-name>myFilter</filter-name>
-        <url-pattern>*</url-pattern>
-    </filter-mapping>
+
     <filter-mapping>
         <filter-name>JspForbidden</filter-name>
         <url-pattern>*.jsp</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>myFilter</filter-name>
+        <url-pattern>*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>struts2</filter-name>
@@ -62,10 +73,6 @@
     <servlet>
         <servlet-name>dwr-invoker</servlet-name>
         <servlet-class>org.directwebremoting.servlet.DwrServlet</servlet-class>
-        <init-param>
-            <param-name>config</param-name>
-            <param-value>/WEB-INF/classes/dwr.xml</param-value>
-        </init-param>
         <init-param>
             <param-name>allowScriptTagRemoting</param-name>
             <param-value>true</param-value>

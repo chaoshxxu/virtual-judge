@@ -19,7 +19,7 @@ public class QueriersHolder {
                         List<Class<? extends Querier>> querierClasses = Tools.findSubClasses("judge", Querier.class);
                         for (Class<? extends Querier> querierClass : querierClasses) {
                             Querier querier = SpringBean.getBean(querierClass);
-                            queriers.put(querier.getOj(), querier);
+                            queriers.put(querier.getOjInfo().remoteOj, querier);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();

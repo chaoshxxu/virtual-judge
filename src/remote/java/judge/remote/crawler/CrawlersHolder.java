@@ -19,7 +19,7 @@ public class CrawlersHolder {
                         List<Class<? extends Crawler>> crawlerClasses = Tools.findSubClasses("judge", Crawler.class);
                         for (Class<? extends Crawler> crawlerClass : crawlerClasses) {
                             Crawler crawler = SpringBean.getBean(crawlerClass);
-                            crawlers.put(crawler.getOj(), crawler);
+                            crawlers.put(crawler.getOjInfo().remoteOj, crawler);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();

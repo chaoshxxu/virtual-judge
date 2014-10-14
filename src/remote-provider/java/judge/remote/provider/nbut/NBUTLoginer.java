@@ -3,7 +3,7 @@ package judge.remote.provider.nbut;
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpBodyValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 import judge.tool.Tools;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class NBUTLoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.NBUT;
+    public RemoteOjInfo getOjInfo() {
+        return NBUTInfo.INFO;
     }
 
     @Override

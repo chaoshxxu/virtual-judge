@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 
@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 public class UVALiveLoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UVALive;
+    public RemoteOjInfo getOjInfo() {
+        return UVALiveInfo.INFO;
     }
 
     @Override

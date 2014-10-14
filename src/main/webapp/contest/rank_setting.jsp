@@ -1,11 +1,13 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ include file="/contextPath.jsp" %>
+
 <s:if test="sameContests.size() > 0">
 <span><b>Time Machine</b>: (Check them to include their standings to your score board)</span>
 <s:if test="contest.getEnableTimeMachine() == 0">
 <br><span style="color:red">Time machine is disabled until the contest ends.</span>
 </s:if>
-<table id="same_contests_table" style="min-height:50px;margin:10px 0 30px 0" class="display" cellpadding="0" cellspacing="0" border="0">
+<table id="same_contests_table" class="display" cellpadding="0" cellspacing="0" border="0">
 	<thead>
 		<tr>
 			<th style="text-align:left;padding-left:3px"><s:checkbox id="checkAll" name="checkAll" /></th>
@@ -20,18 +22,18 @@
 		<s:iterator value="sameContests" status="stat">
 		<tr class="<s:property value='sameContests[#stat.index][7]' />">
 			<td><s:checkbox fieldValue="%{sameContests[#stat.index][0]}" name="ids" /></td>
-			<td><s:if test="sameContests[#stat.index][1] != null"><img height="20" title="Replay" src="images/replay.png"></s:if></td>
+			<td><s:if test="sameContests[#stat.index][1] != null"><img height="20" title="Replay" src="${contextPath}/images/replay.png"></s:if></td>
 			<td><div style="white-space:normal;word-break:break-all;word-wrap:break-word;width:300px;">
 				<s:if test="sameContests[#stat.index][0] == cid || contest.endTime.compareTo(curDate) > 0">
 					<s:property value="sameContests[#stat.index][2]" escape="false" />
 				</s:if>
 				<s:else>
-					<a href="contest/view.action?cid=<s:property value='sameContests[#stat.index][0]' escape="false" />#overview" target="_blank"><s:property value="sameContests[#stat.index][2]" escape="false" /></a>
+					<a href="${contextPath}/contest/view.action?cid=<s:property value='sameContests[#stat.index][0]' escape="false" />#overview" target="_blank"><s:property value="sameContests[#stat.index][2]" escape="false" /></a>
 				</s:else>
 			</div></td>
 			<td class="date"><s:date name="sameContests[#stat.index][3]" format="yyyy-MM-dd HH:mm:ss" /></td>
 			<td class="date"><s:property value='sameContests[#stat.index][4]' /></td>
-			<td class="center"><a href="user/profile.action?uid=<s:property value='sameContests[#stat.index][6]' />"><s:property value="sameContests[#stat.index][5]" /></a></td>
+			<td class="center"><a href="${contextPath}/user/profile.action?uid=<s:property value='sameContests[#stat.index][6]' />"><s:property value="sameContests[#stat.index][5]" /></a></td>
 		</tr>
 		</s:iterator>	
 	</tbody>
@@ -63,56 +65,4 @@
 		</td>
     </tr>
 </table>
-
-<script type="text/javascript">
-$("#same_contests_table").dataTable({
-	"bPaginate": false,
-	"bLengthChange": false,
-	"bFilter": false,
-	"bSort": false,
-	"bInfo": false,
-	"bAutoWidth": false
-});
-$("#same_contests_table_wrapper").css("min-height", "100px");
-
-var	ids = $.cookie("contest_" + cid).split("_");
-for (var i = 0; i < ids.length; i++){
-	$("input[type=checkbox][value=" + ids[i] + "]").prop("checked",'true');
-}
-
-$("[name=showTeams]").eq($.cookie("show_all_teams")).prop("checked", "checked");
-$("[name=showNick]").prop("checked", $.cookie("show_nick") == 'true' ? "checked" : "");
-$("[name=showUsername]").prop("checked", $.cookie("show_username") == 'true' ? "checked" : "");
-$("[name=showAnimation]").eq($.cookie("show_animation")).prop("checked", "checked");
-
-$("[name=showTeams]").change(function(){
-	if ($.browser.msie && $("[name=showTeams]:checked").val() == 1) {
-		$("[name=showTeams]").eq(0).prop("checked", "checked");
-	}
-});
-
-$("[name=ids]").click(function(){
-	updateCheckAll();
-});
-
-$("#checkAll").click(function(){
-	$("[name=ids]").prop("checked", $(this).prop("checked"));
-});
-
-$("#exportRank").button();
-$("#exportRank").click(function(){
-	var exportRankWindow = window.open('about:blank'); 
-	exportRankWindow.document.write(exportRankHtml); 
-});
-
-updateCheckAll();
-
-function updateCheckAll() {
-	if ($("[name=ids]:checked").length == 0){
-		$("#checkAll").attr("checked", false);
-	} else if ($("[name=ids]:not(:checked)").length == 0){
-		$("#checkAll").attr("checked", true);
-	}
-}
-</script>
-
+<script type="text/javascript" src="${contextPath}/javascript/contest_rank_setting.js"></script>

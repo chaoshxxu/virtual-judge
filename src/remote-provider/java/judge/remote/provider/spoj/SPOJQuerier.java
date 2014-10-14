@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -22,15 +22,15 @@ import org.springframework.stereotype.Component;
 public class SPOJQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SPOJ;
+    public RemoteOjInfo getOjInfo() {
+        return SPOJInfo.INFO;
     }
 
     @Override
     protected SubmissionRemoteStatus query(SubmissionInfo info, RemoteAccount remoteAccount, DedicatedHttpClient client) {
         String html = client.post( //
                 "/status/ajax=1,ajaxdiff=1", //
-                SimpleNameValueEntityFactory.create("ids", info.remoteRunId, getOj().defaultChaset) //
+                SimpleNameValueEntityFactory.create("ids", info.remoteRunId, getOjInfo().defaultChaset) //
         ).getBody();
         html = html.replaceAll("\\\\[nt]", "").replaceAll(">(run|edit)<", "><").replaceAll("<.*?>", "").replace("&nbsp;", "").trim();
 

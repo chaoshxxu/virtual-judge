@@ -1,18 +1,18 @@
 package judge.remote.provider.aizu;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SimpleCrawler;
 import judge.tool.Tools;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class AizuCrawler extends SimpleCrawler {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.Aizu;
+    public RemoteOjInfo getOjInfo() {
+        return AizuInfo.INFO;
     }
     
     @Override

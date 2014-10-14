@@ -1,19 +1,20 @@
 package judge.remote.provider.csu;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class CSULanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.CSU;
+    public RemoteOjInfo getOjInfo() {
+        return CSUInfo.INFO;
     }
 
     @Override
@@ -36,6 +37,12 @@ public class CSULanguageFinder implements LanguageFinder {
         languageList.put("10", "Obj-C");
         languageList.put("11", "FreeBasic");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

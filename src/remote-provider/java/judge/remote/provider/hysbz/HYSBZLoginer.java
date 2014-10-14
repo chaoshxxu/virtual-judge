@@ -4,7 +4,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.SimpleHttpResponse;
 import judge.httpclient.SimpleHttpResponseValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.loginer.RetentiveLoginer;
 
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 public class HYSBZLoginer extends RetentiveLoginer {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.HYSBZ;
+    public RemoteOjInfo getOjInfo() {
+        return HYSBZInfo.INFO;
     }
 
     @Override

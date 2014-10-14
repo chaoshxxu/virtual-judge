@@ -1,19 +1,20 @@
 package judge.remote.provider.sgu;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class SGULanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SGU;
+    public RemoteOjInfo getOjInfo() {
+        return SGUInfo.INFO;
     }
 
     @Override
@@ -37,6 +38,12 @@ public class SGULanguageFinder implements LanguageFinder {
         languageList.put("JAVA 7", "JAVA 7");
         languageList.put("Delphi 7.0", "Delphi 7.0");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -16,7 +16,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleHttpResponse;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SyncCrawler;
 import judge.remote.provider.uva.UVaProblemIdCrawlTask.UVaProblemInfo;
@@ -37,8 +37,8 @@ public class UVACrawler extends SyncCrawler {
     private static UVaProblemIdMapHelper helper = new UVaProblemIdMapHelper();
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UVA;
+    public RemoteOjInfo getOjInfo() {
+        return UVAInfo.INFO;
     }
 
     @Override

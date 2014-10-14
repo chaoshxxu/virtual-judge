@@ -1,19 +1,20 @@
 package judge.remote.provider.uva;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class UVALanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.UVA;
+    public RemoteOjInfo getOjInfo() {
+        return UVAInfo.INFO;
     }
 
     @Override
@@ -35,6 +36,12 @@ public class UVALanguageFinder implements LanguageFinder {
         languageList.put("4", "PASCAL 2.6.2");
         languageList.put("5", "C++11 4.8.2");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

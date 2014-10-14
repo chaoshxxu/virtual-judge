@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.querier.SyncQuerier;
 import judge.remote.status.RemoteStatusType;
 import judge.remote.status.SubmissionRemoteStatus;
@@ -19,13 +19,13 @@ import org.springframework.stereotype.Component;
 public class SGUQuerier extends SyncQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SGU;
+    public RemoteOjInfo getOjInfo() {
+        return SGUInfo.INFO;
     }
 
     @Override
     protected SubmissionRemoteStatus query(SubmissionInfo info) {
-        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOj().mainHost, null, getOj().defaultChaset);
+        DedicatedHttpClient client = dedicatedHttpClientFactory.build(getOjInfo().mainHost, null, getOjInfo().defaultChaset);
         
         String html = client.get("/status.php?start=" + info.remoteRunId).getBody();
         Pattern pattern = Pattern.compile("<TD>" + info.remoteRunId + "</TD>[\\s\\S]*?<TD class=btab>([\\s\\S]*?)</TD>[\\s\\S]*?([\\d]*?) ms</TD><TD>([\\d]*?) kb</TD>");

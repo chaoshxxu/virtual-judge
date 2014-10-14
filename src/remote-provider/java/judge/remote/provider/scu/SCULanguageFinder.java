@@ -1,19 +1,20 @@
 package judge.remote.provider.scu;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class SCULanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.SCU;
+    public RemoteOjInfo getOjInfo() {
+        return SCUInfo.INFO;
     }
 
     @Override
@@ -34,6 +35,12 @@ public class SCULanguageFinder implements LanguageFinder {
         languageList.put("JAVA", "JAVA");
         languageList.put("PASCAL (GPC)", "PASCAL (GPC)");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

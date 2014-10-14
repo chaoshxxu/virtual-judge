@@ -1,19 +1,20 @@
 package judge.remote.provider.poj;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class POJLanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.POJ;
+    public RemoteOjInfo getOjInfo() {
+        return POJInfo.INFO;
     }
 
     @Override
@@ -37,6 +38,12 @@ public class POJLanguageFinder implements LanguageFinder {
         languageList.put("5", "C");
         languageList.put("6", "Fortran");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpStatusValidator;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.querier.AuthenticatedQuerier;
 import judge.remote.status.RemoteStatusType;
@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 public class NBUTQuerier extends AuthenticatedQuerier {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.NBUT;
+    public RemoteOjInfo getOjInfo() {
+        return NBUTInfo.INFO;
     }
 
     @Override

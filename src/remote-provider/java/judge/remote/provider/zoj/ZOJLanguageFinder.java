@@ -1,19 +1,20 @@
 package judge.remote.provider.zoj;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.springframework.stereotype.Component;
-
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.language.LanguageFinder;
 import judge.tool.Handler;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class ZOJLanguageFinder implements LanguageFinder {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.ZOJ;
+    public RemoteOjInfo getOjInfo() {
+        return ZOJInfo.INFO;
     }
 
     @Override
@@ -38,6 +39,12 @@ public class ZOJLanguageFinder implements LanguageFinder {
         languageList.put("7", "Scheme (Guile 1.8.7)");
         languageList.put("8", "PHP (PHP 5.3.2)");
         return languageList;
+    }
+
+    @Override
+    public HashMap<String, String> getLanguagesAdapter() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

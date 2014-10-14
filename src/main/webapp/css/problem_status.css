@@ -1,0 +1,217 @@
+/********************Status*********************/
+#status {
+	table-layout: fixed;
+}
+
+#status td {
+	padding: 3px 6px;
+}
+
+#status th.run_id {
+    width: 80px;
+    cursor: pointer;
+}
+
+#status th.username {
+}
+
+#status th.oj {
+    width: 100px;
+}
+
+#status th.prob_num {
+    width: 90px;
+}
+
+#status th.result {
+	width: 160px;
+}
+
+#status th.result select {
+	width: 100%;
+}
+
+#status th.memory {
+	width: 70px;
+    cursor: pointer;
+}
+
+#status th.time {
+	width: 60px;
+    cursor: pointer;
+}
+
+#status th.date {
+	width: 110px;
+}
+
+#status th.language {
+	width: 120px;
+}
+
+#status th.length {
+	width: 60px;
+    cursor: pointer;
+}
+
+/******************/
+#status td {
+    white-space: normal;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+#status td div {
+    height: 20px;
+    overflow: hidden;
+}
+
+#status td:hover div {
+    height: auto;
+}
+
+/******************/
+
+
+#status td.run_id {
+	text-align: left;
+}
+
+#status td.username {
+    text-align: center;
+}
+
+#status td.username img {
+    visibility: hidden;
+    float: right;
+    height: 20px;
+}
+
+#status td.username:hover img {
+    visibility: visible;
+}
+
+#status td.oj {
+    text-align: right;
+}
+
+#status td.prob_num {
+    text-align: left;
+}
+
+#status td.prob_num img {
+    visibility: hidden;
+    float: right;
+    height: 20px;
+}
+
+#status td.prob_num:hover img {
+    visibility: visible;
+}
+
+#status td.result {
+	white-space: normal;
+	word-break: break-all;
+	word-wrap: break-word;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	text-align: center;
+}
+
+#status td.result div {
+	height: 20px;
+	overflow: hidden;
+}
+
+#status td.result:hover div {
+	height: auto;
+	overflow: hidden;
+}
+
+#status td.memory {
+	text-align: right;
+}
+
+#status td.time {
+	text-align: right;
+}
+
+#status td.language {
+	font-size: 12px;
+    text-align: center;
+}
+
+#status td.language a.shared {
+	font-family: Arial, Helvetica, sans-serif;
+	color: #00AA00;
+	font-weight: bold;
+}
+
+#status td.length {
+	text-align: right;
+}
+
+#status td.date {
+	text-align: center;
+}
+
+#status tr.rejudge:hover {
+	cursor: pointer;
+	cursor: hand;
+}
+
+#status tr.odd.yes {
+	background-color: #ddffdd;
+}
+
+#status tr.odd.no {
+	background-color: #ffdddd;
+}
+
+#status tr.odd.pending, #status tr.odd.working {
+	background-color: #ddddff;
+}
+
+#status tr.even.yes {
+	background-color: #eeffee;
+}
+
+#status tr.even.no {
+	background-color: #ffeeee;
+}
+
+#status tr.even.pending, #status tr.even.working {
+	background-color: #eeeeff;
+}
+
+/* #status tr.pending td.time {
+	padding-left: auto;
+	padding-right: auto;
+} */
+
+#status tr.working td.time {
+	padding-right: 0;
+	background: url("../images/loader.gif") no-repeat 90% 50%;
+}
+
+#status_wrapper .dataTables_paginate {
+	float: left;
+	text-align: center;
+}
+
+#status_wrapper .dataTables_paginate span>a:last-child {
+    display: none;
+}
+
+#status_wrapper div.ui-corner-bl {
+	display: none;
+}
+
+#status_wrapper #buttonContainer {
+    float: left;
+    padding-left: 40px;
+}
+
+#status_wrapper .ui-selectmenu-button span.ui-selectmenu-text {
+	overflow: visible;
+}

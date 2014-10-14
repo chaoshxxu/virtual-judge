@@ -10,7 +10,7 @@ import judge.httpclient.DedicatedHttpClient;
 import judge.httpclient.HttpBodyValidator;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleNameValueEntityFactory;
-import judge.remote.RemoteOj;
+import judge.remote.RemoteOjInfo;
 import judge.remote.account.RemoteAccount;
 import judge.remote.submitter.CanonicalSubmitter;
 import judge.remote.submitter.SubmissionInfo;
@@ -19,8 +19,8 @@ import judge.remote.submitter.SubmissionInfo;
 public class NBUTSubmitter extends CanonicalSubmitter {
 
     @Override
-    public RemoteOj getOj() {
-        return RemoteOj.NBUT;
+    public RemoteOjInfo getOjInfo() {
+        return NBUTInfo.INFO;
     }
 
     @Override

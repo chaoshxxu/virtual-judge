@@ -35,7 +35,7 @@ public abstract class AuthenticatedQuerier implements Querier {
         public QueryTask(SubmissionInfo info, Handler<SubmissionRemoteStatus> handler) {
             super(
                     ExecutorTaskType.QUERY_SUBMISSION_STATUS, 
-                    getOj(), 
+                    getOjInfo().remoteOj, 
                     info.remoteAccountId, 
                     null, 
                     handler);
@@ -44,7 +44,7 @@ public abstract class AuthenticatedQuerier implements Querier {
 
         @Override
         protected SubmissionRemoteStatus call(RemoteAccount remoteAccount) throws Exception {
-            LoginersHolder.getLoginer(getOj()).login(remoteAccount);
+            LoginersHolder.getLoginer(getOjInfo().remoteOj).login(remoteAccount);
             DedicatedHttpClient client = dedicatedHttpClientFactory.build(getHost(), remoteAccount.getContext(), getCharset());
             return query(info, remoteAccount, client);
         }
@@ -57,7 +57,7 @@ public abstract class AuthenticatedQuerier implements Querier {
      * @return
      */
     protected HttpHost getHost() {
-        return getOj().mainHost;
+        return getOjInfo().mainHost;
     }
 
     /**
@@ -65,7 +65,7 @@ public abstract class AuthenticatedQuerier implements Querier {
      * @return
      */
     protected String getCharset() {
-        return getOj().defaultChaset;
+        return getOjInfo().defaultChaset;
     }
 
 }
