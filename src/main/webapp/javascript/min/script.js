@@ -3339,7 +3339,7 @@ if(!this.sh_languages){this.sh_languages={}}var sh_requests={};function sh_isEma
 		return;
 	}
 
-	DWREngine.setAsync(false);
+//	DWREngine.setAsync(false);
 
 	var beginTime = parseInt($("[name=beginTime]").val());
 	if (beginTime != NaN && beginTime > 0) {
@@ -3485,28 +3485,35 @@ if(!this.sh_languages){this.sh_languages={}}var sh_requests={};function sh_isEma
 	
 	/////////////////////////////////////////////////////////////////////////
 	
-	var problemInfo;
-	function callBack(_problemInfo){
-		problemInfo = _problemInfo;
-	}
-
 	var last;
 	function updateTitle($row, enforce){
-		if (!enforce && $("[name=probNums]", $row).val() == last)return;
-		last = $("[name=probNums]", $row).val();
-		judgeService.findProblemSimple($("[name=OJs]", $row).val(), $("[name=probNums]", $row).val(), callBack);
-		if (problemInfo == null){
-			$row.children().eq(-1).html("<span style='color:red'>No such problem!</span>");
-		} else {
-			$row.children().eq(-1).html("<a target='_blank' href='" + basePath + "/problem/viewProblem.action?id=" + problemInfo[0] + "'>" + problemInfo[1] + "</a>" + (problemInfo[2] == 2 ? "<span style='color:red'>(Crawl Failed)</span>" : problemInfo[2] == 1 ? "<span style='color:green'>(Crawling)</span>" : ""));
-			$("[name=pids]", $row).val(problemInfo[0]);
-			if (problemInfo[2] == 1) {
-			    setTimeout(function(){
-			        updateTitle($row, true);
-			    }, 1000);
-			}
-		}
-		updateNum();
+	    var oj = $("[name=OJs]", $row).val();
+	    var probNums = $("[name=probNums]", $row).val();
+	    
+		if (!enforce && probNums == last)return;
+		last = probNums;
+		judgeService.findProblemSimple(oj, probNums, function(problemInfo){
+            var _problemId = problemInfo[0];
+            var _problemTitle = problemInfo[1];
+            var _problemTimeLimit = problemInfo[2];
+            var _problemOJ = problemInfo[3];
+            var _problemNum = problemInfo[4];
+            
+            if (oj == _problemOJ && probNums.trim() == _problemNum) {
+                if (_problemId == null){
+                    $row.children().eq(-1).html("<span style='color:red'>No such problem!</span>");
+                } else {
+                    $row.children().eq(-1).html("<a target='_blank' href='" + basePath + "/problem/viewProblem.action?id=" + _problemId + "'>" + _problemTitle + "</a>" + (_problemTimeLimit == 2 ? "<span style='color:red'>(Crawl Failed)</span>" : _problemTimeLimit == 1 ? "<span style='color:green'>(Crawling)</span>" : ""));
+                    $("[name=pids]", $row).val(_problemId);
+                    if (_problemTimeLimit == 1) {
+                        setTimeout(function(){
+                            updateTitle($row, true);
+                        }, 1000);
+                    }
+                }
+                updateNum();
+            }
+		});
 	}
 
 	function updateNum(){
@@ -3529,7 +3536,8 @@ if(!this.sh_languages){this.sh_languages={}}var sh_requests={};function sh_isEma
 		}
 		$newRow = $originRow.clone();
 		$("[name=OJs]", $newRow).val($("[name=OJs]", $originRow).val());
-		$("[name=titles]", $newRow).val("");
+        $("[name=titles]", $newRow).val("");
+        $("td:eq(4), td:eq(5)", $newRow).html("");
 
 		$newRow.removeAttr("id");
 		$(":input", $newRow).removeAttr("id");

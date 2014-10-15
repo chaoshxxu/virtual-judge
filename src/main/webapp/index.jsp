@@ -44,6 +44,7 @@
 			<div style="line-height:20px;padding-top:5px;clear:both;">
 				<p>What's new:</p>
 				<ul>
+                    <li>2014-10-15  UI update. Please <a href="mailto:is.un@qq.com">contact me</a> if you find any bugs. Thanks very much!</li>
 					<li style="color:red;">
 					    2014-09-20  Currently Virtual Judge has two access address:<br />
 		                <ul>

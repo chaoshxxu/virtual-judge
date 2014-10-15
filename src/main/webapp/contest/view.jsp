@@ -6,10 +6,6 @@
     <head>
         <%@ include file="/header.jsp" %>
         <title><s:property value="contest.title" escape="false" /> - Virtual Judge</title>
-<%--          <style type="text/css" media="screen">
-            table.blue_border td {border:1px solid #A6C9E2;}
-        </style>
- --%>
 
 <%--         <link rel="stylesheet" type="text/css" href="${contextPath}/css/contest_view.css?<%=application.getAttribute("version")%>" /> --%>
 <%--         <script type="text/javascript" src="${contextPath}/javascript/contest_view.js?<%=application.getAttribute("version")%>"></script> --%>
@@ -18,7 +14,7 @@
     <body>
         <s:hidden id="js_require_view_contest" />
         <s:include value="/top.jsp" />
-        <s:if test="contest.announcement != null && !contest.announcement.isEmpty()">
+        <s:if test="contest.announcement != null && !contest.announcement.isEmpty() && contestAuthorizeStatus != 0">
             <marquee id="contest_announcement" height="25" style="text-align:center;color:red;font-weight:bold" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="alternate">${contest.announcement}</marquee>
         </s:if>
         <s:hidden id="cid" name="cid" />

@@ -164,13 +164,26 @@ public class JudgeService {
         problemInfoUpdateManager.updateProblem(OJ, problemId, false);
 
         Map paraMap = new HashMap<String, String>();
-        paraMap.put("OJ", OJ.trim());
+        paraMap.put("OJ", OJ);
         paraMap.put("pid", problemId.trim());
         List<Object[]> list = baseService.query("select p.id, p.title, p.timeLimit from Problem p where p.originOJ = :OJ and p.originProb = :pid", paraMap);
         if (!list.isEmpty()) {
-            return list.get(0);
+            return new Object[] { //
+                list.get(0)[0], //
+                list.get(0)[1], //
+                list.get(0)[2], //
+                OJ, //
+                problemId.trim() //
+            };
+        } else {
+            return new Object[] { //
+                null, //
+                null, //
+                null, //
+                OJ, //
+                problemId.trim() //
+            };
         }
-        return null;
     }
 
     /**
