@@ -3420,11 +3420,6 @@ if(!this.sh_languages){this.sh_languages={}}var sh_requests={};function sh_isEma
 					break;
 				}
 			}
-//			tmp = $trs.eq(i).children().eq(-1).html().charAt(1);
-//			if (tmp != 'a' && tmp != 'A'){
-//				err = 1;
-//				break;
-//			}
 			if ($trs.eq(i).find("td span").length > 0) {
                 err = 1;
                 break;

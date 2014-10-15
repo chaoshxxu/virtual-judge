@@ -2757,6 +2757,10 @@ div#title {
 	width: 100px;
 }
 
+/********************Top Menu*********************/
+#cssmenu > ul > li > a#my_account {
+	text-transform: none;
+}
 
 /********************listOL*********************/
 #listOL table {
