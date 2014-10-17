@@ -2722,11 +2722,11 @@ table.display {
 
 /*************** home page ******************/
 div#title {
-	margin: 22px;
 	text-align: center;
 	font-size: 32px;
 	font-family: "Courier New", Courier;
 	font-weight: bold;
+	margin: 0 auto 60px auto;
 }
 
 #ojs span {

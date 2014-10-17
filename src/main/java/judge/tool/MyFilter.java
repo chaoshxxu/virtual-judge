@@ -17,9 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 public class MyFilter implements Filter{
 
     private SessionContext myc;
-    
+
     private ForbiddenVisitorRuler forbiddenVisitorRuler;
-    
+
+    @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         if (forbiddenVisitorRuler == null) {
             forbiddenVisitorRuler = SpringBean.getBean("forbiddenVisitorRuler", ForbiddenVisitorRuler.class);
@@ -46,7 +47,7 @@ public class MyFilter implements Filter{
                 myc = SessionContext.getInstance();
                 session.invalidate();
                 myc.DelSession(session);
-                
+
                 response.sendRedirect("http://ip138.com/ips138.asp?ip=" + ip.replaceAll(",.+", ""));
                 return;
             }
@@ -64,8 +65,12 @@ public class MyFilter implements Filter{
                     session.setAttribute("referer", referer);
                 }
             }
+            if (session.getAttribute("country") == null) {
+                session.setAttribute("country", req.getLocale().getCountry());
+            }
+
             chain.doFilter(req, res);
-            
+
 //            Enumeration paramNames = request.getParameterNames();
 //            while (paramNames.hasMoreElements()) {
 //                String paramName = (String) paramNames.nextElement();
@@ -84,9 +89,11 @@ public class MyFilter implements Filter{
 
     }
 
+    @Override
     public void destroy() {
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
