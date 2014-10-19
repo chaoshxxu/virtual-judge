@@ -14,6 +14,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
@@ -180,7 +181,7 @@ public class Tools {
      * @return
      */
     public static String findClass4SHJS(String srcLang) {
-        srcLang = " " + srcLang.toLowerCase() + " ";
+        srcLang = " " + StringUtils.lowerCase(srcLang) + " ";
         if (srcLang.contains("c++") || srcLang.contains("cpp") || srcLang.contains("g++")){
             return "sh-cpp";
         } else if (srcLang.contains(" c ") || srcLang.contains("gcc")){
