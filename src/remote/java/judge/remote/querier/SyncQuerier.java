@@ -1,17 +1,15 @@
 package judge.remote.querier;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import judge.httpclient.DedicatedHttpClientFactory;
 import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.submitter.SubmissionInfo;
 import judge.tool.Handler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * No dependence on any other resource, just do it in invoking thread.
-
- * @author Isun
  *
+ * @author Isun
  */
 public abstract class SyncQuerier implements Querier {
 
@@ -29,7 +27,6 @@ public abstract class SyncQuerier implements Querier {
         }
         handler.handle(status);
     }
-    
 
     abstract protected SubmissionRemoteStatus query(SubmissionInfo info) throws Exception;
 

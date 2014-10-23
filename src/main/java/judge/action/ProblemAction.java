@@ -405,14 +405,16 @@ public class ProblemAction extends BaseAction{
 
             int submissionId = (Integer) o[0];
             try {
-                if (!statusType.finalized && statusType != RemoteStatusType.SUBMIT_FAILED_TEMP) {
-                    if (runningSubmissions.getFreezeLength(submissionId) > 300000L) {
+                if (!statusType.finalized) {
+                    long freezeThreshold = (statusType == RemoteStatusType.SUBMIT_FAILED_TEMP) ? Math.max(3600000L, System.currentTimeMillis() - (Long)o[8]) : 300000L;
+                    long freezeLength = runningSubmissions.getFreezeLength(submissionId);
+                    if ((freezeLength != Long.MAX_VALUE || statusType != RemoteStatusType.SUBMIT_FAILED_TEMP) && freezeLength > freezeThreshold) {
                         submission = (Submission) baseService.query(Submission.class, submissionId);
                         judgeService.rejudge(submission, false);
                     }
                 }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
+            } catch (Throwable t) {
+                log.error(t.getMessage(), t);
             }
 
             o[16] = runningSubmissions.contains(submissionId) ? 1 : 0; // 1-working 0-notWorking

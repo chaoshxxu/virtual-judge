@@ -654,7 +654,7 @@ public class ContestAction extends BaseAction {
         Session session = baseService.getSession();
         String encryptedPassword = (String) session.createQuery("select c.password from Contest c where c.id = " + cid).uniqueResult();
         baseService.releaseSession(session);
-        if (MD5.getMD5(password).equals(encryptedPassword)) {
+        if (StringUtils.equals(MD5.getMD5(password), encryptedPassword)) {
             httpSession.put("P" + cid, 1);
             httpSession.put("lpc", 1);    //Logged into Private Contest
             json = SUCCESS;

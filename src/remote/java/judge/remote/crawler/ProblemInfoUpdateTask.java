@@ -66,7 +66,6 @@ public class ProblemInfoUpdateTask extends Task<Void>{
                 _onError(t);
             }
         });
-            
         return null;
     }
     

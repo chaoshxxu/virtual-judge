@@ -5,14 +5,13 @@ import judge.tool.Handler;
 
 /**
  * Implementation should be stateless.
- * @author Isun
  *
+ * @author Isun
  */
 public interface Crawler extends RemoteOjAware {
-    
+
     /**
-     * 
-     * @param problemId 
+     * @param problemId
      * @param handler
      * @throws Exception
      */

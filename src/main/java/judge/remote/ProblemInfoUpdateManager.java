@@ -28,21 +28,21 @@ public class ProblemInfoUpdateManager {
 
     @Autowired
     private BaseService baseService;
-    
+
     @Autowired
     private JudgeService judgeService;
-    
+
     /**
      * OJ+PID -> lastTriggerTime
      */
     private ConcurrentHashMap<String, Date> triggerCache = new ConcurrentHashMap<String, Date>();
-    
+
     /**
      * (Re-)crawl problem if any of the following is satisfied:
      * 1. Haven't tried crawling for more than 7 days;
-     * 2. Haven't tried crawling for more than 10 minutes, since the last crawling, which failed,  
-     * 3. Enforce == true, and ((not crawling) or (crawling for more than 1 hour)) 
-     * 
+     * 2. Haven't tried crawling for more than 10 minutes, since the last crawling, which failed,
+     * 3. Enforce == true, and ((not crawling) or (crawling for more than 1 hour))
+     *
      * @param problem
      * @param enforce
      */
@@ -66,18 +66,18 @@ public class ProblemInfoUpdateManager {
             }
         }
     }
-    
+
     public void updateProblem(String remoteOj, String remoteProblemId, boolean enforce) {
         if (remoteOj == null || remoteProblemId == null || remoteProblemId.length() > 36) {
             log.error("Illegal remoteOJ or remoteProblemId");
             return;
         }
-        
+
         remoteOj = remoteOj.trim();
         remoteProblemId = remoteProblemId.trim();
-        
+
         Problem problem = judgeService.findProblem(remoteOj, remoteProblemId);
-        if (problem == null){
+        if (problem == null) {
             problem = new Problem();
             problem.setOriginOJ(remoteOj);
             problem.setOriginProb(remoteProblemId);
@@ -86,15 +86,15 @@ public class ProblemInfoUpdateManager {
         }
         updateProblem(problem, enforce);
     }
-    
+
 }
 
-class ProblemInfoUpdateTask extends Task<Void>{
+class ProblemInfoUpdateTask extends Task<Void> {
     private final static Logger log = LoggerFactory.getLogger(ProblemInfoUpdateTask.class);
 
     private Problem problem;
     private IBaseService baseService = SpringBean.getBean(BaseService.class);
-    
+
     public ProblemInfoUpdateTask(Problem problem) {
         super(ExecutorTaskType.UPDATE_PROBLEM_INFO);
         this.problem = problem;
@@ -119,7 +119,7 @@ class ProblemInfoUpdateTask extends Task<Void>{
                 problem.setMemoryLimit(info.memoryLimit);
                 problem.setSource(info.source);
                 problem.setUrl(info.url);
-                
+
                 Description description = getSystemDescription();
                 description.setDescription(info.description);
                 description.setInput(info.input);
@@ -128,7 +128,7 @@ class ProblemInfoUpdateTask extends Task<Void>{
                 description.setSampleOutput(info.sampleOutput);
                 description.setHint(info.hint);
                 description.setUpdateTime(new Date());
-                
+
                 baseService.addOrModify(problem);
                 baseService.addOrModify(description);
             }
@@ -139,10 +139,10 @@ class ProblemInfoUpdateTask extends Task<Void>{
                 _onError(t);
             }
         });
-            
+
         return null;
     }
-    
+
     private void _onError(Throwable t) {
         t.printStackTrace();
         if (problem.getDescriptions() == null || problem.getDescriptions().isEmpty()) {
@@ -153,11 +153,11 @@ class ProblemInfoUpdateTask extends Task<Void>{
             baseService.addOrModify(problem);
         }
     }
-    
+
     private Description getSystemDescription() {
         if (problem.getDescriptions() != null) {
             for (Description desc : problem.getDescriptions()) {
-                if ("0".equals(desc.getAuthor())){
+                if ("0".equals(desc.getAuthor())) {
                     return desc;
                 }
             }

@@ -116,7 +116,7 @@ $(function () {
         "searching": false,
         "ordering": false,
         "info": false,
-        "autoWidth": false,
+        "autoWidth": false
     });
 
     $("span.plainDate").each(function () {
@@ -124,6 +124,14 @@ $(function () {
     });
 
     $("#contest_opt a").button();
+
+    $("#delete_contest").click(function(){
+        if (confirm("Sure to delete this contest?")) {
+            $.post(basePath + '/contest/deleteContest.action?cid=' + cid, function(data) {
+                location.reload();
+            });
+        }
+    });
 
     $( "#dialog-form-contest-login" ).dialog({
         autoOpen: true,
@@ -541,7 +549,7 @@ $(function () {
             num: hash[2],
             res: hash[3]
         });
-        setQueryParam(queryParam)
+        setQueryParam(queryParam);
         
         $("[name='un']").val(queryParam.un);
         $("[name='num']").val(queryParam.num).selectmenu("refresh");
@@ -703,7 +711,7 @@ $(function () {
 
     /**
      * For status tab only
-     * @return {changed} whether hash changed
+     * @return {boolean} whether hash changed
      */
     function updateHash(triggerVar) {
         var un = $("[name='un']").val();
@@ -719,7 +727,7 @@ $(function () {
         var defaultQueryParam = {
             un : "",
             num : "-",
-            res : "0",
+            res : "0"
         };
         try {
             return Vjudge.storage.get("contest.status.queryParam", defaultQueryParam);
@@ -911,7 +919,7 @@ $(function () {
         });
 
         var result = [];
-        for (name in sb) {
+        for (var name in sb) {
             var solve = 0, penalty = 0;
             for (i in sb[name]) {
                 if (sb[name][i]) {
@@ -1117,7 +1125,7 @@ $(function () {
         var description = problem.descriptions[desc_index];
         $("[name=desc_index]").val(desc_index);
         $("div.hiddable").hide();
-        for (elem in description) {
+        for (var elem in description) {
             if (description[elem]) {
                 $("#vj_" + elem).show();
                 $("#vj_" + elem + " div").html(description[elem]);
@@ -1208,12 +1216,6 @@ $(function () {
             var m = Math.floor(time % 3600 / 60);
             var s = Math.floor(time % 60 + 0.5);
             return sign + h + ":" + (m<10?"0":"") + m + ":" + (s<10?"0":"") + s;
-        }
-    }
-
-    function comfirmDeleteContest(cid) {
-        if (confirm("Sure to delete this contest?")) {
-            location = basePath + '/contest/deleteContest.action?cid=' + cid;
         }
     }
 

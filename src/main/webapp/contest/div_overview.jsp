@@ -35,7 +35,7 @@
 		</s:if>
 		<s:if test="#session.visitor.sup == 1 || #session.visitor.id == contest.manager.id">
 			<a href="${contextPath}/contest/toEditContest.action?cid=${cid}">Edit</a>
-			<a href='javascript:void(0)' onclick='comfirmDeleteContest(${cid})'>Delete</a>
+			<a href='javascript:void(0)' id="delete_contest">Delete</a>
 			<s:if test="contestOver == 1">
 				<a href="${contextPath}/contest/exportSource.action?cid=${cid}">Export source code</a>
 			</s:if>

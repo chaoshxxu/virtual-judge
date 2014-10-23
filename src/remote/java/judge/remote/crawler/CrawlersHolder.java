@@ -1,11 +1,11 @@
 package judge.remote.crawler;
 
-import java.util.HashMap;
-import java.util.List;
-
 import judge.remote.RemoteOj;
 import judge.tool.SpringBean;
 import judge.tool.Tools;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class CrawlersHolder {
 
