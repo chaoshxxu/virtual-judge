@@ -1,5 +1,10 @@
 package judge.tool;
 
+import judge.bean.User;
+import judge.bean.UserSession;
+import judge.service.BaseService;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +23,14 @@ public class SessionListener implements HttpSessionListener {
 
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
         HttpSession session = httpSessionEvent.getSession();
+
+        UserSession userSession = (UserSession) session.getAttribute("user-session");
+        if (userSession != null) {
+            userSession.setReferer((String) session.getAttribute("referer"));
+            userSession.setLeaveTime(new Date());
+            SpringBean.getBean(BaseService.class).addOrModify(userSession);
+        }
+
         myc.DelSession(session);
     }
 }

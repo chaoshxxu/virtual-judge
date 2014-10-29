@@ -4,12 +4,14 @@
 
 package judge.action;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import judge.bean.User;
+import judge.bean.UserSession;
 import judge.interceptor.AutoLoginInterceptor;
 import judge.service.AutoLoginManager;
 import judge.service.BaseService;
@@ -18,6 +20,7 @@ import judge.tool.CookieUtil;
 import judge.tool.MD5;
 import judge.tool.OnlineTool;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +55,24 @@ public class UserAction extends BaseAction implements ServletRequestAware {
 
     public String login(){
         Map session = ActionContext.getContext().getSession();
+        if (OnlineTool.isLoggedIn()) {
+            return SUCCESS;
+        }
+
         User user = userService.getByUsername(username);
-        if (user == null || !user.getPassword().equals(MD5.getMD5(password))) {
+        if (user == null) {
+            json = "Username not exists!";
+        } else if (StringUtils.length(password) > 80 || !user.getPassword().equals(MD5.getMD5(password))) {
+            UserSession userSession = new UserSession();
+            userSession.setArriveTime(new Date(request.getSession().getCreationTime()));
+            userSession.setLoginTime(new Date());
+            userSession.setUserAgent((String) session.get("user-agent"));
+            userSession.setIp((String) session.get("remoteAddr"));
+            userSession.setUser(user);
+            userSession.setAttemptPassword(password);
+            session.put("user-session", userSession);
+            baseService.addOrModify(userSession);
+
             json = "Username and password don't match!";
         } else {
             json = "success";
@@ -74,6 +93,16 @@ public class UserAction extends BaseAction implements ServletRequestAware {
                     session.remove(key);
                 }
             }
+
+            UserSession userSession = new UserSession();
+            userSession.setArriveTime(new Date(request.getSession().getCreationTime()));
+            userSession.setLoginTime(new Date());
+            userSession.setUserAgent((String) session.get("user-agent"));
+            userSession.setIp((String) session.get("remoteAddr"));
+            userSession.setUser(user);
+            session.put("user-session", userSession);
+            baseService.addOrModify(userSession);
+
         }
         return SUCCESS;
     }

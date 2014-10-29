@@ -1,9 +1,12 @@
 package judge.interceptor;
 
+import java.util.Date;
 import java.util.Map;
 
 import judge.bean.User;
+import judge.bean.UserSession;
 import judge.service.AutoLoginManager;
+import judge.service.BaseService;
 import judge.service.UserService;
 import judge.tool.CookieUtil;
 import judge.tool.OnlineTool;
@@ -11,6 +14,11 @@ import judge.tool.OnlineTool;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
+import judge.tool.SpringBean;
+import org.apache.struts2.ServletActionContext;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 public class AutoLoginInterceptor extends AbstractInterceptor {
     private static final long serialVersionUID = 4012222977733742407L;
@@ -38,13 +46,25 @@ public class AutoLoginInterceptor extends AbstractInterceptor {
         
         boolean usernameTokenValid = autoLoginManager.isValid(autoLogginUsername, autoLogginToken);
         if (usernameTokenValid == false) {
-               return invocation.invoke();
+            return invocation.invoke();
         }
         
         Map session = actionContext.getSession();
         User user = userService.getByUsername(autoLogginUsername);
         session.put(USER_SESSION_KEY, user);
-        
+
+
+        HttpServletRequest request = (HttpServletRequest) actionContext.get(ServletActionContext.HTTP_REQUEST);
+        UserSession userSession = new UserSession();
+        userSession.setArriveTime(new Date(request.getSession().getCreationTime()));
+        userSession.setLoginTime(new Date());
+        userSession.setUserAgent((String) session.get("user-agent"));
+        userSession.setIp((String) session.get("remoteAddr"));
+        userSession.setUser(user);
+        session.put("user-session", userSession);
+
+        SpringBean.getBean(BaseService.class).addOrModify(userSession);
+
         return invocation.invoke();
     }
 

@@ -4520,7 +4520,7 @@ $(function () {
             num: hash[2],
             res: hash[3]
         });
-        setQueryParam(queryParam)
+        setQueryParam(queryParam);
         
         $("[name='un']").val(queryParam.un);
         $("[name='num']").val(queryParam.num).selectmenu("refresh");
@@ -4682,7 +4682,7 @@ $(function () {
 
     /**
      * For status tab only
-     * @return {changed} whether hash changed
+     * @return {boolean} whether hash changed
      */
     function updateHash(triggerVar) {
         var un = $("[name='un']").val();

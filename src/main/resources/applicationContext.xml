@@ -56,6 +56,7 @@
                 <value>judge/bean/User.hbm.xml</value>
                 <value>judge/bean/Description.hbm.xml</value>
                 <value>judge/bean/ReplayStatus.hbm.xml</value>
+                <value>judge/bean/UserSession.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -175,11 +176,5 @@
 
     <bean id="remoteAccountTaskExecutor" factory-bean="remoteAccountTaskExecutorFactory" factory-method="create"
         init-method="init" />
-
-
-    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager" p:cache-manager-ref="ehcache" />
-
-    <!-- EhCache library setup -->
-    <bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" p:config-location="classpath:ehcache.xml" />
 
 </beans>

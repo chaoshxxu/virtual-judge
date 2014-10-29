@@ -61,7 +61,11 @@ public class RemoteAccountTaskExecutor {
                     } catch (Throwable t) {
                         log.error(t.getMessage(), t);
                         if (task != null) {
-                            task.getHandler().onError(t);
+                            try {
+                                task.getHandler().onError(t);
+                            } catch (Throwable t1) {
+                                log.error(t.getMessage(), t1);
+                            }
                         }
                     }
                 }
