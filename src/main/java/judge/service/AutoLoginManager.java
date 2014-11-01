@@ -10,12 +10,15 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
+import com.google.gson.reflect.TypeToken;
 import judge.tool.LRUList;
 import judge.tool.RandomUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -24,7 +27,8 @@ import org.slf4j.LoggerFactory;
  */
 public class AutoLoginManager {
     private final static Logger log = LoggerFactory.getLogger(AutoLoginManager.class);
-    
+
+    private static final String repo_REDIS_KEY = "vjudge:AutoLoginManager:repo";
     private static final int MAX_TOKENS_PER_USER = 5;
     private static final int TOKEN_LENGTH = 30;
     private static final String TOKEN_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -47,10 +51,26 @@ public class AutoLoginManager {
     final ReadWriteLock lock = new ReentrantReadWriteLock();
     final Lock readLock = lock.readLock();
     final Lock writeLock = lock.writeLock();
-    
+
+    @Autowired
+    private JedisService jedisService;
+
     @PostConstruct
     public void init() {
-        repo = new ConcurrentHashMap<String, LRUList<String>>();
+        try {
+            repo = jedisService.get(repo_REDIS_KEY, new TypeToken<ConcurrentHashMap<String, LRUList<String>>>() {}.getType());
+        } catch (Throwable t) {
+        }
+        if (repo == null) {
+            repo = new ConcurrentHashMap<>();
+        }
+        log.info("repo.size = {}", repo.size());
+    }
+
+    @PreDestroy
+    public void destroy() {
+        jedisService.set(repo_REDIS_KEY, repo);
+        log.info("AutoLoginManager is persisted successfully!");
     }
     
     /**
@@ -87,7 +107,7 @@ public class AutoLoginManager {
         try {
             LRUList<String> tokens = repo.get(username);
             if (tokens == null) {
-                tokens = new LRUList<String>(MAX_TOKENS_PER_USER);
+                tokens = new LRUList<>(MAX_TOKENS_PER_USER);
                 repo.put(username, tokens);
             }
             token = RandomUtil.getRandomString(TOKEN_LENGTH, TOKEN_CHARSET);

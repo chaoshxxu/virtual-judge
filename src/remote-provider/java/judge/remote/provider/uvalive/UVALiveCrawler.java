@@ -1,37 +1,27 @@
 package judge.remote.provider.uvalive;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import judge.executor.CascadeTask;
 import judge.executor.ExecutorTaskType;
 import judge.executor.Task;
 import judge.httpclient.DedicatedHttpClient;
-import judge.httpclient.DedicatedHttpClientFactory;
 import judge.httpclient.HttpStatusValidator;
 import judge.httpclient.SimpleHttpResponse;
 import judge.remote.RemoteOjInfo;
 import judge.remote.crawler.RawProblemInfo;
 import judge.remote.crawler.SyncCrawler;
 import judge.tool.HtmlHandleUtil;
-import judge.tool.SpringBean;
 import judge.tool.Tools;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UVALiveCrawler extends SyncCrawler {
-    
-    private static UVALiveProblemIdMapHelper helper = new UVALiveProblemIdMapHelper();
+
+    @Autowired
+    private UVALiveProblemIdMapHelper helper;
 
     @Override
     public RemoteOjInfo getOjInfo() {
@@ -40,9 +30,11 @@ public class UVALiveCrawler extends SyncCrawler {
 
     @Override
     public RawProblemInfo crawl(final String problemId1) throws Exception {
+        Validate.isTrue(problemId1.matches("\\d{3,5}"));
+
         final String problemId2 = helper.getProblemId2(problemId1);
         Validate.isTrue(!StringUtils.isEmpty(problemId2));
-        
+
         final HttpHost host = new HttpHost("icpcarchive.ecs.baylor.edu", 443, "https");
         final DedicatedHttpClient client = dedicatedHttpClientFactory.build(host);
 
@@ -54,7 +46,7 @@ public class UVALiveCrawler extends SyncCrawler {
                 return HtmlHandleUtil.transformUrlToAbs(html, outerUrl);
             }
         };
-        
+
         Task<String> taskInner = new Task<String>(ExecutorTaskType.GENERAL) {
             @Override
             public String call() throws Exception {
@@ -70,7 +62,7 @@ public class UVALiveCrawler extends SyncCrawler {
                 }
             }
         };
-        
+
         taskOuter.submit();
         taskInner.submit();
         String htmlOuter = taskOuter.get();
@@ -80,12 +72,12 @@ public class UVALiveCrawler extends SyncCrawler {
         info.title = Tools.regFind(htmlOuter, "<h3>" + problemId1 + " - (.+?)</h3>").trim();
         info.timeLimit = Integer.parseInt(Tools.regFind(htmlOuter, "Time limit: ([\\d\\.]+)").replaceAll("\\.", ""));
         info.memoryLimit = 0;
-        info.source = Tools.regFind(htmlOuter, problemId1 + " - [^<>]*</h3>([\\s\\S]*?)<br />").trim();
+        info.source = Tools.regFind(htmlOuter, "<br />\\s*(.+)<br />\\s*<h3>" + problemId1).trim();
         info.url = outerUrl;
-        
-        String descriptionPrefix = 
+
+        String descriptionPrefix =
                 "<style type=\"text/css\">h1,h2,h3,h4,h5,h6{margin-bottom:0;}div.textBG p{margin: 0 0 0.0001pt;}</style>" +
-                "<span style='float:right'><a target='_blank' href='https://icpcarchive.ecs.baylor.edu/external/" + Integer.parseInt(problemId1) / 100 + "/" + problemId1 + ".pdf'><img width='100' height='26' border='0' title='Download as PDF' alt='Download as PDF' src='https://icpcarchive.ecs.baylor.edu/components/com_onlinejudge/images/button_pdf.png'></a></span><div style='clear:both'></div>";
+                        "<span style='float:right'><a target='_blank' href='https://icpcarchive.ecs.baylor.edu/external/" + Integer.parseInt(problemId1) / 100 + "/" + problemId1 + ".pdf'><img width='100' height='26' border='0' title='Download as PDF' alt='Download as PDF' src='https://icpcarchive.ecs.baylor.edu/components/com_onlinejudge/images/button_pdf.png'></a></span><div style='clear:both'></div>";
         String sampleInput = Tools.regFind(htmlInner, "Sample Int?put</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*?)<H2><FONT size=\"4\" COLOR=\"#ff0000\"><A NAME=\"SECTION000100\\d000000000000000\"");
         String sampleOutput = Tools.regFind(htmlInner, "Sample Output</A>&nbsp;</FONT>\\s*</H2>([\\s\\S]*)");
         if (StringUtils.isEmpty(sampleInput) || StringUtils.isEmpty(sampleOutput)) {
@@ -97,98 +89,7 @@ public class UVALiveCrawler extends SyncCrawler {
             info.sampleInput = sampleInput;
             info.sampleOutput = sampleOutput;
         }
-        
+
         return info;
     }
-}
-
-/**
- * <pre>
- * UVA live has two standards of "problem id".
- * For example, to access the problem "2000 - Wrap it up", you need to know another magic number other than "2000", it's "1".
- * 
- * The URL pointing to the page containing problem title and time limit is:
- * https://icpcarchive.ecs.baylor.edu/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=1 
- * 
- * The URL pointing to the page containing description is:
- * https://icpcarchive.ecs.baylor.edu/external/20/2000.html
- * 
- * This class helps to get "1" given "2000".
- * To distinguish them, I'd like to call "2000" problem_id_1, and call "1" problem_id_2.
- * </pre>
- * 
- * @author Isun
- * 
- */
-class UVALiveProblemIdMapHelper {
-    private final static Logger log = LoggerFactory.getLogger(UVALiveProblemIdMapHelper.class);
-
-    private Map<String, String> problemIdMap = new ConcurrentHashMap<String, String>();
-    private long lastUpdateTime;
-    
-    public synchronized String getProblemId2(String problemId1) throws InterruptedException, ExecutionException {
-        if (!problemIdMap.containsKey(problemId1) && System.currentTimeMillis() - lastUpdateTime > 3600000L) {
-            lastUpdateTime = System.currentTimeMillis();
-            
-            UVALiveProblemIdCrawlTask task = new UVALiveProblemIdCrawlTask(0, problemIdMap, new ConcurrentHashMap<Integer, Boolean>());
-            
-            long begin = System.currentTimeMillis();
-            task.get();
-            log.info("UVA live problem id map init cost " + (System.currentTimeMillis() - begin) + "ms");
-        }
-        return problemIdMap.get(problemId1);
-    }
-}
-
-class UVALiveProblemIdCrawlTask extends CascadeTask<Boolean> {
-    private final static Logger log = LoggerFactory.getLogger(UVALiveProblemIdCrawlTask.class);
-
-    private int category;
-    private Map<String, String> problemIdMap;
-    private Map<Integer, Boolean> visitedCategories;
-
-    public UVALiveProblemIdCrawlTask(
-            int category, 
-            Map<String, String> problemIdMap, 
-            Map<Integer, Boolean> visitedCategories) {
-        super(ExecutorTaskType.INIT_UVA_LIVE_PROBLEM_ID_MAP);
-        this.category = category;
-        this.problemIdMap = problemIdMap;
-        this.visitedCategories = visitedCategories;
-    }
-
-    @Override
-    public Boolean call() {
-        if (visitedCategories.containsKey(category)) {
-            return null;
-        }
-        visitedCategories.put(category, true);
-        
-        log.info("> UVA live problem id mapping, category = " + category);
-        
-        HttpHost host = new HttpHost("icpcarchive.ecs.baylor.edu", 443, "https");
-        DedicatedHttpClient client = SpringBean.getBean(DedicatedHttpClientFactory.class).build(host);
-        String listPageUrl = "/index.php?option=com_onlinejudge&Itemid=8&limit=1000&limitstart=0&category=" + category;
-
-        String html = client.get(listPageUrl, HttpStatusValidator.SC_OK).getBody();
-        
-        // 1. find problem
-        Matcher matcher = Pattern.compile("problem=(\\d+)\">(\\d+)").matcher(html);
-        while (matcher.find()) {
-            String problemId1 = matcher.group(2);
-            String problemId2 = matcher.group(1);
-            problemIdMap.put(problemId1, problemId2);
-        }
-        
-        // 2. find sub-category
-        matcher = Pattern.compile("category=(\\d+)").matcher(html);
-        while (matcher.find()) {
-            int newCategory = Integer.parseInt(matcher.group(1));
-            UVALiveProblemIdCrawlTask childTask = new UVALiveProblemIdCrawlTask(newCategory, problemIdMap, visitedCategories);
-            addChildTask(childTask);
-        }
-        log.info("< UVA live problem id mapping, category = " + category);
-        return null;
-    }
-
 }

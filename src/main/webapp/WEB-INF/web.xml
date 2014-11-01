@@ -57,7 +57,7 @@
         <url-pattern>*.action</url-pattern>
     </filter-mapping>
     <session-config>
-        <session-timeout>180</session-timeout>
+        <session-timeout>60</session-timeout>
     </session-config>
     <welcome-file-list>
         <welcome-file>/welcome.jsp</welcome-file>

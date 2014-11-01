@@ -202,6 +202,13 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.6.0</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -258,9 +265,9 @@
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <executable>${JAVA_HOME}/bin/javac</executable>
-                    <compilerVersion>1.6</compilerVersion>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <compilerVersion>1.7</compilerVersion>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -288,7 +295,7 @@
             <plugin>
                 <groupId>com.samaxes.maven</groupId>
                 <artifactId>minify-maven-plugin</artifactId>
-                <version>1.6.2</version>
+                <version>1.7.4</version>
                 <executions>
                     <execution>
                         <id>default-minify</id>
@@ -361,19 +368,6 @@
     </build>
     <reporting>
         <plugins>
-            <plugin>
-                <!-- http://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <charset>UTF-8</charset>
-                    <docencoding>UTF-8</docencoding>
-                    <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-                    <show>protected</show>
-                </configuration>
-            </plugin>
         </plugins>
     </reporting>
 

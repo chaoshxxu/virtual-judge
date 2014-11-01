@@ -45,7 +45,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
     private String newpassword;
     private String redir;
     private HttpServletRequest request;
-    
+
     private AutoLoginManager autoLoginManager;
 
     @Autowired
