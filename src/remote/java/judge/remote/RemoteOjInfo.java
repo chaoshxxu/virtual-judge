@@ -25,6 +25,8 @@ public class RemoteOjInfo {
 
     public String faviconUrl = "images/remote_oj/icon-icpc-small.gif";
 
+    public String _64IntIoFormat;
+
     //////////////////////////////////////////////////////////////////////////////
 
     public RemoteOjInfo(RemoteOj remoteOj, String literal, HttpHost mainHost) {

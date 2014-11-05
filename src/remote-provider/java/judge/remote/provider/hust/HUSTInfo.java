@@ -15,5 +15,6 @@ public class HUSTInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/HUST_icon.jpg";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 }

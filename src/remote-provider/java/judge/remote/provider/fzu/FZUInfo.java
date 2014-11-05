@@ -15,5 +15,6 @@ public class FZUInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/FZU_favicon.gif";
+        INFO._64IntIoFormat = "%I64d & %I64u";
     }
 }

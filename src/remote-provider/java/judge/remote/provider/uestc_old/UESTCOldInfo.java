@@ -13,4 +13,8 @@ public class UESTCOldInfo {
             new HttpHost("acm.uestc.edu.cn") //
     );
 
+    static {
+        INFO._64IntIoFormat = "%lld & %llu";
+    }
+
 }

@@ -16,6 +16,7 @@ public class SCUInfo {
     static {
         INFO.defaultChaset = "GBK";
         INFO.faviconUrl = "images/remote_oj/SCU_favicon.ico";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 
 }

@@ -15,5 +15,6 @@ public class SGUInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/SGU_favicon.ico";
+        INFO._64IntIoFormat = "%I64d & %I64u";
     }
 }

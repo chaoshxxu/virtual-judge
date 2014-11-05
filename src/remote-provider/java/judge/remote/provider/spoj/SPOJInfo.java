@@ -16,6 +16,7 @@ public class SPOJInfo {
     static {
         INFO.defaultChaset = "ISO-8859-1";
         INFO.faviconUrl = "images/remote_oj/SPOJ_favicon.png";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 
 }

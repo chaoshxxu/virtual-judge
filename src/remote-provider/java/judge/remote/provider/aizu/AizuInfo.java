@@ -15,6 +15,7 @@ public class AizuInfo {
 
     static {
         INFO.faviconUrl = "images/remote_oj/Aizu_favicon.ico";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
     
 }

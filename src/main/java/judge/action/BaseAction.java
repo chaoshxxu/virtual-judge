@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import judge.remote.RemoteOjInfo;
+import judge.remote.provider.acdream.ACdreamInfo;
 import judge.remote.provider.aizu.AizuInfo;
 import judge.remote.provider.codeforces.CodeForcesInfo;
 import judge.remote.provider.csu.CSUInfo;
@@ -42,26 +43,16 @@ import com.opensymphony.xwork2.ActionSupport;
  *
  */
 public class BaseAction extends ActionSupport implements ParameterAware {
-
     private static final long serialVersionUID = 1L;
     
     protected Map<String, String[]> paraMap;
-
-//    protected Integer start = 0;
-//    protected Integer length = 25;
-//    protected String sSearch;
-//    protected Integer iSortingCols;
-//    protected Integer iSortCol_0;
-//    protected String sSortDir_0;
-//    protected Integer draw;
-
     protected Object json;
 
     protected IBaseService baseService;
     protected JudgeService judgeService;
 
-    static public List<RemoteOjInfo> OJList = new ArrayList<RemoteOjInfo>();
-    static public List<String> OJListLiteral = new ArrayList<String>();
+    static public List<RemoteOjInfo> OJList = new ArrayList<>();
+    static public List<String> OJListLiteral = new ArrayList<>();
     static {
         OJList.add(POJInfo.INFO);
         OJList.add(ZOJInfo.INFO);
@@ -83,6 +74,7 @@ public class BaseAction extends ActionSupport implements ParameterAware {
         OJList.add(FZUInfo.INFO);
         OJList.add(CSUInfo.INFO);
         OJList.add(SCUInfo.INFO);
+        OJList.add(ACdreamInfo.INFO);
         Collections.sort(OJList, new Comparator<RemoteOjInfo>() {
             @Override
             public int compare(RemoteOjInfo oj1, RemoteOjInfo oj2) {
@@ -95,34 +87,11 @@ public class BaseAction extends ActionSupport implements ParameterAware {
         }
     }
 
-//    static private List<String> OJListAll = new ArrayList<String>();
-//    static {
-//        OJListAll.add("All");
-//        OJListAll.addAll(OJList);
-//    }
-
-    static public Map<String, String> lf = new HashMap<String, String>();
+    static public Map<String, String> lf = new HashMap<>();
     static {
-        lf.put("POJ", "%I64d & %I64u");
-        lf.put("ZOJ", "%lld & %llu");
-        lf.put("UVALive", "%lld & %llu");
-        lf.put("SGU", "%I64d & %I64u");
-        lf.put("URAL", "%I64d & %I64u");
-        lf.put("HUST", "%lld & %llu");
-        lf.put("SPOJ", "%lld & %llu");
-        lf.put("HDU", "%I64d & %I64u");
-        lf.put("HYSBZ", "%lld & %llu");
-        lf.put("UVA", "%lld & %llu");
-        lf.put("CodeForces", "%I64d & %I64u");
-        lf.put("Z-Trening", "%lld & %llu");
-        lf.put("Aizu", "%lld & %llu");
-        lf.put("LightOJ", "%lld & %llu");
-        lf.put("UESTC-old", "%lld & %llu");
-        lf.put("UESTC", "%lld & %llu");
-        lf.put("NBUT", "%I64d & %I64u");
-        lf.put("FZU", "%I64d & %I64u");
-        lf.put("CSU", "%lld & %llu");
-        lf.put("SCU", "%lld & %llu");
+        for (RemoteOjInfo oj : OJList) {
+            lf.put(oj.toString(), oj._64IntIoFormat);
+        }
     }
     
     @Override
@@ -135,54 +104,9 @@ public class BaseAction extends ActionSupport implements ParameterAware {
         return ArrayUtils.isEmpty(_value) ? null : _value[0];
     }
 
-//    public Integer getStart() {
-//        return start;
-//    }
-//    public void setStart(Integer start) {
-//        this.start = start;
-//    }
-//    public Integer getLength() {
-//        return length;
-//    }
-//    public void setLength(Integer length) {
-//        this.length = length;
-//    }
-//    public Integer getDraw() {
-//        return draw;
-//    }
-//    public void setDraw(Integer draw) {
-//        this.draw = draw;
-//    }
-//    public String getSSearch() {
-//        return sSearch;
-//    }
-//    public void setSSearch(String search) {
-//        sSearch = search;
-//    }
-//    public Integer getISortingCols() {
-//        return iSortingCols;
-//    }
-//    public void setISortingCols(Integer sortingCols) {
-//        iSortingCols = sortingCols;
-//    }
-//    public Integer getISortCol_0() {
-//        return iSortCol_0;
-//    }
-//    public void setISortCol_0(Integer sortCol_0) {
-//        iSortCol_0 = sortCol_0;
-//    }
-//    public String getSSortDir_0() {
-//        return sSortDir_0;
-//    }
-//    public void setSSortDir_0(String sortDir_0) {
-//        sSortDir_0 = sortDir_0;
-//    }
     public List getOJList() {
         return OJList;
     }
-//    public List getOJListAll() {
-//        return OJListAll;
-//    }
     public IBaseService getBaseService() {
         return baseService;
     }

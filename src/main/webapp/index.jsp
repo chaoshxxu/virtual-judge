@@ -74,6 +74,7 @@
                 <span><a href="http://acm.fzu.edu.cn/" target="_blank"><img src="${contextPath}/images/remote_oj/FZU_favicon.gif" />FZU</a></span>
                 <span><a href="http://acm.csu.edu.cn/OnlineJudge/" target="_blank"><img src="${contextPath}/images/remote_oj/CSU_favicon.ico" />CSU</a></span>
                 <span><a href="http://cstest.scu.edu.cn/" target="_blank"><img src="${contextPath}/images/remote_oj/SCU_favicon.ico" />SCU</a></span>
+                <span><a href="http://acdream.info/" target="_blank"><img src="${contextPath}/images/remote_oj/ACdream_favicon.ico" />ACdream</a></span>
             </div>
             <div style="line-height:20px;padding-top:5px;clear:both;">
                 <p>What's new:</p>

@@ -17,6 +17,7 @@ public class HDUInfo {
         INFO.defaultChaset = "gb2312";
         INFO.maxInactiveInterval = 60000L;
         INFO.faviconUrl = "images/remote_oj/HDU_icon.png";
+        INFO._64IntIoFormat = "%I64d & %I64u";
     }
 
 }

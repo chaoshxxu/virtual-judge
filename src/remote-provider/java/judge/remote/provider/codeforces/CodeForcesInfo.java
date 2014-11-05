@@ -15,5 +15,6 @@ public class CodeForcesInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/CodeForces_favicon.png";
+        INFO._64IntIoFormat = "%I64d & %I64u";
     }
 }

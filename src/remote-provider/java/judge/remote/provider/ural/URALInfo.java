@@ -15,6 +15,7 @@ public class URALInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/URAL_favicon.ico";
+        INFO._64IntIoFormat = "%I64d & %I64u";
     }
 
 }

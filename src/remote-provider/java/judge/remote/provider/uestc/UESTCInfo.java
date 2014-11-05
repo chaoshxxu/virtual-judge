@@ -15,5 +15,6 @@ public class UESTCInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/UESTC_favicon.png";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 }

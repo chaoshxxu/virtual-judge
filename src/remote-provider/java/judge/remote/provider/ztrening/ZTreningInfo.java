@@ -12,5 +12,9 @@ public class ZTreningInfo {
             "Z-Trening", //
             new HttpHost("www.z-trening.com") //
     );
+
+    static {
+        INFO._64IntIoFormat = "%lld & %llu";
+    }
     
 }

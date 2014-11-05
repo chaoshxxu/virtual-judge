@@ -2,7 +2,8 @@ package judge.remote;
 
 
 public enum RemoteOj {
-    
+
+    ACdream, //
     Aizu, //
     CodeForces, //
     CSU, //

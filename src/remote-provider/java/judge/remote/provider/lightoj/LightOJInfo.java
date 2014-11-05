@@ -15,6 +15,7 @@ public class LightOJInfo {
     
     static {
         INFO.maxInactiveInterval = 0;
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 
 }
