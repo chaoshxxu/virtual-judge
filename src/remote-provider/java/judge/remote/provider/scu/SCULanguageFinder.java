@@ -33,7 +33,7 @@ public class SCULanguageFinder implements LanguageFinder {
         languageList.put("C++ (G++-3)", "C++ (G++-3)");
         languageList.put("C (GCC-3)", "C (GCC-3)");
         languageList.put("JAVA", "JAVA");
-        languageList.put("PASCAL (GPC)", "PASCAL (GPC)");
+        languageList.put("PASCAL (FPC)", "PASCAL (FPC)");
         return languageList;
     }
 

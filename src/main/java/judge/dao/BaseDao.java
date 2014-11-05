@@ -7,10 +7,13 @@ import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 @SuppressWarnings("unchecked")
 public class BaseDao extends HibernateDaoSupport implements IBaseDao {
+    private final static Logger log = LoggerFactory.getLogger(BaseDao.class);
 
     public void addOrModify(Object entity) {
         Session session = super.getSession();
@@ -19,7 +22,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
             sessionAddOrModify(session, entity);
             tx.commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             tx.rollback();
         } finally {
             super.releaseSession(session);
@@ -44,7 +47,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
             session.createQuery(statement).executeUpdate();
             tx.commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             tx.rollback();
         } finally {
             super.releaseSession(session);
@@ -58,7 +61,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
             session.createQuery(statement).setProperties(parMap).executeUpdate();
             tx.commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             tx.rollback();
         } finally {
             super.releaseSession(session);
@@ -85,7 +88,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
         try {
             list = session.createQuery(queryString).setFirstResult(FirstResult).setMaxResults(MaxResult).list();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             super.releaseSession(session);
         }
@@ -98,7 +101,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
         try {
             list = session.createQuery(hql).setProperties(parMap).list();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             super.releaseSession(session);
         }
@@ -111,7 +114,7 @@ public class BaseDao extends HibernateDaoSupport implements IBaseDao {
         try {
             list = session.createQuery(hql).setProperties(parMap).setFirstResult(FirstResult).setMaxResults(MaxResult).list();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             super.releaseSession(session);
         }

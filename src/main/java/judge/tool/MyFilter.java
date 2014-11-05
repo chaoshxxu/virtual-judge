@@ -13,8 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyFilter implements Filter{
+    private final static Logger log = LoggerFactory.getLogger(MyFilter.class);
 
     private SessionContext myc;
 
@@ -84,7 +87,7 @@ public class MyFilter implements Filter{
 //            log.info("");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
     }

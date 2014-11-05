@@ -16,6 +16,8 @@ import judge.tool.Handler;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Containing remote accounts dedicating to one remote OJ
@@ -23,29 +25,30 @@ import org.apache.http.protocol.HttpContext;
  *
  */
 public class RemoteAccountRepository {
-    
+    private final static Logger log = LoggerFactory.getLogger(RemoteAccountRepository.class);
+
     private final RemoteOj remoteOj;
 
     /**
      * accountId -> acountStatus
      */
-    private final Map<String, RemoteAccountStatus> publicRepo = new HashMap<String, RemoteAccountStatus>();
+    private final Map<String, RemoteAccountStatus> publicRepo = new HashMap<>();
     
     /**
      * accountId -> acountStatus
      */
-    private final Map<String, RemoteAccountStatus> privateRepo = new HashMap<String, RemoteAccountStatus>();
+    private final Map<String, RemoteAccountStatus> privateRepo = new HashMap<>();
     
     /**
      * accountId == null, meaning any account is OK.
      */
-    private final LinkedList<RemoteAccountTask<?>> normalBacklog = new LinkedList<RemoteAccountTask<?>>();
+    private final LinkedList<RemoteAccountTask<?>> normalBacklog = new LinkedList<>();
     
     /**
      * accountId != null, meaning specifying an account.
      * accountId -> tasks
      */
-    private final Map<String, LinkedList<RemoteAccountTask<?>>> pickyBacklog = new HashMap<String, LinkedList<RemoteAccountTask<?>>>();
+    private final Map<String, LinkedList<RemoteAccountTask<?>>> pickyBacklog = new HashMap<>();
     
     private final RemoteAccountTaskExecutor remoteAuthTaskExecutor;
     
@@ -80,7 +83,7 @@ public class RemoteAccountRepository {
         Validate.isTrue(account.getRemoteOj().equals(remoteOj));
         String accountId = account.getAccountId();
         
-        RemoteAccountStatus accountStatus = null;
+        RemoteAccountStatus accountStatus;
         if (publicRepo.containsKey(accountId)) {
             accountStatus = publicRepo.get(accountId);
         } else if (privateRepo.containsKey(accountId)) {
@@ -108,7 +111,7 @@ public class RemoteAccountRepository {
 
     private boolean tryBacklog(LinkedList<RemoteAccountTask<?>> backlog) {
         for (Iterator<RemoteAccountTask<?>> iterator = backlog.iterator(); iterator.hasNext();) {
-            RemoteAccountTask<?> task = (RemoteAccountTask<?>) iterator.next();
+            RemoteAccountTask<?> task = iterator.next();
             RemoteAccount account = findAccount(task.getAccountId(), task.getExclusiveCode());
             if (account != null) {
                 iterator.remove();
@@ -137,19 +140,19 @@ public class RemoteAccountRepository {
         }
         LinkedList<RemoteAccountTask<?>> picky = pickyBacklog.get(accountId);
         if (picky == null) {
-            picky = new LinkedList<RemoteAccountTask<?>>();
+            picky = new LinkedList<>();
             pickyBacklog.put(accountId, picky);
         }
         picky.add(task);
     }
     
     private RemoteAccount findAccount(String accountId, String exclusiveCode) {
-        List<RemoteAccountStatus> candidates = new ArrayList<RemoteAccountStatus>();
+        List<RemoteAccountStatus> candidates = new ArrayList<>();
         if (accountId == null) {
             candidates.addAll(publicRepo.values());
-        } else if (accountId != null && publicRepo.containsKey(accountId)) {
+        } else if (publicRepo.containsKey(accountId)) {
             candidates.add(publicRepo.get(accountId));
-        } else if (accountId != null && privateRepo.containsKey(accountId)) {
+        } else if (privateRepo.containsKey(accountId)) {
             candidates.add(privateRepo.get(accountId));
         }
         Collections.shuffle(candidates);
@@ -186,7 +189,7 @@ public class RemoteAccountRepository {
                         task.offerResult(result);
                     }
                 } catch (Throwable t) {
-                    t.printStackTrace();
+                    log.error(t.getMessage(), t);
                 } finally {
                     task.done();
                     remoteAuthTaskExecutor.submit(task);

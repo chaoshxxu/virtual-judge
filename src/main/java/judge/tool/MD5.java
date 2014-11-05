@@ -1,5 +1,8 @@
 package judge.tool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * MD5的算法在RFC1321 中定义 在RFC 1321中，给出了Test suite用来检验你的实现是否正确： MD5 ("") =
  * d41d8cd98f00b204e9800998ecf8427e MD5 ("a") = 0cc175b9c0f1b6a831c399e269772661
@@ -12,6 +15,8 @@ package judge.tool;
  *         传入参数：一个字节数组 传出参数：字节数组的 MD5 结果字符串
  */
 public class MD5 {
+    private final static Logger log = LoggerFactory.getLogger(MD5.class);
+
     public static String getMD5(String input) {
         String s = null;
         char hexDigits[] = { // 用来将字节转换成 16 进制表示的字符
@@ -46,7 +51,7 @@ public class MD5 {
             s = new String(str); // 换后的结果转换为字符串
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return s;
     }

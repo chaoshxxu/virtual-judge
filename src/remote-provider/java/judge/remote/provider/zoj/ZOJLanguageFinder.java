@@ -29,15 +29,16 @@ public class ZOJLanguageFinder implements LanguageFinder {
 
     @Override
     public LinkedHashMap<String, String> getDefaultLanguages() {
-        LinkedHashMap<String, String> languageList = new LinkedHashMap<String, String>();
-        languageList.put("1", "C (gcc 4.4.5)");
-        languageList.put("2", "C++ (g++ 4.4.5)");
-        languageList.put("3", "FPC (fpc 2.4.0)");
-        languageList.put("4", "Java (java 1.6.0)");
-        languageList.put("5", "Python (Python 2.6.6)");
-        languageList.put("6", "Perl (Perl 5.10.1)");
-        languageList.put("7", "Scheme (Guile 1.8.7)");
-        languageList.put("8", "PHP (PHP 5.3.2)");
+        LinkedHashMap<String, String> languageList = new LinkedHashMap<>();
+        languageList.put("1", "C (gcc 4.7.2)");
+        languageList.put("2", "C++ (g++ 4.7.2)");
+        languageList.put("3", "FPC (fpc 2.6.0)");
+        languageList.put("4", "Java (java 1.7.0)");
+        languageList.put("5", "Python (Python 2.7.3)");
+        languageList.put("6", "Perl (Perl 5.14.2)");
+        languageList.put("7", "Scheme (Guile 1.8.8)");
+        languageList.put("8", "PHP (PHP 5.4.4)");
+        languageList.put("9", "C++0x (g++ 4.7.2)");
         return languageList;
     }
 

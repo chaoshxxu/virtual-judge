@@ -29,7 +29,7 @@ public class UESTCLanguageFinder implements LanguageFinder {
 
     @Override
     public LinkedHashMap<String, String> getDefaultLanguages() {
-        LinkedHashMap<String, String> languageList = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> languageList = new LinkedHashMap<>();
         languageList.put("1", "C");
         languageList.put("2", "C++");
         languageList.put("3", "Java");

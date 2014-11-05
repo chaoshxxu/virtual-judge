@@ -31,9 +31,17 @@ public class AizuLanguageFinder implements LanguageFinder {
     @Override
     public LinkedHashMap<String, String> getDefaultLanguages() {
         LinkedHashMap<String, String> languageList = new LinkedHashMap<String, String>();
-        languageList.put("C++", "C++");
         languageList.put("C", "C");
+        languageList.put("C++", "C++");
         languageList.put("JAVA", "JAVA");
+        languageList.put("C++11", "C++11");
+        languageList.put("C#", "C#");
+        languageList.put("D", "D");
+        languageList.put("Ruby", "Ruby");
+        languageList.put("Python", "Python");
+        languageList.put("Python3", "Python3");
+        languageList.put("PHP", "PHP");
+        languageList.put("JavaScript", "JavaScript");
         return languageList;
     }
 

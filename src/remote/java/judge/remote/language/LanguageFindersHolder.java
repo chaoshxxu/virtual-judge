@@ -6,10 +6,13 @@ import java.util.List;
 import judge.remote.RemoteOj;
 import judge.tool.SpringBean;
 import judge.tool.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LanguageFindersHolder {
+    private final static Logger log = LoggerFactory.getLogger(LanguageFindersHolder.class);
 
-    private static HashMap<RemoteOj, LanguageFinder> finders = new HashMap<RemoteOj, LanguageFinder>();
+    private static final HashMap<RemoteOj, LanguageFinder> finders = new HashMap<>();
 
     public static LanguageFinder getLanguageFinder(RemoteOj remoteOj) {
         if (!finders.containsKey(remoteOj)) {
@@ -22,7 +25,7 @@ public class LanguageFindersHolder {
                             finders.put(crawler.getOjInfo().remoteOj, crawler);
                         }
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        log.error(t.getMessage(), t);
                         System.exit(-1);
                     }
                 }

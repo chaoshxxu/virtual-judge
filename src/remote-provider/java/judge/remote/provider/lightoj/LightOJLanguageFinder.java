@@ -34,7 +34,6 @@ public class LightOJLanguageFinder implements LanguageFinder {
         languageList.put("C++", "C++");
         languageList.put("JAVA", "JAVA");
         languageList.put("PASCAL", "PASCAL");
-        languageList.put("PYTHON", "PYTHON");
         return languageList;
     }
 

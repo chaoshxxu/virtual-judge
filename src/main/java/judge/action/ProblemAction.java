@@ -493,7 +493,7 @@ public class ProblemAction extends BaseAction{
             }
             tx.commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             tx.rollback();
         } finally {
             baseService.releaseSession(session);

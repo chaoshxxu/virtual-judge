@@ -303,7 +303,7 @@ public class JudgeService {
         try {
             contest = (Contest) baseService.query("select contest from Contest contest left join fetch contest.manager where contest.id = " + cid).get(0);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             Map res = new HashMap();
             res.put("cid", cid);
             res.put("length", 0);
@@ -491,7 +491,7 @@ public class JudgeService {
         try {
             result = Tools.splitCellsFromExcel(file);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
         if (result == null) {

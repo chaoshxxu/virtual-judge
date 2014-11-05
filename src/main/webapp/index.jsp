@@ -37,6 +37,7 @@
 			<s:if test='#session.country == "CN"'>
 				<div style="float: right; width: 450px; padding-top: 10px;">
 					<wb:like appkey="cAvMG" type="text">test</wb:like>
+                    <wb:follow-button uid="5340553087" type="red_3" width="100%" height="24" ></wb:follow-button>
 				</div>
 			</s:if>
 			<s:else>

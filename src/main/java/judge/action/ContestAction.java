@@ -365,7 +365,7 @@ public class ContestAction extends BaseAction {
                     descList.add(description);
                     problem = description.getProblem();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                     this.addActionError("Problem " + pids.get(i) + " doesn't exist!");
                     return;
                 }
@@ -376,7 +376,7 @@ public class ContestAction extends BaseAction {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             this.addActionError("Unknown error");
             return;
         } finally {
@@ -470,7 +470,7 @@ public class ContestAction extends BaseAction {
                 ranklistCells = judgeService.splitCells(ranklistFile, pids.size());
                 cellMeaningOptions = judgeService.getCellMeaningOptions(ranklistCells, contest.getEndTime().getTime() - contest.getBeginTime().getTime());
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 this.addActionError(e.getMessage());
                 return INPUT;
             }
@@ -515,7 +515,7 @@ public class ContestAction extends BaseAction {
             session.remove("contest");
             cid = contest.getId();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             this.addActionError(e.getMessage());
             return INPUT;
         }
@@ -636,7 +636,7 @@ public class ContestAction extends BaseAction {
             }
             tx.commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             tx.rollback();
         } finally {
             baseService.releaseSession(session);
@@ -676,7 +676,7 @@ public class ContestAction extends BaseAction {
         try {
             cproblem = (Cproblem) session.createQuery("select cproblem from Cproblem cproblem left join fetch cproblem.problem left join fetch cproblem.contest where cproblem.num = :num and cproblem.contest.id = :cid").setParameter("num", num).setParameter("cid", cid).uniqueResult();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             json = "No such problem";
             return SUCCESS;
         } finally {
@@ -907,7 +907,7 @@ public class ContestAction extends BaseAction {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             baseService.releaseSession(session);
         }
@@ -1059,7 +1059,7 @@ public class ContestAction extends BaseAction {
                 ranklistCells = judgeService.splitCells(ranklistFile, pids.size());
                 cellMeaningOptions = judgeService.getCellMeaningOptions(ranklistCells, contest.getEndTime().getTime() - contest.getBeginTime().getTime());
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 this.addActionError(e.getMessage());
                 return "detail_edit";
             }
@@ -1095,7 +1095,7 @@ public class ContestAction extends BaseAction {
                 language = Tools.findClass4SHJS(submission.getDispLanguage());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return ERROR;
         } finally {
             baseService.releaseSession(session);
@@ -1251,7 +1251,7 @@ public class ContestAction extends BaseAction {
                 filewriter.write(source);
                 filewriter.close();
             }catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 throw e;
             }
         }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LanguageManager {
 
-    private Map<RemoteOj, LinkedHashMap<String, String>> ojLanguages = new HashMap<RemoteOj, LinkedHashMap<String,String>>();
+    private Map<RemoteOj, LinkedHashMap<String, String>> ojLanguages = new HashMap<>();
     
     public LinkedHashMap<String, String> getLanguages(RemoteOj remoteOj) {
         if (!ojLanguages.containsKey(remoteOj)) {

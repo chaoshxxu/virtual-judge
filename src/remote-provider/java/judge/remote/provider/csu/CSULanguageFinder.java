@@ -34,8 +34,6 @@ public class CSULanguageFinder implements LanguageFinder {
         languageList.put("1", "C++");
         languageList.put("2", "Pascal");
         languageList.put("3", "Java");
-        languageList.put("10", "Obj-C");
-        languageList.put("11", "FreeBasic");
         return languageList;
     }
 

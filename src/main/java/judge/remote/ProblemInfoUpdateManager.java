@@ -144,7 +144,7 @@ class ProblemInfoUpdateTask extends Task<Void> {
     }
 
     private void _onError(Throwable t) {
-        t.printStackTrace();
+        log.error(t.getMessage(), t);
         if (problem.getDescriptions() == null || problem.getDescriptions().isEmpty()) {
             // Never crawled successfully
             baseService.delete(problem);

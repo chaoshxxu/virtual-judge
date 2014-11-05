@@ -6,8 +6,11 @@ import java.util.List;
 import judge.remote.RemoteOj;
 import judge.tool.SpringBean;
 import judge.tool.Tools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SubmittersHolder {
+    private final static Logger log = LoggerFactory.getLogger(SubmittersHolder.class);
 
     private static HashMap<RemoteOj, Submitter> submitters = new HashMap<RemoteOj, Submitter>();
 
@@ -22,7 +25,7 @@ public class SubmittersHolder {
                             submitters.put(submitter.getOjInfo().remoteOj, submitter);
                         }
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        log.error(t.getMessage(), t);
                         System.exit(-1);
                     }
                 }

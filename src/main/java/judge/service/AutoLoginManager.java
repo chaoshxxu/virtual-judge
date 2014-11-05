@@ -119,7 +119,7 @@ public class AutoLoginManager {
         try {
             reduceRepo();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
         return token;

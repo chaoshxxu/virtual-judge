@@ -3,13 +3,16 @@ package judge.remote;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import judge.bean.Submission;
 
 @Component
 public class RemoteStatusUpdateEvent {
-    
+    private final static Logger log = LoggerFactory.getLogger(RemoteStatusUpdateEvent.class);
+
     private List<Listener> listeners = new ArrayList<Listener>();
     
     public void addListener(Listener listener) {
@@ -25,7 +28,7 @@ public class RemoteStatusUpdateEvent {
             try {
                 listener.onStatusUpdate(submission);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }
