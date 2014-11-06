@@ -254,7 +254,21 @@ public class JudgeService {
             //原data内无contest ID信息，特此加上
             out.write("[" + contest.getId() + "," + replayStatus.getData().substring(1));
         } else {
-            List<Object[]> submissionList = baseService.query("select s.user.id, cp.num, s.status, s.subTime, s.username, s.user.nickname, s.statusCanonical from Submission s, Cproblem cp where s.contest.id = " + contest.getId() + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id order by s.id asc");
+            List<Object[]> submissionList = baseService.query("" +
+                    "select " +
+                    "  s.user.id, " +
+                    "  s.contestNum, " +
+                    "  s.status, " +
+                    "  s.subTime, " +
+                    "  s.username, " +
+                    "  s.user.nickname, " +
+                    "  s.statusCanonical " +
+                    "from " +
+                    "  Submission s " +
+                    "where " +
+                    "  s.contest.id = " + contest.getId() + " " +
+                    "order by " +
+                    "  s.id asc ");
             long beginTime = contest.getBeginTime().getTime();
 
             StringBuffer submissionData = new StringBuffer("");

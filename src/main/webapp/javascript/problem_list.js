@@ -91,7 +91,7 @@ $(function() {
                         var raw = json.data[i];
                         rows.push([
                             raw[0],
-                            "<a href='" + raw[6] + "' target='_blank'>" + raw[1] + "</a>",
+                            "<a href='" + basePath + "/problem/visitOriginUrl.action?id=" + raw[5] + "' target='_blank'>" + raw[1] + "</a>",
                             "<a href='" + basePath + "/problem/viewProblem.action?id=" + raw[5] + "'>" + raw[2] + "</a>",
                             "<div class='localizedTime'>" + raw[3] + "</div>",
                             "<div>" + (raw[4] || "") + "</div>",

@@ -34,8 +34,8 @@
             <column name="C_IP" />
         </property>
 
-        <property name="attemptPassword" type="java.lang.String">
-            <column name="C_ATTEMPT_PASSWORD" />
+        <property name="loginSuccess" type="java.lang.Integer">
+            <column name="C_LOGIN_SUCCESS" />
         </property>
 
         <many-to-one name="user" class="judge.bean.User" fetch="select">

@@ -13,7 +13,7 @@ public class UserSession {
     private String userAgent;
     private String referer;
     private String ip;
-    private String attemptPassword; // only set if it's an unsuccessful login attempt
+    private int loginSuccess;
 
     public int getId() {
         return id;
@@ -79,11 +79,11 @@ public class UserSession {
         this.ip = ip;
     }
 
-    public String getAttemptPassword() {
-        return attemptPassword;
+    public int getLoginSuccess() {
+        return loginSuccess;
     }
 
-    public void setAttemptPassword(String attemptPassword) {
-        this.attemptPassword = attemptPassword;
+    public void setLoginSuccess(int loginSuccess) {
+        this.loginSuccess = loginSuccess;
     }
 }

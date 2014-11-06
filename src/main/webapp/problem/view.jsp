@@ -18,7 +18,7 @@
 		<td id="left_view">
 			<span style="text-align:left;font-family:Verdana;color:green">${problem.originOJ} - ${problem.originProb}</span>
 			<div class="ptt">
-				<a href="${problem.url}" target="_blank">${problem.title}</a>
+				<a href="${contextPath}/problem/visitOriginUrl.action?id=${problem.id}" target="_blank">${problem.title}</a>
 			</div>
 			<div class="plm">
 				<table align="center">

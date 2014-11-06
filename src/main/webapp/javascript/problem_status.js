@@ -121,7 +121,7 @@ $(function() {
                         rows.push([
                             raw[0] + (raw[13] > 0 ? "(<a href='" + basePath + "/contest/view.action?cid=" + raw[13] + "#overview' target='_blank'>#</a>)" : ""),
                             "<div><a href='" + basePath + "/user/profile.action?uid=" + raw[9] + "' target='_blank'>" + raw[1] + "</a><img src='" + basePath + "/images/find_me.png' /></div>",
-                            "<div><a href='" + raw[17] + "' target='_blank'>" + raw[11] + "</a></div>",
+                            "<div><a href='" + basePath + "/problem/visitOriginUrl.action?id=" + raw[2] + "' target='_blank'>" + raw[11] + "</a></div>",
                             "<div><a href='" + basePath + "/problem/viewProblem.action?id=" + raw[2] + "'>" + raw[12] + "</a><img src='" + basePath + "/images/find_me.png' /></div>",
                             "<div>" + (raw[14] ? "<a href='" + basePath + "/problem/fetchSubmissionInfo.action?id=" + raw[0] + "' rel='facebox'>" + raw[3] + "</a>" : raw[3]) + "</div>",
                             (raw[15] == 0 && raw[4] > 0 ? raw[4] : ""),

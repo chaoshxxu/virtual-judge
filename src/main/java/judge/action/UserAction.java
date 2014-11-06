@@ -69,7 +69,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
             userSession.setUserAgent((String) session.get("user-agent"));
             userSession.setIp((String) session.get("remoteAddr"));
             userSession.setUser(user);
-            userSession.setAttemptPassword(password);
+            userSession.setLoginSuccess(0);
             session.put("user-session", userSession);
             baseService.addOrModify(userSession);
 
@@ -100,6 +100,7 @@ public class UserAction extends BaseAction implements ServletRequestAware {
             userSession.setUserAgent((String) session.get("user-agent"));
             userSession.setIp((String) session.get("remoteAddr"));
             userSession.setUser(user);
+            userSession.setLoginSuccess(1);
             session.put("user-session", userSession);
             baseService.addOrModify(userSession);
 

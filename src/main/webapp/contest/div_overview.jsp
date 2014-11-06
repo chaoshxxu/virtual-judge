@@ -61,7 +61,7 @@
 				<td style="text-align: right">Problem <s:property value="dataList[#stat.index][0]" /></td>
 				<s:if test="curDate.compareTo(contest.endTime) > 0 || #session.visitor.sup == 1 || #session.visitor.id == contest.manager.id">
 					<td class="center">
-						<a target="_blank" href="<s:property value="dataList[#stat.index][3]" />"><s:property value="dataList[#stat.index][1]" /> <s:property value="dataList[#stat.index][2]" /></a>
+						<a target="_blank" href="${contextPath}/problem/visitOriginUrl.action?id=<s:property value='dataList[#stat.index][3]' />"><s:property value="dataList[#stat.index][1]" /> <s:property value="dataList[#stat.index][2]" /></a>
 					</td>
 				</s:if>
 				<td style="padding-left:50px;">

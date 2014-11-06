@@ -73,9 +73,9 @@
 		</action>
 
 		<!-- 修改题面 -->
-		<action name="editDescription" class="problemAction" method="editDescription">
-			<result name="success" type="redirect">${redir}</result>
-		</action>
+        <action name="editDescription" class="problemAction" method="editDescription">
+            <result name="success" type="redirect">${redir}</result>
+        </action>
 
 		<!-- 删除题面 -->
 		<action name="deleteDescription" class="problemAction" method="deleteDescription">
@@ -108,5 +108,9 @@
 			</result>
 		</action>
 
-	</package>
+        <action name="visitOriginUrl" class="problemAction" method="visitOriginUrl">
+            <result name="success" type="redirect">${redir}</result>
+        </action>
+
+    </package>
 </struts>

@@ -526,7 +526,7 @@ $(function () {
         }
         if (problem.originProblemNumber) {
             $("#problem_origin").button("destroy");
-            $("#problem_origin").attr("href", problem.originURL).text(problem.originProblemNumber);
+            $("#problem_origin").attr("href", basePath + "/problem/visitOriginUrl.action?id=" + problem.pid).text(problem.originProblemNumber);
             $("#problem_origin").button();
         }
 

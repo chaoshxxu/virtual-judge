@@ -254,7 +254,20 @@ public class ContestAction extends BaseAction {
             contest.setAnnouncement(null);
             contest.setPassword(null);
 
-            List<Object []> cproblemList = baseService.query("select p.id, p.originOJ, p.originProb, cproblem.title from Cproblem cproblem, Problem p where cproblem.problem.id = p.id and cproblem.contest.id = " + cid + " order by cproblem.num asc");
+            List<Object []> cproblemList = baseService.query("" +
+                    "select " +
+                    "  p.id, " +
+                    "  p.originOJ, " +
+                    "  p.originProb, " +
+                    "  cproblem.title " +
+                    "from " +
+                    "  Cproblem cproblem, " +
+                    "  Problem p " +
+                    "where " +
+                    "  cproblem.problem.id = p.id and " +
+                    "  cproblem.contest.id = " + cid + " " +
+                    "order by " +
+                    "  cproblem.num asc");
             pids = new ArrayList();
             OJs = new ArrayList();
             probNums = new ArrayList();
@@ -535,7 +548,19 @@ public class ContestAction extends BaseAction {
         }
 
         if (contestAuthorizeStatus > 0 && (curDate.getTime() >= contest.getBeginTime().getTime() || contestAuthorizeStatus == 2)){
-            dataList = baseService.query("select cproblem.num, cproblem.problem.originOJ, cproblem.problem.originProb, cproblem.problem.url, cproblem.title from Cproblem cproblem where cproblem.contest.id = '" + cid + "' order by cproblem.num asc");
+            dataList = baseService.query("" +
+                    "select " +
+                    "  cproblem.num, " +
+                    "  cproblem.problem.originOJ, " +
+                    "  cproblem.problem.originProb, " +
+                    "  cproblem.problem.id, " +
+                    "  cproblem.title " +
+                    "from " +
+                    "  Cproblem cproblem " +
+                    "where " +
+                    "  cproblem.contest.id = '" + cid + "' " +
+                    "order by " +
+                    "  cproblem.num asc");
         }
         beginTime = contest.getBeginTime().getTime();
         endTime = contest.getEndTime().getTime();
@@ -546,7 +571,16 @@ public class ContestAction extends BaseAction {
 
         if (dataList != null) {
             numList = new TreeMap<String, String>();
-            List<Object[]> tmpList = baseService.query("select cp.num, cp.title from Cproblem cp where cp.contest.id = " + cid + " order by cp.num asc");
+            List<Object[]> tmpList = baseService.query("" +
+                    "select " +
+                    "  cp.num, " +
+                    "  cp.title " +
+                    "from " +
+                    "  Cproblem cp " +
+                    "where " +
+                    "  cp.contest.id = " + cid + " " +
+                    "order by " +
+                    "  cp.num asc");
             for (Object[] o : tmpList) {
                 numList.put((String) o[0], o[0] + " - " + o[1]);
             }
@@ -569,15 +603,22 @@ public class ContestAction extends BaseAction {
             paraMap.put("cid", cid);
             paraMap.put("num", num);
 
-            String hql =
-                    "select cp "
-                            + "from    Cproblem cp "
-                            + "    left join fetch cp.problem p "
-                            + "    left join fetch p.descriptions "
-                            + "    left join fetch cp.description "
-                            + "    left join fetch cp.contest "
-                            + "where"
-                            + "    cp.contest.id = :cid and cp.num = :num";
+            String hql = "" +
+                    "select " +
+                    "  cp " +
+                    "from " +
+                    "  Cproblem cp " +
+                    "left join fetch " +
+                    "  cp.problem p " +
+                    "left join fetch " +
+                    "  p.descriptions " +
+                    "left join fetch " +
+                    "  cp.description " +
+                    "left join fetch " +
+                    "  cp.contest " +
+                    "where " +
+                    "  cp.contest.id = :cid and " +
+                    "  cp.num = :num";
             try {
                 cproblem = (Cproblem) baseService.query(hql, paraMap).get(0);
             } catch (Exception e) {}
@@ -624,7 +665,18 @@ public class ContestAction extends BaseAction {
         Session session = baseService.getSession();
         Transaction tx = session.beginTransaction();
         try {
-            String hql = "select cp from Cproblem cp left join fetch cp.contest left join fetch cp.problem where cp.contest.id = :cid and cp.num = :num";
+            String hql = "" +
+                    "select " +
+                    "  cp " +
+                    "from " +
+                    "  Cproblem cp " +
+                    "left join fetch " +
+                    "  cp.contest " +
+                    "left join fetch " +
+                    "  cp.problem " +
+                    "where " +
+                    "  cp.contest.id = :cid and " +
+                    "  cp.num = :num";
             cproblem = (Cproblem) session.createQuery(hql).setParameter("cid", cid).setParameter("num", num).uniqueResult();
 
             User user = OnlineTool.getCurrentUser();
@@ -674,7 +726,18 @@ public class ContestAction extends BaseAction {
 
         Session session = baseService.getSession();
         try {
-            cproblem = (Cproblem) session.createQuery("select cproblem from Cproblem cproblem left join fetch cproblem.problem left join fetch cproblem.contest where cproblem.num = :num and cproblem.contest.id = :cid").setParameter("num", num).setParameter("cid", cid).uniqueResult();
+            cproblem = (Cproblem) session.createQuery("" +
+                    "select " +
+                    "  cproblem " +
+                    "from " +
+                    "  Cproblem cproblem " +
+                    "left join fetch " +
+                    "  cproblem.problem " +
+                    "left join fetch " +
+                    "  cproblem.contest " +
+                    "where " +
+                    "  cproblem.num = :num and " +
+                    "  cproblem.contest.id = :cid").setParameter("num", num).setParameter("cid", cid).uniqueResult();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             json = "No such problem";
@@ -734,6 +797,7 @@ public class ContestAction extends BaseAction {
         submission.setUsername(user.getUsername());
         submission.setOriginOJ(problem.getOriginOJ());
         submission.setOriginProb(problem.getOriginProb());
+        submission.setContestNum(cproblem.getNum());
         baseService.addOrModify(submission);
         if (user.getShare() != submission.getIsOpen()) {
             user.setShare(submission.getIsOpen());
@@ -762,7 +826,7 @@ public class ContestAction extends BaseAction {
                 "select "
                         + " s.id, "  // 0
                         + " s.username, "
-                        + " cp.num, "
+                        + " s.contestNum, "
                         + " s.status, "
                         + " s.memory, "
                         + " s.time, " // 5
@@ -771,14 +835,14 @@ public class ContestAction extends BaseAction {
                         + " s.subTime, "
                         + " s.user.id, "
                         + " s.isOpen, " // 10
-                        + " cp.id, "
+                        + " s.id, "
                         + " s.additionalInfo, "
                         + " s.statusCanonical, "
                         + " s.id "  // 14
                         + "from "
-                        + "  Submission s, Cproblem cp "
+                        + "  Submission s "
                         + "where "
-                        + " s.contest.id = " + cid + " and s.problem.id = cp.problem.id and s.contest.id = cp.contest.id ");
+                        + " s.contest.id = " + cid);
 
         dataTablesPage = new DataTablesPage();
         dataTablesPage.setRecordsTotal(9999999L);
@@ -790,7 +854,7 @@ public class ContestAction extends BaseAction {
 
         if (!num.equals("-")){
             Validate.isTrue(num.length() == 1);
-            hql.append(" and cp.num = '" + num + "' ");
+            hql.append(" and s.contestNum = '" + num + "' ");
         }
 
         if (res == 1){
@@ -929,7 +993,20 @@ public class ContestAction extends BaseAction {
         d_minute = (int) (dur % 3600000 / 60000);
         contest.setTitle(Tools.toPlainChar(contest.getTitle()));
 
-        List<Object []> cproblemList = baseService.query("select cproblem.id, p.originOJ, p.originProb, cproblem.title from Cproblem cproblem, Problem p where cproblem.problem.id = p.id and cproblem.contest.id = " + cid + " order by cproblem.num asc");
+        List<Object []> cproblemList = baseService.query("" +
+                "select " +
+                "  cproblem.id, " +
+                "  p.originOJ, " +
+                "  p.originProb, " +
+                "  cproblem.title " +
+                "from " +
+                "  Cproblem cproblem, " +
+                "  Problem p " +
+                "where " +
+                "  cproblem.problem.id = p.id and " +
+                "  cproblem.contest.id = " + cid + " " +
+                "order by " +
+                "  cproblem.num asc ");
 
         if (contest.getReplayStatus() == null && curDate.compareTo(contest.getBeginTime()) > 0){
             return "brief_edit";
@@ -1163,7 +1240,18 @@ public class ContestAction extends BaseAction {
 
         Map paraMap = new HashMap();
         paraMap.put("cids", contestIds);
-        List<Object[]> submissions = baseService.query("select submission.username, submission.contest.id, cproblem.num, submission.problem.id from Submission submission, Cproblem cproblem where submission.status = 'Accepted' and submission.contest.id in :cids and cproblem.problem.id = submission.problem.id and cproblem.contest.id = submission.contest.id " + (afterContest == 0 ? " and submission.subTime < submission.contest.endTime" : ""), paraMap);
+        List<Object[]> submissions = baseService.query("" +
+                "select " +
+                "  submission.username, " +
+                "  submission.contest.id, " +
+                "  submission.contestNum, " +
+                "  submission.problem.id " +
+                "from " +
+                "  Submission submission " +
+                "where " +
+                "  submission.status = 'Accepted' and " +
+                "  submission.contest.id in :cids " +
+                (afterContest == 0 ? " and submission.subTime < submission.contest.endTime" : ""), paraMap);
 
         HashMap<String, Object[]> rank = new HashMap<String, Object[]>();
         for (Object[] submission : submissions) {
@@ -1214,7 +1302,20 @@ public class ContestAction extends BaseAction {
         FileUtils.deleteDirectory(dir);
         dir.mkdirs();
 
-        List<Object[]> submissions = baseService.query("select submission.id, submission.username, cproblem.num, submission.status, submission.dispLanguage, submission.source from Submission submission, Cproblem cproblem where submission.contest.id = " + cid + " and submission.status = 'Accepted' and submission.subTime <= submission.contest.endTime and submission.problem.id = cproblem.problem.id and cproblem.contest.id = " + cid);
+        List<Object[]> submissions = baseService.query("" +
+                "select  " +
+                "  submission.id, " +
+                "  submission.username, " +
+                "  submission.contestNum, " +
+                "  submission.status, " +
+                "  submission.dispLanguage, " +
+                "  submission.source " +
+                "from " +
+                "  Submission submission " +
+                "where " +
+                "  submission.contest.id = " + cid + " and " +
+                "  submission.status = 'Accepted' and " +
+                "  submission.subTime <= submission.contest.endTime ");
         for (Object[] submission : submissions) {
             Integer id = (Integer) submission[0];
             String username = (String) submission[1];

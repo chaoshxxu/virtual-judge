@@ -30,7 +30,15 @@ public class Customize {
         Session session = baseService.getSession();
         Transaction tx = session.beginTransaction();
         try {
-            List<Object[]> list = session.createQuery("select cp.contest.id, cp.problem.title from Cproblem cp order by cp.contest.id, cp.num").list();
+            List<Object[]> list = session.createQuery("" +
+                    "select " +
+                    "  cp.contest.id, " +
+                    "  cp.problem.title " +
+                    "from " +
+                    "  Cproblem cp " +
+                    "order by " +
+                    "  cp.contest.id, " +
+                    "  cp.num ").list();
             String contestSign = "";
             int problemCnt = 0;
             for (int i = 0; i < list.size(); i++) {
@@ -159,7 +167,18 @@ public class Customize {
 
         List<Contest> cList = baseService.query("select c from Contest c");
         for (Contest contest : cList) {
-            List<Object[]> cpList = baseService.query("select cp.num, p.title from Cproblem cp, Problem p where cp.problem.id = p.id and cp.contest.id = " + contest.getId() +  " order by cp.num asc");
+            List<Object[]> cpList = baseService.query("" +
+                    "select " +
+                    "  cp.num, " +
+                    "  p.title " +
+                    "from " +
+                    "  Cproblem cp, " +
+                    "  Problem p " +
+                    "where " +
+                    "  cp.problem.id = p.id and " +
+                    "  cp.contest.id = " + contest.getId() +  " " +
+                    "order by " +
+                    "  cp.num asc");
             StringBuffer hashCode = new StringBuffer();
             for (Object s[] : cpList) {
                 hashCode.append(((String)s[1]).toLowerCase().replaceAll("\\W", ""));

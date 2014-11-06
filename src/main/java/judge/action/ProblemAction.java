@@ -109,7 +109,7 @@ public class ProblemAction extends BaseAction{
                         + "  problem.triggerTime, "
                         + "  problem.source, "
                         + "  problem.id, "
-                        + "  problem.url, "
+                        + "  problem.id, "
                         + "  problem.timeLimit "
                         + "from "
                         + "  Problem problem "
@@ -302,27 +302,27 @@ public class ProblemAction extends BaseAction{
         int userId = user != null ? user.getId() : -1;
         int sup = user != null ? user.getSup() : 0;
 
-        StringBuffer hql = new StringBuffer(
-                "select "
-                        + " s.id, " // 0
-                        + " s.username, "
-                        + " s.problem.id, "
-                        + " s.status, "
-                        + " s.memory, "
-                        + " s.time, " // 5
-                        + " s.dispLanguage, "
-                        + " length(s.source), "
-                        + " s.subTime, "
-                        + " s.user.id, "
-                        + " s.isOpen, " // 10
-                        + " s.originOJ, "
-                        + " s.originProb, "
-                        + " s.contest.id, "
-                        + " s.additionalInfo, " // 14
-                        + " s.statusCanonical, "
-                        + " s.id, "
-                        + " s.problem.url "
-                        + "from Submission s ");
+        StringBuffer hql = new StringBuffer("" +
+                "select " +
+                "  s.id, " + // 0
+                "  s.username, " +
+                "  s.problem.id, " +
+                "  s.status, " +
+                "  s.memory, " +
+                "  s.time, " + // 5
+                "  s.dispLanguage, " +
+                "  length(s.source), " +
+                "  s.subTime, " +
+                "  s.user.id, " +
+                "  s.isOpen, " + // 10
+                "  s.originOJ, " +
+                "  s.originProb, " +
+                "  s.contest.id, " +
+                "  s.additionalInfo, " +
+                "  s.statusCanonical, " + // 15
+                "  s.id " +
+                "from " +
+                "  Submission s ");
 
         dataTablesPage = new DataTablesPage();
         dataTablesPage.setRecordsTotal(9999999L);
@@ -340,17 +340,13 @@ public class ProblemAction extends BaseAction{
             paraMap.put("un", un.toLowerCase().trim());
         }
 
-        if (id != 0){
-            hql.append(" and s.problem.id = " + id);
-        } else {
-            if (!probNum.isEmpty()){
-                hql.append(" and s.originProb = :probNum ");
-                paraMap.put("probNum", probNum);
-            }
-            if (OJListLiteral.contains(OJId)){
-                hql.append(" and s.originOJ = :OJId ");
-                paraMap.put("OJId", OJId);
-            }
+        if (!probNum.isEmpty()){
+            hql.append(" and s.originProb = :probNum ");
+            paraMap.put("probNum", probNum);
+        }
+        if (OJListLiteral.contains(OJId)){
+            hql.append(" and s.originOJ = :OJId ");
+            paraMap.put("OJId", OJId);
         }
 
         if (res == 1){
@@ -554,6 +550,16 @@ public class ProblemAction extends BaseAction{
         submission = (Submission) baseService.query(Submission.class, id);
         submissionInfo = submission.getAdditionalInfo();
         return SUCCESS;
+    }
+
+    public String visitOriginUrl() {
+        List<String> _url = baseService.query("select p.url from Problem p where p.id = " + id);
+        if (_url.isEmpty()) {
+            return ERROR;
+        } else {
+            redir = _url.get(0);
+            return SUCCESS;
+        }
     }
 
     public int getUid() {

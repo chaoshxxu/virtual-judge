@@ -38,10 +38,12 @@ public class Submission {
     private int queryCount;            //累计查询状态次数
     private Date statusUpdateTime;    //最后查询状态时间
     private int failCase = -1;
-    
+
+    private String languageCanonical;
+    private String contestNum;         // copy of cproblem.num
 
     private Problem problem;    //外键    题目
-    private User user;            //外键    提交人
+    private User user;          //外键    提交人
     private Contest contest;    //外键    比赛
 
     public void reset() {
@@ -202,5 +204,18 @@ public class Submission {
     public void setFailCase(int failCase) {
         this.failCase = failCase;
     }
-    
+    public String getLanguageCanonical() {
+        return languageCanonical;
+    }
+    public void setLanguageCanonical(String languageCanonical) {
+        this.languageCanonical = languageCanonical;
+    }
+
+    public String getContestNum() {
+        return contestNum;
+    }
+
+    public void setContestNum(String contestNum) {
+        this.contestNum = contestNum;
+    }
 }

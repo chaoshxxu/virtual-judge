@@ -61,6 +61,7 @@ public class AutoLoginInterceptor extends AbstractInterceptor {
         userSession.setUserAgent((String) session.get("user-agent"));
         userSession.setIp((String) session.get("remoteAddr"));
         userSession.setUser(user);
+        userSession.setLoginSuccess(1);
         session.put("user-session", userSession);
 
         SpringBean.getBean(BaseService.class).addOrModify(userSession);

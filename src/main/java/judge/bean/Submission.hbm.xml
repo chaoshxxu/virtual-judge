@@ -67,6 +67,12 @@
         <property name="isPrivate" type="java.lang.Integer">
             <column name="C_IS_PRIVATE" />
         </property>
+        <property name="languageCanonical" type="java.lang.String">
+            <column name="C_LANGUAGE_CANONICAL" />
+        </property>
+        <property name="contestNum" type="java.lang.String">
+            <column name="C_CONTEST_NUM" />
+        </property>
 
         <many-to-one name="user" class="judge.bean.User" fetch="select">
             <column name="C_USER_ID" />
