@@ -11,14 +11,20 @@ $(function() {
         	updateHash("OJId");
     	}
     }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
-    
+
     $("#res").selectmenu({
-    	change : function(){
-        	updateHash("res");
-    	}
+        change : function(){
+            updateHash("res");
+        }
     });
-    
-    $(["#OJId", "#res"]).each(function(_, id){
+
+    $("#language").selectmenu({
+        change : function(){
+            updateHash("language");
+        }
+    });
+
+    $(["#OJId", "#res", "#language"]).each(function(_, id){
     	var buttonId = id + "-button";
     	var menuId = id + "-menu";
     	$(buttonId).mouseenter(function(){
@@ -70,7 +76,8 @@ $(function() {
     	$("[name='un']").val(queryParam.un);
     	$("[name='OJId']").val(queryParam.OJId).selectmenu("refresh");
     	$("[name='probNum']").val(queryParam.probNum);
-    	$("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='language']").val(queryParam.language).selectmenu("refresh");
     	$("[name='orderBy']").val(queryParam.orderBy);
     	if (oTable) {
             oTable.draw();
@@ -225,7 +232,8 @@ $(function() {
                 	$("[name='OJId']").val("All");
                 	$("[name='probNum']").val("");
                 	$("[name='orderBy']").val("run_id");
-                	$("[name='res']").val("0");
+                    $("[name='res']").val("0");
+                    $("[name='language']").val("");
                 	if (!updateHash()) {
                 		oTable.draw();
                 	}
@@ -243,6 +251,7 @@ $(function() {
         var probNum = $("[name='probNum']").val();
         var _orderBy = (OJId != 'All' && probNum) ? $("[name='orderBy']").val() : "run_id";
         var _res = $("[name='res']").val();
+        var language = $("[name='language']").val();
         var orderBy, res;
         
         if (triggerVar == "res") {
@@ -254,7 +263,7 @@ $(function() {
         }
 
         var oldHash = location.hash;
-        location.hash = "#un=" + un + "&OJId=" + OJId + "&probNum=" + probNum + "&res=" + res + "&orderBy=" + orderBy;
+        location.hash = "#un=" + un + "&OJId=" + OJId + "&probNum=" + probNum + "&res=" + res + "&orderBy=" + orderBy + "&language=" + language;
         return oldHash != location.hash;
     }
 
@@ -263,7 +272,8 @@ $(function() {
 			un : "",
 			OJId : "All",
 			probNum : "",
-			res : "0",
+            res : "0",
+            language : "",
 			orderBy : "run_id"
     	};
         try {

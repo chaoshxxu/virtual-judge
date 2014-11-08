@@ -4250,7 +4250,13 @@ $(function () {
         }
     }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
 
-    $(["#num", "#res"]).each(function(_, id){
+    $("#lang").selectmenu({
+        change : function(){
+            updateHash("lang");
+        }
+    }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
+
+    $(["#num", "#res", "#lang"]).each(function(_, id){
         var buttonId = id + "-button";
         var menuId = id + "-menu";
         $(buttonId).mouseenter(function(){
@@ -4518,13 +4524,15 @@ $(function () {
         $.extend(queryParam, {
             un: hash[1],
             num: hash[2],
-            res: hash[3]
+            res: hash[3],
+            lang: hash[4]
         });
         setQueryParam(queryParam);
         
         $("[name='un']").val(queryParam.un);
         $("[name='num']").val(queryParam.num).selectmenu("refresh");
         $("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='lang']").val(queryParam.lang).selectmenu("refresh");
         if (statusTable) {
             statusTable.draw();
         } else {
@@ -4671,6 +4679,7 @@ $(function () {
                         $("[name='un']").val("");
                         $("[name='num']").val("-").selectmenu("refresh");
                         $("[name='res']").val("0").selectmenu("refresh");
+                        $("[name='lang']").val("").selectmenu("refresh");
                         if (!updateHash()) {
                             statusTable.draw();
                         }
@@ -4688,9 +4697,10 @@ $(function () {
         var un = $("[name='un']").val();
         var num = $("[name='num']").val();
         var res = $("[name='res']").val();
-        
+        var lang = $("[name='lang']").val();
+
         var oldHash = location.hash;
-        location.hash = "#status/" + un + "/" + num + "/" + res;
+        location.hash = "#status/" + un + "/" + num + "/" + res + "/" + lang;
         return oldHash != location.hash;
     }
 
@@ -4698,7 +4708,8 @@ $(function () {
         var defaultQueryParam = {
             un : "",
             num : "-",
-            res : "0"
+            res : "0",
+            lang : ""
         };
         try {
             return Vjudge.storage.get("contest.status.queryParam", defaultQueryParam);
@@ -5832,14 +5843,20 @@ $(function() {
         	updateHash("OJId");
     	}
     }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
-    
+
     $("#res").selectmenu({
-    	change : function(){
-        	updateHash("res");
-    	}
+        change : function(){
+            updateHash("res");
+        }
     });
-    
-    $(["#OJId", "#res"]).each(function(_, id){
+
+    $("#language").selectmenu({
+        change : function(){
+            updateHash("language");
+        }
+    });
+
+    $(["#OJId", "#res", "#language"]).each(function(_, id){
     	var buttonId = id + "-button";
     	var menuId = id + "-menu";
     	$(buttonId).mouseenter(function(){
@@ -5891,7 +5908,8 @@ $(function() {
     	$("[name='un']").val(queryParam.un);
     	$("[name='OJId']").val(queryParam.OJId).selectmenu("refresh");
     	$("[name='probNum']").val(queryParam.probNum);
-    	$("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='language']").val(queryParam.language).selectmenu("refresh");
     	$("[name='orderBy']").val(queryParam.orderBy);
     	if (oTable) {
             oTable.draw();
@@ -6046,7 +6064,8 @@ $(function() {
                 	$("[name='OJId']").val("All");
                 	$("[name='probNum']").val("");
                 	$("[name='orderBy']").val("run_id");
-                	$("[name='res']").val("0");
+                    $("[name='res']").val("0");
+                    $("[name='language']").val("");
                 	if (!updateHash()) {
                 		oTable.draw();
                 	}
@@ -6064,6 +6083,7 @@ $(function() {
         var probNum = $("[name='probNum']").val();
         var _orderBy = (OJId != 'All' && probNum) ? $("[name='orderBy']").val() : "run_id";
         var _res = $("[name='res']").val();
+        var language = $("[name='language']").val();
         var orderBy, res;
         
         if (triggerVar == "res") {
@@ -6075,7 +6095,7 @@ $(function() {
         }
 
         var oldHash = location.hash;
-        location.hash = "#un=" + un + "&OJId=" + OJId + "&probNum=" + probNum + "&res=" + res + "&orderBy=" + orderBy;
+        location.hash = "#un=" + un + "&OJId=" + OJId + "&probNum=" + probNum + "&res=" + res + "&orderBy=" + orderBy + "&language=" + language;
         return oldHash != location.hash;
     }
 
@@ -6084,7 +6104,8 @@ $(function() {
 			un : "",
 			OJId : "All",
 			probNum : "",
-			res : "0",
+            res : "0",
+            language : "",
 			orderBy : "run_id"
     	};
         try {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.tools.Tool;
 
 import judge.bean.Cproblem;
 import judge.bean.DataTablesPage;
@@ -261,6 +262,7 @@ public class ProblemAction extends BaseAction{
         submission.setUsername(user.getUsername());
         submission.setOriginOJ(problem.getOriginOJ());
         submission.setOriginProb(problem.getOriginProb());
+        submission.setLanguageCanonical(Tools.getCanonicalLanguage(submission.getDispLanguage()).toString());
         baseService.addOrModify(submission);
         if (user.getShare() != submission.getIsOpen()) {
             user.setShare(submission.getIsOpen());
@@ -371,6 +373,11 @@ public class ProblemAction extends BaseAction{
             hql.append(" and s.statusCanonical = 'SUBMIT_FAILED_TEMP' ");
         } else if (res == 11) {
             hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
+        }
+
+        if (!StringUtils.isBlank(language)) {
+            hql.append(" and s.languageCanonical = :language ");
+            paraMap.put("language", language);
         }
 
         if (OJListLiteral.contains(OJId) && !StringUtils.isBlank(probNum) && 1 == res) {

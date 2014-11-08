@@ -212,6 +212,35 @@ public class Tools {
             return "sh-c";
         }
     }
+
+    public static CanonicalLanguage getCanonicalLanguage(String rawLanguage) {
+        if (StringUtils.isBlank(rawLanguage)) {
+            return CanonicalLanguage.OTHER;
+        }
+        rawLanguage = rawLanguage.toLowerCase().trim();
+        if (rawLanguage.contains("g++") || rawLanguage.contains("c++") || rawLanguage.contains("cpp")) {
+            return CanonicalLanguage.CPP;
+        }
+        if (rawLanguage.equals("c") || rawLanguage.startsWith("c ") || rawLanguage.endsWith(" c") || rawLanguage.contains(" c ") || rawLanguage.contains("gcc")) {
+            return CanonicalLanguage.C;
+        }
+        if (rawLanguage.contains("java") && !rawLanguage.contains("javascript")) {
+            return CanonicalLanguage.JAVA;
+        }
+        if (rawLanguage.contains("python")) {
+            return CanonicalLanguage.PYTHON;
+        }
+        if (rawLanguage.contains("pascal") || rawLanguage.contains("fpc") || rawLanguage.contains("delphi")) {
+            return CanonicalLanguage.PASCAL;
+        }
+        if (rawLanguage.contains("c#")) {
+            return CanonicalLanguage.CSHARP;
+        }
+        if (rawLanguage.contains("ruby")) {
+            return CanonicalLanguage.RUBY;
+        }
+        return CanonicalLanguage.OTHER;
+    }
     
     public static <T> List<Class<? extends T>> findSubClasses(String packagePath, Class<T> parentClass) throws ClassNotFoundException {
         List<Class<? extends T>> result = new ArrayList<Class<? extends T>>();

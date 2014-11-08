@@ -33,11 +33,7 @@ import judge.remote.SubmitCodeManager;
 import judge.remote.language.LanguageManager;
 import judge.remote.status.RemoteStatusType;
 import judge.service.IBaseService;
-import judge.tool.ApplicationContainer;
-import judge.tool.MD5;
-import judge.tool.OnlineTool;
-import judge.tool.Tools;
-import judge.tool.ZipUtil;
+import judge.tool.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -73,6 +69,7 @@ public class ContestAction extends BaseAction {
     private int isOpen;
     private String password;
     private String language;
+    private String lang;
     private String source;
     private String un, num;
     private Date curDate;
@@ -798,6 +795,7 @@ public class ContestAction extends BaseAction {
         submission.setOriginOJ(problem.getOriginOJ());
         submission.setOriginProb(problem.getOriginProb());
         submission.setContestNum(cproblem.getNum());
+        submission.setLanguageCanonical(Tools.getCanonicalLanguage(submission.getDispLanguage()).toString());
         baseService.addOrModify(submission);
         if (user.getShare() != submission.getIsOpen()) {
             user.setShare(submission.getIsOpen());
@@ -879,6 +877,11 @@ public class ContestAction extends BaseAction {
             hql.append(" and s.statusCanonical = 'SUBMIT_FAILED_TEMP' ");
         } else if (res == 11) {
             hql.append(" and s.statusCanonical in ('PENDING', 'SUBMITTED', 'QUEUEING', 'COMPILING', 'JUDGING') ");
+        }
+
+        if (!StringUtils.isBlank(lang)) {
+            CanonicalLanguage canonicalLanguage = CanonicalLanguage.valueOf(lang);
+            hql.append(" and s.languageCanonical = '" + canonicalLanguage + "' ");
         }
 
         hql.append(" order by s.id desc ");
@@ -1685,7 +1688,12 @@ public class ContestAction extends BaseAction {
     public void setContestAuthorizeStatus(Integer contestAuthorizeStatus) {
         this.contestAuthorizeStatus = contestAuthorizeStatus;
     }
-
+    public String getLang() {
+        return lang;
+    }
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
 }
 
 

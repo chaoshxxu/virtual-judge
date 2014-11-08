@@ -279,7 +279,13 @@ $(function () {
         }
     }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
 
-    $(["#num", "#res"]).each(function(_, id){
+    $("#lang").selectmenu({
+        change : function(){
+            updateHash("lang");
+        }
+    }).selectmenu( "menuWidget").addClass( "ui-menu-icons avatar" );
+
+    $(["#num", "#res", "#lang"]).each(function(_, id){
         var buttonId = id + "-button";
         var menuId = id + "-menu";
         $(buttonId).mouseenter(function(){
@@ -547,13 +553,15 @@ $(function () {
         $.extend(queryParam, {
             un: hash[1],
             num: hash[2],
-            res: hash[3]
+            res: hash[3],
+            lang: hash[4]
         });
         setQueryParam(queryParam);
         
         $("[name='un']").val(queryParam.un);
         $("[name='num']").val(queryParam.num).selectmenu("refresh");
         $("[name='res']").val(queryParam.res).selectmenu("refresh");
+        $("[name='lang']").val(queryParam.lang).selectmenu("refresh");
         if (statusTable) {
             statusTable.draw();
         } else {
@@ -700,6 +708,7 @@ $(function () {
                         $("[name='un']").val("");
                         $("[name='num']").val("-").selectmenu("refresh");
                         $("[name='res']").val("0").selectmenu("refresh");
+                        $("[name='lang']").val("").selectmenu("refresh");
                         if (!updateHash()) {
                             statusTable.draw();
                         }
@@ -717,9 +726,10 @@ $(function () {
         var un = $("[name='un']").val();
         var num = $("[name='num']").val();
         var res = $("[name='res']").val();
-        
+        var lang = $("[name='lang']").val();
+
         var oldHash = location.hash;
-        location.hash = "#status/" + un + "/" + num + "/" + res;
+        location.hash = "#status/" + un + "/" + num + "/" + res + "/" + lang;
         return oldHash != location.hash;
     }
 
@@ -727,7 +737,8 @@ $(function () {
         var defaultQueryParam = {
             un : "",
             num : "-",
-            res : "0"
+            res : "0",
+            lang : ""
         };
         try {
             return Vjudge.storage.get("contest.status.queryParam", defaultQueryParam);

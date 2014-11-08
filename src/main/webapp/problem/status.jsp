@@ -61,7 +61,21 @@
 					</th>
 					<th class="memory">Memory<br />(KB)</th>
 					<th class="time">Time<br />(ms)</th>
-					<th class="language">Language</th>
+					<th class="language">
+                        Language
+                        <br />
+                        <select name="language" id="language" style="width: 100%;">
+                            <option value="">All</option>
+                            <option value="CPP">C++</option>
+                            <option value="C">C</option>
+                            <option value="JAVA">Java</option>
+                            <option value="PASCAL">Pascal</option>
+                            <option value="PYTHON">Python</option>
+                            <option value="CSHARP">C#</option>
+                            <option value="RUBY">Ruby</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </th>
 					<th class="length">Length<br />(Bytes)</th>
 					<th class="date">Submit Time</th>
 					<th></th>
