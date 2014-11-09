@@ -2887,6 +2887,14 @@ body {
     background-color: white;
 }
 
+#listProblem tr.Running.odd {
+    background-color: #FFDDDD !important;
+}
+
+#listProblem tr.Running.even {
+    background-color: #FFEEEE !important;
+}
+
 #listProblem_wrapper .dataTables_paginate {
     float: left;
     text-align: center;
@@ -2917,8 +2925,6 @@ table.dataTable thead th div.DataTables_sort_wrapper span.ui-selectmenu-text  {
 #listProblem_wrapper .ui-selectmenu-button span.ui-selectmenu-text {
     overflow: visible;
 }
-
-
 /********************Status*********************/
 #status {
 	table-layout: fixed;
