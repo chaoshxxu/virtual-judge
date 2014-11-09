@@ -303,7 +303,7 @@ Vjudge = new function() {
     };
 
     this.sendGaPageview = function() {
-        var _page = window.location.pathname + window.location.hash;
+        var _page = window.location.pathname + window.location.search + window.location.hash;
 //        console.log(_page);
         if (typeof ga == 'function') {
             ga('send', 'pageview', _page);
