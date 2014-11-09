@@ -483,6 +483,7 @@ $(function () {
         } else {
             showOverview();
         }
+        Vjudge.sendGaPageview();
     }).hashchange();
 
     $("#contest_tabs").show();

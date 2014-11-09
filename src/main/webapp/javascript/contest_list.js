@@ -70,6 +70,7 @@ $(function() {
         if (oTable) {
             oTable.draw();
         }
+        Vjudge.sendGaPageview();
     }).hashchange();
     
     var oTable = initDataTable();

@@ -440,7 +440,15 @@ Vjudge = new function() {
 
         return ((elemBottom >= docViewTop) && (elemTop <= docViewBottom));
     };
-    
+
+    this.sendGaPageview = function() {
+        var _page = window.location.pathname + window.location.hash;
+//        console.log(_page);
+        if (typeof ga == 'function') {
+            ga('send', 'pageview', _page);
+        }
+    };
+
     this.storage = new function(){
         var cache = {};
 		this.set = function(key, value, temp) {
@@ -3626,6 +3634,7 @@ $(function() {
         if (oTable) {
             oTable.draw();
         }
+        Vjudge.sendGaPageview();
     }).hashchange();
     
     var oTable = initDataTable();
@@ -4454,6 +4463,7 @@ $(function () {
         } else {
             showOverview();
         }
+        Vjudge.sendGaPageview();
     }).hashchange();
 
     $("#contest_tabs").show();
@@ -5703,6 +5713,7 @@ $(function() {
         if (oTable) {
             oTable.draw();
         }
+        Vjudge.sendGaPageview();
     }).hashchange();
     
     var oTable = initDataTable();
@@ -5914,6 +5925,7 @@ $(function() {
     	if (oTable) {
             oTable.draw();
     	}
+        Vjudge.sendGaPageview();
     }).hashchange();
     
     $(document).on("click", ".rejudge", function(){

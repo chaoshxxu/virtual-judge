@@ -82,6 +82,7 @@ $(function() {
     	if (oTable) {
             oTable.draw();
     	}
+        Vjudge.sendGaPageview();
     }).hashchange();
     
     $(document).on("click", ".rejudge", function(){
