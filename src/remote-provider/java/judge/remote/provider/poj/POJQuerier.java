@@ -32,8 +32,8 @@ public class POJQuerier extends AuthenticatedQuerier {
         status.rawStatus = Tools.regFind(html, "<b>Result:</b>(.+?)</td>").replaceAll("<.*?>", "").trim();
         status.statusType = SubstringNormalizer.DEFAULT.getStatusType(status.rawStatus);
         if (status.statusType == RemoteStatusType.AC) {
-            status.executionMemory = Integer.parseInt(Tools.regFind(html, "<b>Memory:</b> (\\d+)"));
-            status.executionTime = Integer.parseInt(Tools.regFind(html, "<b>Time:</b> (\\d+)"));
+            status.executionMemory = Integer.parseInt(Tools.regFind(html, "<b>Memory:</b> ([-\\d]+)"));
+            status.executionTime = Integer.parseInt(Tools.regFind(html, "<b>Time:</b> ([-\\d]+)"));
         } else if (status.statusType == RemoteStatusType.CE) {
             html = client.get("/showcompileinfo?solution_id=" + info.remoteRunId).getBody();
             Validate.isTrue(html.contains("Compile Error"));
