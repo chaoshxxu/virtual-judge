@@ -10,7 +10,6 @@ import judge.remote.status.SubmissionRemoteStatus;
 import judge.remote.status.SubstringNormalizer;
 import judge.remote.submitter.SubmissionInfo;
 import judge.tool.Tools;
-
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Component;
 
