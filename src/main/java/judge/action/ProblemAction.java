@@ -330,7 +330,12 @@ public class ProblemAction extends BaseAction{
         dataTablesPage.setRecordsTotal(9999999L);
 
         if (sup == 0){
-            hql.append(" left join s.contest c where (s.isPrivate = 0 and (c is null or c.endTime < :currentTime) or s.user.id = :userId) ");
+            hql.append("" +
+                    "left join " +
+                    "  s.contest c " +
+                    "where " +
+                    "  ((s.isPrivate = 0 or s.user.id = :userId) and" +
+                    "  (c is null or c.endTime < :currentTime)) ");
             paraMap.put("currentTime", new Date());
             paraMap.put("userId", user != null ? user.getId() : -1);
         } else {
