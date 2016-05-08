@@ -39,7 +39,8 @@ public class POJSubmitter extends CanonicalSubmitter {
         HttpEntity entity = SimpleNameValueEntityFactory.create(
             "language", info.remotelanguage, //
             "problem_id", info.remoteProblemId, //
-            "source", info.sourceCode
+            "source", info.sourceCode,
+            "encoded", "0"
         );
         client.post("/submit", entity, HttpStatusValidator.SC_MOVED_TEMPORARILY);
         return null;
