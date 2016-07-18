@@ -15,7 +15,7 @@ public class POJInfo {
     
     static {
         INFO.faviconUrl = "images/remote_oj/poj.ico";
-        INFO._64IntIoFormat = "%I64d & %I64u";
+        INFO._64IntIoFormat = "%lld & %llu";
     }
 
 }
