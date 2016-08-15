@@ -1,4 +1,5 @@
-virtual-judge
+Virtual Judge
 =============
 
-Holding contests using problems from other OJs!!
+Thanks for your attention, my dear friends.
+Welcome to real [Virtual Judge](http://vjudge.net).

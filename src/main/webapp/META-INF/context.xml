@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<Context path="/vjudge" debug="0" reloadable="false">
-	<Manager className="org.apache.catalina.session.PersistentManager" debug="0" saveOnRestart="false" maxActiveSessions="-1" minIdleSwap="-1" maxIdleSwap="-1" maxIdleBackup="-1" >
-		<Store className="org.apache.catalina.session.FileStore" directory="mydir"/>
-	</Manager>
-</Context>
